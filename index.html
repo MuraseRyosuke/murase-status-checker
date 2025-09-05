@@ -29,6 +29,9 @@
         <div class="status"><span class="label">🩺 体調:</span> <span id="condition">---</span></div>
         <div class="status"><span class="label">☀️ 起床時間:</span> <span id="wakeup_time">---</span></div>
 
+        <h2><span class="label">📍 Location</span></h2>
+        <div class="status"><span class="label">現在地:</span> <span id="location">---</span></div>
+        
         <h2><span class="label">📱 Device</span></h2>
         <div class="status"><span class="label">バッテリー:</span> <span id="device_status">---</span></div>
 
@@ -81,6 +84,9 @@
                                                                                                                                                     minute: '2-digit'
                                                     });
                 }
+
+                // 起床時間表示コードの下に追加
+                document.getElementById('location').textContent = content.location.city || 'N/A';
                 
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 const livenessEl = document.getElementById('liveness');
