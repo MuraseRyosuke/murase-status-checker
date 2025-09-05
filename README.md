@@ -41,7 +41,7 @@ Apple WatchとiPhoneで取得した自身のバイタルデータを、Web上に
 このプロジェクトで使用しているiPhoneショートカットは、以下のリンクからインストール、またはダウンロードできます。
 
 * **[▶︎ iCloudリンクからショートカットをインストール](https://www.icloud.com/shortcuts/36b86883d084465f9e2f56b69a3add3d)**
-* **[▶︎ ショートカットファイルをダウンロード](./ステータス更新 （公開用）.shortcut)**
+* **[▶︎ ショートカットファイルをダウンロード](https://github.com/MuraseRyosuke/murase-status-checker/blob/main/%E3%82%B9%E3%83%86%E3%83%BC%E3%82%BF%E3%82%B9%E6%9B%B4%E6%96%B0%20%EF%BC%88%E5%85%AC%E9%96%8B%E7%94%A8%EF%BC%89.shortcut)**
 
 **【重要】**
 インストール後、ショートカットを編集して、あなた自身の**GitHub Gist ID**と**アクセストークン**を設定する必要があります。
