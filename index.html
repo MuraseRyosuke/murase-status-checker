@@ -17,8 +17,8 @@
             --dark-text: #e0e0e0;
             --dark-text-sub: #a0a0a0;
             --dark-border: #333333;
-            --ecg-alive-color: rgba(46, 204, 113, 0.4);  /* 彩度を落とした緑色 */
-            --ecg-lost-color: rgba(231, 76, 60, 0.4);   /* 彩度を落とした赤色 */
+            --ecg-alive-color: rgba(46, 204, 113, 0.4);
+            --ecg-lost-color: rgba(231, 76, 60, 0.4);
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -37,8 +37,8 @@
         h2.dark-mode { border-bottom-color: var(--dark-border); }
         .label.light-mode { color: var(--light-text); }
         .label.dark-mode { color: var(--dark-text); }
-        .timestamp.light-mode { color: var(--light-text-sub); } /* タイムスタンプのみ薄い色に */
-        .timestamp.dark-mode { color: var(--dark-text-sub); }
+        .timestamp.light-mode, #last_updated.light-mode { color: var(--light-text-sub); }
+        .timestamp.dark-mode, #last_updated.dark-mode { color: var(--dark-text-sub); }
         #liveness-subtext a { color: #007aff; }
 
         /* --- レイアウト --- */
@@ -102,7 +102,7 @@
         /* --- UI要素のスタイル --- */
         #liveness-header { text-align: center; padding-bottom: 1em; margin-bottom: 1em; border-bottom: 2px solid; }
         #liveness-message { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: bold; }
-        #liveness-subtext { font-size: clamp(0.9rem, 2vw, 1rem); margin-top: 0.5rem; min-height: 1.2em; /* サブテキスト有無でのガタつき防止 */ }
+        #liveness-subtext { font-size: clamp(0.9rem, 2vw, 1rem); margin-top: 0.5rem; min-height: 1.2em; }
         
         .timestamp {
             font-size: 0.8em;
@@ -134,7 +134,7 @@
     <div class="wrapper">
         <div class="main-content">
             <div class="profile-container">
-                <img src="ogp.png" alt="プロフィール画像" class="profile-image">
+                <img src="https://muraseryosuke.info/assets/img/ogp.jpg" alt="プロフィール画像" class="profile-image">
             </div>
 
             <div class="details-container">
@@ -147,20 +147,20 @@
 
                     <div class="details-content">
                         <h2 class="light-mode"><span class="label light-mode">❤️ ヘルスケア</span></h2>
-                        <div class="status"><span class="label light-mode">心拍数:</span> <span id="heart_rate">---</span> bpm</div>
-                        <div class="status"><span class="label light-mode">歩数:</span> <span id="steps">---</span> 歩</div>
-                        <div class="status"><span class="label light-mode">カロリー:</span> <span id="calories">---</span> kcal</div>
+                        <div class="status"><span class="label light-mode">❤️ 心拍数:</span> <span id="heart_rate">---</span> bpm</div>
+                        <div class="status"><span class="label light-mode">👟 歩数:</span> <span id="steps">---</span> 歩</div>
+                        <div class="status"><span class="label light-mode">🔥 カロリー:</span> <span id="calories">---</span> kcal</div>
                         <div class="status"><span class="label light-mode">🩺 体調:</span> <span id="condition">---</span></div>
                         <div class="status"><span class="label light-mode">☀️ 起床時間:</span> <span id="wakeup_time">---</span></div>
 
                         <h2 class="light-mode"><span class="label light-mode">📍 ロケーション</span></h2>
-                        <div class="status"><span class="label light-mode">現在地:</span> <span id="location">---</span></div>
+                        <div class="status"><span class="label light-mode">📍 現在地:</span> <span id="location">---</span></div>
                         
                         <h2 class="light-mode"><span class="label light-mode">📱 デバイス</span></h2>
-                        <div class="status"><span class="label light-mode">バッテリー:</span> <span id="device_status">---</span></div>
+                        <div class="status"><span class="label light-mode">🔋 バッテリー:</span> <span id="device_status">---</span></div>
                     </div>
 
-                    <div class="timestamp light-mode">最終更新: <span id="last_updated">---</span></div>
+                    <div class="timestamp light-mode">最終更新: <span id="last_updated" class="light-mode">---</span></div>
                 </div>
             </div>
         </div>
@@ -236,7 +236,7 @@
                 
                 const livenessMessageEl = document.getElementById('liveness-message');
                 const livenessSubtextEl = document.getElementById('liveness-subtext');
-                const elementsToTheme = document.querySelectorAll('.container, #liveness-header, h2, .label, .timestamp');
+                const elementsToTheme = document.querySelectorAll('.container, #liveness-header, h2, .label, .timestamp, #last_updated');
 
                 if (diffHours > 13) {
                     document.body.className = 'dark-mode';
@@ -245,9 +245,9 @@
                 } else {
                     document.body.className = 'light-mode';
                     livenessMessageEl.textContent = '村瀨亮介は生きています。';
-                    livenessSubtextEl.textContent = ''; // サブタイトルを削除
+                    livenessSubtextEl.textContent = '';
                 }
-                elementsToTheme.forEach(el => { el.className = document.body.className; });
+                elementsToTheme.forEach(el => { el.className = el.className.replace(/light-mode|dark-mode/g, '').trim() + ' ' + document.body.className; });
 
                 document.getElementById('last_updated').textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 
@@ -267,10 +267,11 @@
                     document.getElementById('wakeup_time').textContent = wakeupDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
                 }
 
+                // HRVに基づき体調を評価 (一般的な指標であり、個人差があります)
                 const hrv = parseFloat(content.health.condition_hrv);
                 const conditionEl = document.getElementById('condition');
-                if (hrv > 40) { conditionEl.textContent = '良好 ✅'; conditionEl.style.color = 'green'; }
-                else if (hrv > 20) { conditionEl.textContent = '普通 😐'; conditionEl.style.color = 'orange'; }
+                if (hrv > 50) { conditionEl.textContent = '良好 ✅'; conditionEl.style.color = 'green'; }
+                else if (hrv > 30) { conditionEl.textContent = '普通 😐'; conditionEl.style.color = 'orange'; }
                 else if (hrv) { conditionEl.textContent = '要注意 ⚠️'; conditionEl.style.color = 'red'; }
                 else { conditionEl.textContent = 'N/A'; }
 
