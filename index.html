@@ -50,7 +50,7 @@
                 document.getElementById('steps').textContent = content.health.steps.value || 'N/A';
                 document.getElementById('calories').textContent = content.health.active_calories.value ? Math.round(content.health.active_calories.value) : 'N/A';
 
-                const deviceStatus = `${content.device.battery * 100}% ${content.device.is_charging ? '⚡️ 充電中' : ''}`;
+                const deviceStatus = `${content.device.battery}% ${content.device.is_charging ? '⚡️ 充電中' : ''}`;
                 document.getElementById('device_status').textContent = deviceStatus;
 
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
