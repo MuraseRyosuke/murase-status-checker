@@ -27,6 +27,7 @@
         <div class="status"><span class="label">歩数:</span> <span id="steps">---</span> 歩</div>
         <div class="status"><span class="label">カロリー:</span> <span id="calories">---</span> kcal</div>
         <div class="status"><span class="label">🩺 体調:</span> <span id="condition">---</span></div>
+        <div class="status"><span class="label">☀️ 起床時間:</span> <span id="wakeup_time">---</span></div>
 
         <h2><span class="label">📱 Device</span></h2>
         <div class="status"><span class="label">バッテリー:</span> <span id="device_status">---</span></div>
@@ -72,6 +73,15 @@
                         conditionEl.style.color = 'red';
                 }
 
+                // 体調表示コードの下に追加
+                if (content.health.wakeup_time) {
+                                                    const wakeupDate = new Date(content.health.wakeup_time);
+                                                    document.getElementById('wakeup_time').textContent = wakeupDate.toLocaleTimeString('ja-JP', {
+                                                                                                                                                    hour: '2-digit',
+                                                                                                                                                    minute: '2-digit'
+                                                    });
+                }
+                
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 const livenessEl = document.getElementById('liveness');
                 if (diffHours > 13) { // 13時間以上更新がない場合
