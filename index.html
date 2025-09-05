@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Status Checker</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; padding: 2em; background-color: #f5f5f7; color: #1d1d1f; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #fff; padding: 2em; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1, h2 { border-bottom: 2px solid #eee; padding-bottom: 0.5em; }
+        .status { margin-bottom: 1.2em; font-size: 1.1em; }
+        .label { font-weight: 600; display: inline-block; width: 120px; }
+        #liveness { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Status Checker</h1>
+        <div class="status">最終更新: <span id="last_updated">---</span></div>
+        
+        <h2><span class="label">❤️ Health</span></h2>
+        <div class="status"><span class="label">心拍数:</span> <span id="heart_rate">---</span> bpm</div>
+        <div class="status"><span class="label">歩数:</span> <span id="steps">---</span> 歩</div>
+        <div class="status"><span class="label">カロリー:</span> <span id="calories">---</span> kcal</div>
+
+        <h2><span class="label">📱 Device</span></h2>
+        <div class="status"><span class="label">バッテリー:</span> <span id="device_status">---</span></div>
+
+        <h2><span class="label">🚦 生存確認</span></h2>
+        <div class="status"><span class="label">Liveness:</span> <span id="liveness">---</span></div>
+    </div>
+
+    <script>
+        // ★★★★★ 下の1行をあなたの情報に書き換えてください！ ★★★★★
+        const gistId = '1f81b107b898201a865a613c319d579b'; 
+        const gistFileName = 'murase_status.json';
+        // ★★★★★ ここまで ★★★★★
+
+        async function updateStatus() {
+            try {
+                const response = await fetch(`https://api.github.com/gists/${gistId}`);
+                if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+                const gist = await response.json();
+                const content = JSON.parse(gist.files[gistFileName].content);
+
+                const lastUpdated = new Date(content.last_updated);
+                document.getElementById('last_updated').textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
+                
+                document.getElementById('heart_rate').textContent = content.health.heart_rate.value || 'N/A';
+                document.getElementById('steps').textContent = content.health.steps.value || 'N/A';
+                document.getElementById('calories').textContent = content.health.active_calories.value ? Math.round(content.health.active_calories.value) : 'N/A';
+
+                const deviceStatus = `${content.device.battery * 100}% ${content.device.is_charging ? '⚡️ 充電中' : ''}`;
+                document.getElementById('device_status').textContent = deviceStatus;
+
+                const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
+                const livenessEl = document.getElementById('liveness');
+                if (diffHours > 12) { // 12時間以上更新がない場合
+                    livenessEl.textContent = 'SIGNAL LOST (>12h)';
+                    livenessEl.style.color = 'red';
+                } else {
+                    livenessEl.textContent = 'ALIVE';
+                    livenessEl.style.color = 'green';
+                }
+
+            } catch (error) {
+                console.error('Failed to fetch status:', error);
+                document.getElementById('last_updated').textContent = 'データの取得に失敗しました';
+            }
+        }
+
+        updateStatus();
+        setInterval(updateStatus, 60000); // 1分ごとに自動更新
+    </script>
+</body>
+</html>
