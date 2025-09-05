@@ -59,8 +59,8 @@
 
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 const livenessEl = document.getElementById('liveness');
-                if (diffHours > 12) { // 12時間以上更新がない場合
-                    livenessEl.textContent = 'SIGNAL LOST (>12h)';
+                if (diffHours > 13) { // 13時間以上更新がない場合
+                    livenessEl.textContent = 'SIGNAL LOST (>13h)';
                     livenessEl.style.color = 'red';
                 } else {
                     livenessEl.textContent = 'ALIVE';
