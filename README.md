@@ -1,10 +1,10 @@
 # 村瀨亮介のリアルタイム健康診断 (Personal Status Checker)
 
-[![Deploy GitHub Pages](https://github.com/muraseyosuke/murase-status-checker/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/muraseyosuke/murase-status-checker/actions/workflows/pages/pages--build-deployment)
+[![Deploy GitHub Pages](https://github.com/muraseryosuke/murase-status-checker/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/muraseryosuke/murase-status-checker/actions/workflows/pages/pages--build-deployment)
 
 Apple WatchとiPhoneで取得した自身のバイタルデータを、Web上にリアルタイムで表示するパーソナル・ステータスチェッカーです。
 
-**[▶︎ 公開サイトはこちら](https://muraseyosuke.github.io/murase-status-checker/)**
+**[▶︎ 公開サイトはこちら](https://muraseryosuke.github.io/murase-status-checker/)**
 
 ---
 
