@@ -46,9 +46,9 @@
                 const lastUpdated = new Date(content.last_updated);
                 document.getElementById('last_updated').textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 
-                document.getElementById('heart_rate').textContent = content.health.heart_rate.value || 'N/A';
-                document.getElementById('steps').textContent = content.health.steps.value || 'N/A';
-                document.getElementById('calories').textContent = content.health.active_calories.value ? Math.round(content.health.active_calories.value) : 'N/A';
+                document.getElementById('heart_rate').textContent = content.health.heart_rate || 'N/A';
+                document.getElementById('steps').textContent = content.health.steps || 'N/A';
+                document.getElementById('calories').textContent = content.health.active_calories ? Math.round(content.health.active_calories) : 'N/A';
 
                 const deviceStatus = `${content.device.battery}% ${content.device.is_charging ? '⚡️ 充電中' : ''}`;
                 document.getElementById('device_status').textContent = deviceStatus;
