@@ -113,7 +113,12 @@
 
         h2 { border-bottom-width: 2px; border-bottom-style: solid; padding-bottom: 0.5em; white-space: nowrap; }
         .status { margin-bottom: 1.2em; font-size: 1.1em; }
-        .label { font-weight: 600; display: inline-block; width: 120px; }
+        .label {
+            font-weight: 600;
+            display: inline-block;
+            width: 120px;
+            white-space: nowrap; /* ラベルの改行を禁止 */
+        }
 
         /* --- 心電図アニメーション --- */
         #ecg-canvas {
@@ -267,7 +272,6 @@
                     document.getElementById('wakeup_time').textContent = wakeupDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
                 }
 
-                // HRVに基づき体調を評価 (一般的な指標であり、個人差があります)
                 const hrv = parseFloat(content.health.condition_hrv);
                 const conditionEl = document.getElementById('condition');
                 if (hrv > 50) { conditionEl.textContent = '良好 ✅'; conditionEl.style.color = 'green'; }
