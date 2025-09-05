@@ -17,8 +17,8 @@
             --dark-text: #e0e0e0;
             --dark-text-sub: #a0a0a0;
             --dark-border: #333333;
-            --ecg-alive-color: rgba(52, 199, 89, 0.4); /* 薄い緑色 */
-            --ecg-lost-color: rgba(255, 59, 48, 0.4); /* 薄い赤色 */
+            --ecg-alive-color: rgba(46, 204, 113, 0.4);  /* 彩度を落とした緑色 */
+            --ecg-lost-color: rgba(231, 76, 60, 0.4);   /* 彩度を落とした赤色 */
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -37,8 +37,8 @@
         h2.dark-mode { border-bottom-color: var(--dark-border); }
         .label.light-mode { color: var(--light-text); }
         .label.dark-mode { color: var(--dark-text); }
-        .status span:not(.label).light-mode, .timestamp.light-mode { color: var(--light-text-sub); }
-        .status span:not(.label).dark-mode, .timestamp.dark-mode { color: var(--dark-text-sub); }
+        .timestamp.light-mode { color: var(--light-text-sub); } /* タイムスタンプのみ薄い色に */
+        .timestamp.dark-mode { color: var(--dark-text-sub); }
         #liveness-subtext a { color: #007aff; }
 
         /* --- レイアウト --- */
@@ -102,7 +102,7 @@
         /* --- UI要素のスタイル --- */
         #liveness-header { text-align: center; padding-bottom: 1em; margin-bottom: 1em; border-bottom: 2px solid; }
         #liveness-message { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: bold; }
-        #liveness-subtext { font-size: clamp(0.9rem, 2vw, 1rem); margin-top: 0.5rem; }
+        #liveness-subtext { font-size: clamp(0.9rem, 2vw, 1rem); margin-top: 0.5rem; min-height: 1.2em; /* サブテキスト有無でのガタつき防止 */ }
         
         .timestamp {
             font-size: 0.8em;
@@ -142,22 +142,22 @@
                     
                     <div id="liveness-header" class="light-mode">
                         <div id="liveness-message">---</div>
-                        <div id="liveness-subtext" class="light-mode">---</div>
+                        <div id="liveness-subtext" class="light-mode"></div>
                     </div>
 
                     <div class="details-content">
                         <h2 class="light-mode"><span class="label light-mode">❤️ ヘルスケア</span></h2>
-                        <div class="status"><span class="label light-mode">心拍数:</span> <span id="heart_rate" class="light-mode">---</span> bpm</div>
-                        <div class="status"><span class="label light-mode">歩数:</span> <span id="steps" class="light-mode">---</span> 歩</div>
-                        <div class="status"><span class="label light-mode">カロリー:</span> <span id="calories" class="light-mode">---</span> kcal</div>
-                        <div class="status"><span class="label light-mode">🩺 体調:</span> <span id="condition" class="light-mode">---</span></div>
-                        <div class="status"><span class="label light-mode">☀️ 起床時間:</span> <span id="wakeup_time" class="light-mode">---</span></div>
+                        <div class="status"><span class="label light-mode">心拍数:</span> <span id="heart_rate">---</span> bpm</div>
+                        <div class="status"><span class="label light-mode">歩数:</span> <span id="steps">---</span> 歩</div>
+                        <div class="status"><span class="label light-mode">カロリー:</span> <span id="calories">---</span> kcal</div>
+                        <div class="status"><span class="label light-mode">🩺 体調:</span> <span id="condition">---</span></div>
+                        <div class="status"><span class="label light-mode">☀️ 起床時間:</span> <span id="wakeup_time">---</span></div>
 
                         <h2 class="light-mode"><span class="label light-mode">📍 ロケーション</span></h2>
-                        <div class="status"><span class="label light-mode">現在地:</span> <span id="location" class="light-mode">---</span></div>
+                        <div class="status"><span class="label light-mode">現在地:</span> <span id="location">---</span></div>
                         
                         <h2 class="light-mode"><span class="label light-mode">📱 デバイス</span></h2>
-                        <div class="status"><span class="label light-mode">バッテリー:</span> <span id="device_status" class="light-mode">---</span></div>
+                        <div class="status"><span class="label light-mode">バッテリー:</span> <span id="device_status">---</span></div>
                     </div>
 
                     <div class="timestamp light-mode">最終更新: <span id="last_updated">---</span></div>
@@ -178,7 +178,7 @@
         let height = canvas.height = window.innerHeight;
         let x = 0;
         let y = height / 2;
-        let heartRateBPM = 60; // アニメーションの初期値
+        let heartRateBPM = 60;
         let lastBeatTime = 0;
 
         function drawEcg() {
@@ -190,33 +190,32 @@
             ctx.moveTo(x - 2, y);
             
             let newY = height / 2;
-            const amplitude = height * 0.25; // 振幅を画面高さの50%に設定
+            const amplitude = height * 0.25;
             
-            // PQRST波を簡易的に表現
             if (now - lastBeatTime > beatInterval) {
                 lastBeatTime = now;
-                newY = height / 2 - amplitude; // R波
+                newY = height / 2 - amplitude;
             } else if (now - lastBeatTime < 50) {
-                newY = height / 2 + (amplitude * 0.2); // S波
+                newY = height / 2 + (amplitude * 0.2);
             } else if (now - lastBeatTime > beatInterval - 200) {
-                 newY = height / 2 + (amplitude * 0.4); // T波
+                 newY = height / 2 + (amplitude * 0.4);
             }
 
-            y = y * 0.9 + newY * 0.1; // 線が滑らかに変化するように調整
+            y = y * 0.9 + newY * 0.1;
             ctx.lineTo(x, y);
             ctx.strokeStyle = document.body.classList.contains('dark-mode') ? 'var(--ecg-lost-color)' : 'var(--ecg-alive-color)';
             ctx.lineWidth = 2;
             ctx.stroke();
 
             x++;
-            if (x > width) { // 線が画面端に到達したら最初に戻る
+            if (x > width) {
                 x = 0;
                 ctx.clearRect(0,0,width,height);
             }
             requestAnimationFrame(drawEcg);
         }
 
-        window.addEventListener('resize', () => { // ブラウザサイズ変更時に再描画
+        window.addEventListener('resize', () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             x = 0; y = height / 2;
@@ -235,10 +234,9 @@
                 const lastUpdated = new Date(content.last_updated);
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 
-                // 安否情報に基づいて、ページの表示モード(ライト/ダーク)とメッセージを決定
                 const livenessMessageEl = document.getElementById('liveness-message');
                 const livenessSubtextEl = document.getElementById('liveness-subtext');
-                const elementsToTheme = document.querySelectorAll('.container, #liveness-header, h2, .label, .status span:not(.label), .timestamp');
+                const elementsToTheme = document.querySelectorAll('.container, #liveness-header, h2, .label, .timestamp');
 
                 if (diffHours > 13) {
                     document.body.className = 'dark-mode';
@@ -247,16 +245,15 @@
                 } else {
                     document.body.className = 'light-mode';
                     livenessMessageEl.textContent = '村瀨亮介は生きています。';
-                    livenessSubtextEl.textContent = 'リアルタイム健康診断';
+                    livenessSubtextEl.textContent = ''; // サブタイトルを削除
                 }
                 elementsToTheme.forEach(el => { el.className = document.body.className; });
 
-                // 各種ステータス情報をページに反映
                 document.getElementById('last_updated').textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 
                 const currentHeartRate = parseInt(content.health.heart_rate, 10);
                 document.getElementById('heart_rate').textContent = currentHeartRate || 'N/A';
-                if(currentHeartRate) heartRateBPM = currentHeartRate; // 心電図アニメーションに心拍数を反映
+                if(currentHeartRate) heartRateBPM = currentHeartRate;
 
                 document.getElementById('steps').textContent = content.health.steps || 'N/A';
                 document.getElementById('calories').textContent = content.health.active_calories ? Math.round(content.health.active_calories) : 'N/A';
@@ -284,8 +281,8 @@
         }
 
         // --- 関数の実行 ---
-        drawEcg(); // 心電図アニメーションを開始
-        updateStatus(); // ページ読み込み時にステータスを1回だけ更新
+        drawEcg();
+        updateStatus();
 
     </script>
 </body>
