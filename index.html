@@ -3,104 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Status Checker</title>
+    <title>村瀨亮介のリアルタイム健康診断</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; padding: 2em; background-color: #f5f5f7; color: #1d1d1f; }
-        .container { max-width: 600px; margin: 0 auto; background-color: #fff; padding: 2em; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h1, h2 { 
-                border-bottom: 2px solid #eee; 
-                padding-bottom: 0.5em; 
-                white-space: nowrap;
+        /* --- 基本設定 --- */
+        :root {
+            --light-bg: #f5f5f7;
+            --light-card-bg: #ffffff;
+            --light-text: #1d1d1f;
+            --light-text-sub: #86868b;
+            --light-border: #e5e5e5;
+            --dark-bg: #121212;
+            --dark-card-bg: #1e1e1e;
+            --dark-text: #e0e0e0;
+            --dark-text-sub: #a0a0a0;
+            --dark-border: #333333;
+            --accent-green: #34c759;
+            --accent-red: #ff3b30;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 2em;
+            transition: background-color 0.5s, color 0.5s;
+            overflow: hidden; /* スクロールを禁止 */
+        }
+
+        /* --- ライト/ダークモード --- */
+        body.light-mode {
+            background-color: var(--light-bg);
+            color: var(--light-text);
+        }
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+        }
+        .container.light-mode { background-color: var(--light-card-bg); }
+        .container.dark-mode { background-color: var(--dark-card-bg); }
+        h1.light-mode, h2.light-mode { border-bottom-color: var(--light-border); }
+        h1.dark-mode, h2.dark-mode { border-bottom-color: var(--dark-border); }
+        .label.light-mode { color: var(--light-text); }
+        .label.dark-mode { color: var(--dark-text); }
+        .status span:not(.label).light-mode { color: var(--light-text-sub); }
+        .status span:not(.label).dark-mode { color: var(--dark-text-sub); }
+
+        /* --- 生存確認メッセージ --- */
+        #liveness-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 10;
+        }
+        #liveness-message {
+            font-size: clamp(2rem, 8vw, 5rem); /* 可変フォントサイズ */
+            font-weight: bold;
+            padding: 0 1rem;
+        }
+        #liveness-subtext {
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
+            margin-top: 1rem;
+            color: var(--light-text-sub);
+        }
+        body.dark-mode #liveness-subtext {
+            color: var(--dark-text-sub);
+        }
+
+        /* --- コンテンツレイアウト --- */
+        .wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: calc(100vh - 4em); /* paddingを考慮 */
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+        .main-content {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            max-height: 800px;
+        }
+
+        /* --- PC/タブレット表示 (横長) --- */
+        @media (min-aspect-ratio: 1/1) {
+            .profile-container {
+                flex: 0 0 40%;
+                padding-right: 2em;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .profile-image {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1 / 1;
+                object-fit: cover;
+                border-radius: 12px;
+            }
+            .details-container {
+                flex: 1;
+                overflow-y: auto;
+            }
+        }
+
+        /* --- スマホ表示 (縦長) --- */
+        @media (max-aspect-ratio: 1/1) {
+            .profile-container {
+                display: none; /* プロフィール非表示 */
+            }
+            .details-container {
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+                height: 100%;
+                overflow-y: auto;
+            }
+        }
+        
+        .container {
+            padding: 2em;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            border-bottom-width: 2px;
+            border-bottom-style: solid;
+            padding-bottom: 0.5em;
+            white-space: nowrap;
         }
         .status { margin-bottom: 1.2em; font-size: 1.1em; }
         .label { font-weight: 600; display: inline-block; width: 120px; }
-        #liveness { font-weight: bold; }
+
+        /* --- 心電図アニメーション --- */
+        #ecg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>My Status Checker</h1>
-        <div class="status">最終更新: <span id="last_updated">---</span></div>
-        
-        <h2><span class="label">❤️ Health</span></h2>
-        <div class="status"><span class="label">心拍数:</span> <span id="heart_rate">---</span> bpm</div>
-        <div class="status"><span class="label">歩数:</span> <span id="steps">---</span> 歩</div>
-        <div class="status"><span class="label">カロリー:</span> <span id="calories">---</span> kcal</div>
-        <div class="status"><span class="label">🩺 体調:</span> <span id="condition">---</span></div>
-        <div class="status"><span class="label">☀️ 起床時間:</span> <span id="wakeup_time">---</span></div>
+<body class="light-mode">
 
-        <h2><span class="label">📍 Location</span></h2>
-        <div class="status"><span class="label">現在地:</span> <span id="location">---</span></div>
-        
-        <h2><span class="label">📱 Device</span></h2>
-        <div class="status"><span class="label">バッテリー:</span> <span id="device_status">---</span></div>
+    <div id="liveness-container">
+        <div id="liveness-message"></div>
+        <div id="liveness-subtext"></div>
+    </div>
+    
+    <canvas id="ecg-canvas"></canvas>
 
-        <h2><span class="label">🚦 生存確認</span></h2>
-        <div class="status"><span class="label">Liveness:</span> <span id="liveness">---</span></div>
+    <div class="wrapper">
+        <div class="main-content">
+            <div class="profile-container">
+                <img src="https://muraseryosuke.info/assets/img/ogp.jpg" alt="プロフィール画像" class="profile-image">
+                </div>
+
+            <div class="details-container">
+                <div class="container light-mode" id="details-card">
+                    <h1 class="light-mode">村瀨亮介のリアルタイム健康診断</h1>
+                    <div class="status">最終更新: <span id="last_updated" class="light-mode">---</span></div>
+                    
+                    <h2 class="light-mode"><span class="label light-mode">❤️ ヘルスケア</span></h2>
+                    <div class="status"><span class="label light-mode">心拍数:</span> <span id="heart_rate" class="light-mode">---</span> bpm</div>
+                    <div class="status"><span class="label light-mode">歩数:</span> <span id="steps" class="light-mode">---</span> 歩</div>
+                    <div class="status"><span class="label light-mode">カロリー:</span> <span id="calories" class="light-mode">---</span> kcal</div>
+                    <div class="status"><span class="label light-mode">🩺 体調:</span> <span id="condition" class="light-mode">---</span></div>
+                    <div class="status"><span class="label light-mode">☀️ 起床時間:</span> <span id="wakeup_time" class="light-mode">---</span></div>
+
+                    <h2 class="light-mode"><span class="label light-mode">📍 ロケーション</span></h2>
+                    <div class="status"><span class="label light-mode">現在地:</span> <span id="location" class="light-mode">---</span></div>
+                    
+                    <h2 class="light-mode"><span class="label light-mode">📱 デバイス</span></h2>
+                    <div class="status"><span class="label light-mode">バッテリー:</span> <span id="device_status" class="light-mode">---</span></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ★★★★★ 下の1行をあなたの情報に書き換えてください！ ★★★★★
         const gistId = '1f81b107b898201a865a613c319d579b'; 
         const gistFileName = 'murase_status.json';
-        // ★★★★★ ここまで ★★★★★
+
+        // --- 心電図アニメーションのセットアップ ---
+        const canvas = document.getElementById('ecg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        let x = 0;
+        let y = height / 2;
+        let heartRateBPM = 60; // 初期値
+        let lastBeatTime = 0;
+
+        function drawEcg() {
+            const beatInterval = 60000 / heartRateBPM;
+            const now = Date.now();
+            
+            ctx.clearRect(x, 0, 10, height);
+            ctx.beginPath();
+            ctx.moveTo(x - 1, y);
+            
+            let newY = height / 2;
+            // PQRST波を簡易的に表現
+            if (now - lastBeatTime > beatInterval) {
+                lastBeatTime = now;
+                newY = height / 2 - 50; // R波
+            } else if (now - lastBeatTime < 50) {
+                newY = height / 2 + 10; // S波
+            } else if (now - lastBeatTime > beatInterval - 200) {
+                 newY = height / 2 + 20; // T波
+            }
+
+            y = y * 0.9 + newY * 0.1; // 滑らかに移動
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = document.body.classList.contains('dark-mode') ? 'var(--accent-red)' : 'var(--accent-green)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            x++;
+            if (x > width) {
+                x = 0;
+                ctx.clearRect(0,0,width,height);
+            }
+            requestAnimationFrame(drawEcg);
+        }
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            x = 0;
+            y = height / 2;
+        });
+        drawEcg();
+        // --- ここまで心電図 ---
 
         async function updateStatus() {
             try {
                 const response = await fetch(`https://api.github.com/gists/${gistId}`);
-                if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
                 const gist = await response.json();
+                if (!response.ok || !gist.files || !gist.files[gistFileName]) {
+                    throw new Error('Gistのデータ取得に失敗しました');
+                }
                 const content = JSON.parse(gist.files[gistFileName].content);
 
                 const lastUpdated = new Date(content.last_updated);
+                const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
+
+                // --- 生存確認とモード切替 ---
+                const livenessMessageEl = document.getElementById('liveness-message');
+                const livenessSubtextEl = document.getElementById('liveness-subtext');
+                const wrapperEl = document.querySelector('.wrapper');
+                
+                if (diffHours > 13) {
+                    document.body.className = 'dark-mode';
+                    livenessMessageEl.textContent = '村瀨亮介からの応答がありません。';
+                    livenessSubtextEl.innerHTML = `最終更新: ${lastUpdated.toLocaleString('ja-JP')} <br>安否確認は <a href="https://twitter.com/vl_lvo0" target="_blank">X(旧Twitter)@vl_lvo0</a> へ`;
+                    document.getElementById('liveness-container').style.opacity = 1;
+                    wrapperEl.style.opacity = 0;
+                } else {
+                    document.body.className = 'light-mode';
+                    livenessMessageEl.textContent = '村瀨亮介は生きています。';
+                    livenessSubtextEl.textContent = '';
+                    document.getElementById('liveness-container').style.opacity = 1;
+                    wrapperEl.style.opacity = 1;
+                }
+                document.querySelectorAll('.container, h1, h2, .label, .status span:not(.label)').forEach(el => {
+                    el.className = document.body.className;
+                });
+
+                // --- データ表示更新 ---
                 document.getElementById('last_updated').textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 
-                document.getElementById('heart_rate').textContent = content.health.heart_rate || 'N/A';
+                const currentHeartRate = parseInt(content.health.heart_rate, 10);
+                document.getElementById('heart_rate').textContent = currentHeartRate || 'N/A';
+                if(currentHeartRate) heartRateBPM = currentHeartRate; // 心電図に反映
+
                 document.getElementById('steps').textContent = content.health.steps || 'N/A';
                 document.getElementById('calories').textContent = content.health.active_calories ? Math.round(content.health.active_calories) : 'N/A';
-
-                const deviceStatus = `${content.device.battery}% ${content.device.is_charging === true ? '⚡️ 充電中' : ''}`;
-                document.getElementById('device_status').textContent = deviceStatus;
-
-                // デバイスの表示設定の下あたりに追加
-                const hrv = content.health.condition_hrv;
-                const conditionEl = document.getElementById('condition');
-                if (hrv > 40) { // 40msより高ければ良好
-                                conditionEl.textContent = '良好 ✅';
-                                conditionEl.style.color = 'green';
-                } else if (hrv > 20) { // 20msより高ければ普通
-                                        conditionEl.textContent = '普通 😐';
-                                        conditionEl.style.color = 'orange';
-                } else { // それ以外は要注意
-                        conditionEl.textContent = '要注意 ⚠️';
-                        conditionEl.style.color = 'red';
-                }
-
-                // 体調表示コードの下に追加
-                if (content.health.wakeup_time) {
-                                                    const wakeupDate = new Date(content.health.wakeup_time);
-                                                    document.getElementById('wakeup_time').textContent = wakeupDate.toLocaleTimeString('ja-JP', {
-                                                                                                                                                    hour: '2-digit',
-                                                                                                                                                    minute: '2-digit'
-                                                    });
-                }
-
-                // 起床時間表示コードの下に追加
+                
                 document.getElementById('location').textContent = content.location.city || 'N/A';
                 
-                const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
-                const livenessEl = document.getElementById('liveness');
-                if (diffHours > 13) { // 13時間以上更新がない場合
-                    livenessEl.textContent = 'SIGNAL LOST (>13h)';
-                    livenessEl.style.color = 'red';
+                const deviceStatus = `${content.device.battery}% ${content.device.is_charging === true ? '⚡️ 充電中' : ''}`;
+                document.getElementById('device_status').textContent = deviceStatus;
+                
+                if (content.health.wakeup_time) {
+                    const wakeupDate = new Date(content.health.wakeup_time);
+                    document.getElementById('wakeup_time').textContent = wakeupDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+                }
+
+                const hrv = parseFloat(content.health.condition_hrv);
+                const conditionEl = document.getElementById('condition');
+                if (hrv > 40) {
+                    conditionEl.textContent = '良好 ✅';
+                    conditionEl.style.color = 'green';
+                } else if (hrv > 20) {
+                    conditionEl.textContent = '普通 😐';
+                    conditionEl.style.color = 'orange';
+                } else if (hrv) {
+                    conditionEl.textContent = '要注意 ⚠️';
+                    conditionEl.style.color = 'red';
                 } else {
-                    livenessEl.textContent = 'ALIVE';
-                    livenessEl.style.color = 'green';
+                    conditionEl.textContent = 'N/A';
                 }
 
             } catch (error) {
-                console.error('Failed to fetch status:', error);
-                document.getElementById('last_updated').textContent = 'データの取得に失敗しました';
+                console.error('ステータスの更新に失敗:', error);
+                const livenessMessageEl = document.getElementById('liveness-message');
+                livenessMessageEl.textContent = 'データの取得に失敗しました。';
+                document.getElementById('liveness-container').style.opacity = 1;
+                document.querySelector('.wrapper').style.opacity = 0;
             }
         }
 
