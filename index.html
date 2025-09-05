@@ -26,6 +26,7 @@
         <div class="status"><span class="label">心拍数:</span> <span id="heart_rate">---</span> bpm</div>
         <div class="status"><span class="label">歩数:</span> <span id="steps">---</span> 歩</div>
         <div class="status"><span class="label">カロリー:</span> <span id="calories">---</span> kcal</div>
+        <div class="status"><span class="label">🩺 体調:</span> <span id="condition">---</span></div>
 
         <h2><span class="label">📱 Device</span></h2>
         <div class="status"><span class="label">バッテリー:</span> <span id="device_status">---</span></div>
@@ -56,6 +57,20 @@
 
                 const deviceStatus = `${content.device.battery}% ${content.device.is_charging === true ? '⚡️ 充電中' : ''}`;
                 document.getElementById('device_status').textContent = deviceStatus;
+
+                // デバイスの表示設定の下あたりに追加
+                const hrv = content.health.condition_hrv;
+                const conditionEl = document.getElementById('condition');
+                if (hrv > 40) { // 40msより高ければ良好
+                                conditionEl.textContent = '良好 ✅';
+                                conditionEl.style.color = 'green';
+                } else if (hrv > 20) { // 20msより高ければ普通
+                                        conditionEl.textContent = '普通 😐';
+                                        conditionEl.style.color = 'orange';
+                } else { // それ以外は要注意
+                        conditionEl.textContent = '要注意 ⚠️';
+                        conditionEl.style.color = 'red';
+                }
 
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 const livenessEl = document.getElementById('liveness');
