@@ -18,7 +18,7 @@
             --dark-text-sub: #a0a0a0;
             --dark-border: #333333;
             --ecg-alive-color: rgba(46, 204, 113, 0.4);
-            --ecg-lost-color: rgba(231, 76, 60, 0.4);
+            --ecg-lost-color: rgba(48, 209, 201, 0.4);
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -28,18 +28,17 @@
             overflow: hidden;
         }
 
-        /* --- ライト/ダークモード --- */
+        /* --- ライト/ダークモード (CSS継承を利用) --- */
         body.light-mode { background-color: var(--light-bg); color: var(--light-text); }
         body.dark-mode { background-color: var(--dark-bg); color: var(--dark-text); }
-        .container.light-mode { background-color: var(--light-card-bg); }
-        .container.dark-mode { background-color: var(--dark-card-bg); }
-        h2.light-mode { border-bottom-color: var(--light-border); }
-        h2.dark-mode { border-bottom-color: var(--dark-border); }
-        .label.light-mode { color: var(--light-text); }
-        .label.dark-mode { color: var(--dark-text); }
-        .timestamp.light-mode, #last_updated.light-mode { color: var(--light-text-sub); }
-        .timestamp.dark-mode, #last_updated.dark-mode { color: var(--dark-text-sub); }
-        #liveness-subtext a { color: #007aff; }
+        .light-mode .container { background-color: var(--light-card-bg); }
+        .dark-mode .container { background-color: var(--dark-card-bg); }
+        .light-mode h2, .light-mode #liveness-header { border-bottom-color: var(--light-border); }
+        .dark-mode h2, .dark-mode #liveness-header { border-bottom-color: var(--dark-border); }
+        .light-mode .timestamp { color: var(--light-text-sub); }
+        .dark-mode .timestamp { color: var(--dark-text-sub); }
+        .dark-mode #liveness-subtext a { color: #0a84ff; }
+        .dark-mode .profile-image { filter: invert(1) grayscale(1); }
 
         /* --- レイアウト --- */
         .wrapper {
@@ -52,7 +51,6 @@
         .main-content {
             display: flex;
             width: 100%;
-            height: 100%;
             max-width: 1200px;
             max-height: 800px;
         }
@@ -72,8 +70,9 @@
                 aspect-ratio: 1 / 1;
                 object-fit: cover;
                 border-radius: 12px;
+                transition: filter 0.5s;
             }
-            .details-container { flex: 1; overflow-y: auto; }
+            .details-container { flex: 1; overflow-y: auto; min-height: 0; }
         }
 
         /* --- スマホ表示 (縦長) --- */
@@ -94,7 +93,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
-            height: 100%;
             box-sizing: border-box;
         }
         .details-content { flex-grow: 1; }
@@ -107,7 +105,7 @@
         .timestamp {
             font-size: 0.8em;
             text-align: right;
-            margin-top: auto;
+            margin-top: 1em;
             padding-top: 1em;
         }
 
@@ -117,7 +115,7 @@
             font-weight: 600;
             display: inline-block;
             width: 120px;
-            white-space: nowrap; /* ラベルの改行を禁止 */
+            white-space: nowrap;
         }
 
         /* --- 心電図アニメーション --- */
@@ -139,33 +137,33 @@
     <div class="wrapper">
         <div class="main-content">
             <div class="profile-container">
-                <img src="ogp.png" alt="プロフィール画像" class="profile-image">
+                <img src="https://muraseryosuke.info/assets/img/ogp.jpg" alt="プロフィール画像" class="profile-image">
             </div>
 
             <div class="details-container">
-                <div class="container light-mode" id="details-card">
+                <div class="container">
                     
-                    <div id="liveness-header" class="light-mode">
+                    <div id="liveness-header">
                         <div id="liveness-message">---</div>
-                        <div id="liveness-subtext" class="light-mode"></div>
+                        <div id="liveness-subtext"></div>
                     </div>
 
                     <div class="details-content">
-                        <h2 class="light-mode"><span class="label light-mode">❤️ ヘルスケア</span></h2>
-                        <div class="status"><span class="label light-mode">❤️ 心拍数:</span> <span id="heart_rate">---</span> bpm</div>
-                        <div class="status"><span class="label light-mode">👟 歩数:</span> <span id="steps">---</span> 歩</div>
-                        <div class="status"><span class="label light-mode">🔥 カロリー:</span> <span id="calories">---</span> kcal</div>
-                        <div class="status"><span class="label light-mode">🩺 体調:</span> <span id="condition">---</span></div>
-                        <div class="status"><span class="label light-mode">☀️ 起床時間:</span> <span id="wakeup_time">---</span></div>
+                        <h2><span>❤️ ヘルスケア</span></h2>
+                        <div class="status"><span class="label">❤️ 心拍数:</span> <span id="heart_rate">---</span> bpm</div>
+                        <div class="status"><span class="label">👟 歩数:</span> <span id="steps">---</span> 歩</div>
+                        <div class="status"><span class="label">🔥 カロリー:</span> <span id="calories">---</span> kcal</div>
+                        <div class="status"><span class="label">🩺 体調:</span> <span id="condition">---</span></div>
+                        <div class="status"><span class="label">☀️ 起床時間:</span> <span id="wakeup_time">---</span></div>
 
-                        <h2 class="light-mode"><span class="label light-mode">📍 ロケーション</span></h2>
-                        <div class="status"><span class="label light-mode">📍 現在地:</span> <span id="location">---</span></div>
+                        <h2><span>📍 ロケーション</span></h2>
+                        <div class="status"><span class="label">📍 現在地:</span> <span id="location">---</span></div>
                         
-                        <h2 class="light-mode"><span class="label light-mode">📱 デバイス</span></h2>
-                        <div class="status"><span class="label light-mode">🔋 バッテリー:</span> <span id="device_status">---</span></div>
+                        <h2><span>📱 デバイス</span></h2>
+                        <div class="status"><span class="label">🔋 バッテリー:</span> <span id="device_status">---</span></div>
                     </div>
 
-                    <div class="timestamp light-mode">最終更新: <span id="last_updated" class="light-mode">---</span></div>
+                    <div class="timestamp">最終更新: <span id="last_updated">---</span></div>
                 </div>
             </div>
         </div>
@@ -181,15 +179,11 @@
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
-        let x = 0;
-        let y = height / 2;
-        let heartRateBPM = 60;
-        let lastBeatTime = 0;
+        let x = 0, y = height / 2, heartRateBPM = 60, lastBeatTime = 0;
 
         function drawEcg() {
             const beatInterval = 60000 / heartRateBPM;
             const now = Date.now();
-            
             ctx.clearRect(x, 0, 10, height);
             ctx.beginPath();
             ctx.moveTo(x - 2, y);
@@ -212,11 +206,9 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            x++;
-            if (x > width) {
-                x = 0;
-                ctx.clearRect(0,0,width,height);
-            }
+            x = (x + 1) % width;
+            if (x === 0) ctx.clearRect(0,0,width,height);
+            
             requestAnimationFrame(drawEcg);
         }
 
@@ -239,9 +231,9 @@
                 const lastUpdated = new Date(content.last_updated);
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 
+                // 安否情報に基づいて、ページの表示モード(ライト/ダーク)とメッセージを決定
                 const livenessMessageEl = document.getElementById('liveness-message');
                 const livenessSubtextEl = document.getElementById('liveness-subtext');
-                const elementsToTheme = document.querySelectorAll('.container, #liveness-header, h2, .label, .timestamp, #last_updated');
 
                 if (diffHours > 13) {
                     document.body.className = 'dark-mode';
@@ -252,8 +244,8 @@
                     livenessMessageEl.textContent = '村瀨亮介は生きています。';
                     livenessSubtextEl.textContent = '';
                 }
-                elementsToTheme.forEach(el => { el.className = el.className.replace(/light-mode|dark-mode/g, '').trim() + ' ' + document.body.className; });
 
+                // 各種ステータス情報をページに反映
                 document.getElementById('last_updated').textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 
                 const currentHeartRate = parseInt(content.health.heart_rate, 10);
@@ -272,6 +264,7 @@
                     document.getElementById('wakeup_time').textContent = wakeupDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
                 }
 
+                // HRVに基づき体調を評価 (一般的な指標であり、個人差があります)
                 const hrv = parseFloat(content.health.condition_hrv);
                 const conditionEl = document.getElementById('condition');
                 if (hrv > 50) { conditionEl.textContent = '良好 ✅'; conditionEl.style.color = 'green'; }
