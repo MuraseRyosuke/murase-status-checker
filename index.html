@@ -25,7 +25,7 @@
             margin: 0;
             padding: 2em;
             transition: background-color 0.5s, color 0.5s;
-            overflow: hidden;
+            /* overflow: hidden; をここから削除 */
         }
 
         /* --- ライト/ダークモード (CSS継承を利用) --- */
@@ -57,6 +57,9 @@
 
         /* --- PC/タブレット表示 (横長) --- */
         @media (min-aspect-ratio: 1/1) {
+            body {
+                overflow: hidden; /* 横長の時だけスクロールを禁止 */
+            }
             .profile-container {
                 flex: 0 0 40%;
                 padding-right: 2em;
@@ -231,7 +234,6 @@
                 const lastUpdated = new Date(content.last_updated);
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 
-                // 安否情報に基づいて、ページの表示モード(ライト/ダーク)とメッセージを決定
                 const livenessMessageEl = document.getElementById('liveness-message');
                 const livenessSubtextEl = document.getElementById('liveness-subtext');
 
@@ -245,7 +247,6 @@
                     livenessSubtextEl.textContent = '';
                 }
 
-                // 各種ステータス情報をページに反映
                 document.getElementById('last_updated').textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 
                 const currentHeartRate = parseInt(content.health.heart_rate, 10);
@@ -264,7 +265,6 @@
                     document.getElementById('wakeup_time').textContent = wakeupDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
                 }
 
-                // HRVに基づき体調を評価 (一般的な指標であり、個人差があります)
                 const hrv = parseFloat(content.health.condition_hrv);
                 const conditionEl = document.getElementById('condition');
                 if (hrv > 50) { conditionEl.textContent = '良好 ✅'; conditionEl.style.color = 'green'; }
