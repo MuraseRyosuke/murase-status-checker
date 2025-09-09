@@ -25,7 +25,7 @@
             margin: 0;
             padding: 2em;
             transition: background-color 0.5s, color 0.5s;
-            /* overflow: hidden; をここから削除 */
+            overflow: hidden;
         }
 
         /* --- ライト/ダークモード (CSS継承を利用) --- */
@@ -57,9 +57,6 @@
 
         /* --- PC/タブレット表示 (横長) --- */
         @media (min-aspect-ratio: 1/1) {
-            body {
-                overflow: hidden; /* 横長の時だけスクロールを禁止 */
-            }
             .profile-container {
                 flex: 0 0 40%;
                 padding-right: 2em;
@@ -102,7 +99,7 @@
 
         /* --- UI要素のスタイル --- */
         #liveness-header { text-align: center; padding-bottom: 1em; margin-bottom: 1em; border-bottom: 2px solid; }
-        #liveness-message { font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: bold; }
+        #liveness-message { font-size: clamp(1.5rem, 5vw, 2.2rem); font-weight: bold; white-space: nowrap; }
         #liveness-subtext { font-size: clamp(0.9rem, 2vw, 1rem); margin-top: 0.5rem; min-height: 1.2em; }
         
         .timestamp {
@@ -182,10 +179,11 @@
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
-        let x = 0, y = height / 2, heartRateBPM = 60, lastBeatTime = 0;
+        let x = 0, y = height / 2, heartRateBPM = 60, lastBeatTime = 0, isAlive = true;
 
         function drawEcg() {
-            const beatInterval = 60000 / heartRateBPM;
+            const currentBPM = isAlive ? heartRateBPM : 0;
+            const beatInterval = currentBPM > 0 ? 60000 / currentBPM : Infinity;
             const now = Date.now();
             ctx.clearRect(x, 0, 10, height);
             ctx.beginPath();
@@ -194,12 +192,12 @@
             let newY = height / 2;
             const amplitude = height * 0.25;
             
-            if (now - lastBeatTime > beatInterval) {
+            if (currentBPM > 0 && (now - lastBeatTime > beatInterval)) {
                 lastBeatTime = now;
                 newY = height / 2 - amplitude;
-            } else if (now - lastBeatTime < 50) {
+            } else if (currentBPM > 0 && (now - lastBeatTime < 50)) {
                 newY = height / 2 + (amplitude * 0.2);
-            } else if (now - lastBeatTime > beatInterval - 200) {
+            } else if (currentBPM > 0 && (now - lastBeatTime > beatInterval - 200)) {
                  newY = height / 2 + (amplitude * 0.4);
             }
 
@@ -239,10 +237,12 @@
 
                 if (diffHours > 13) {
                     document.body.className = 'dark-mode';
+                    isAlive = false;
                     livenessMessageEl.textContent = '村瀨亮介からの応答がありません。';
-                    livenessSubtextEl.innerHTML = `安否確認は <a href="https://twitter.com/vl_lvo0" target="_blank" rel="noopener noreferrer">X(旧Twitter)@vl_lvo0</a> へ`;
+                    livenessSubtextEl.innerHTML = `安否確認は <a href="https://twitter.com/vl_lvoO" target="_blank" rel="noopener noreferrer">X(旧Twitter)@vl_lvoO</a> へ`;
                 } else {
                     document.body.className = 'light-mode';
+                    isAlive = true;
                     livenessMessageEl.textContent = '村瀨亮介は生きています。';
                     livenessSubtextEl.textContent = '';
                 }
