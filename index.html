@@ -25,7 +25,6 @@
             margin: 0;
             padding: 2em;
             transition: background-color 0.5s, color 0.5s;
-            overflow: hidden;
         }
 
         /* --- ライト/ダークモード (CSS継承を利用) --- */
@@ -53,10 +52,13 @@
             width: 100%;
             max-width: 1200px;
             max-height: 800px;
+            height: 100%;
         }
 
         /* --- PC/タブレット表示 (横長) --- */
         @media (min-aspect-ratio: 1/1) {
+            body { overflow: hidden; }
+            #liveness-message { white-space: nowrap; }
             .profile-container {
                 flex: 0 0 40%;
                 padding-right: 2em;
@@ -72,7 +74,7 @@
                 border-radius: 12px;
                 transition: filter 0.5s;
             }
-            .details-container { flex: 1; overflow-y: auto; min-height: 0; }
+            .details-container { flex: 1; min-height: 0; }
         }
 
         /* --- スマホ表示 (縦長) --- */
@@ -95,11 +97,15 @@
             flex-direction: column;
             box-sizing: border-box;
         }
-        .details-content { flex-grow: 1; }
+        .details-content { 
+            flex-grow: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
 
         /* --- UI要素のスタイル --- */
         #liveness-header { text-align: center; padding-bottom: 1em; margin-bottom: 1em; border-bottom: 2px solid; }
-        #liveness-message { font-size: clamp(1.5rem, 5vw, 2.2rem); font-weight: bold; white-space: nowrap; }
+        #liveness-message { font-size: clamp(1.5rem, 5vw, 2.2rem); font-weight: bold; }
         #liveness-subtext { font-size: clamp(0.9rem, 2vw, 1rem); margin-top: 0.5rem; min-height: 1.2em; }
         
         .timestamp {
@@ -107,6 +113,7 @@
             text-align: right;
             margin-top: 1em;
             padding-top: 1em;
+            flex-shrink: 0;
         }
 
         h2 { border-bottom-width: 2px; border-bottom-style: solid; padding-bottom: 0.5em; white-space: nowrap; }
@@ -239,7 +246,7 @@
                     document.body.className = 'dark-mode';
                     isAlive = false;
                     livenessMessageEl.textContent = '村瀨亮介からの応答がありません。';
-                    livenessSubtextEl.innerHTML = `安否確認は <a href="https://twitter.com/vl_lvoO" target="_blank" rel="noopener noreferrer">X(旧Twitter)@vl_lvoO</a> へ`;
+                    livenessSubtextEl.innerHTML = `安否確認は <a href="https://twitter.com/vl_lvoO" target="_blank" rel="noopener noreferrer">X</a> または <a href="https://muraseryosuke.github.io/murase-dosei/" target="_blank" rel="noopener noreferrer">村瀨動静</a> へ`;
                 } else {
                     document.body.className = 'light-mode';
                     isAlive = true;
@@ -265,7 +272,7 @@
                     document.getElementById('wakeup_time').textContent = wakeupDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
                 }
 
-                const hrv = parseFloat(content.health.condition_hrv);
+                const hrv = parseFloat(content.health.condition_hry);
                 const conditionEl = document.getElementById('condition');
                 if (hrv > 50) { conditionEl.textContent = '良好 ✅'; conditionEl.style.color = 'green'; }
                 else if (hrv > 30) { conditionEl.textContent = '普通 😐'; conditionEl.style.color = 'orange'; }
