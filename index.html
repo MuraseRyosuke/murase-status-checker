@@ -7,37 +7,56 @@
     <style>
         /* --- 基本設定とカラーパレット --- */
         :root {
-            --light-bg: #f5f5f7;
-            --light-card-bg: #ffffff;
             --light-text: #1d1d1f;
-            --light-text-sub: #86868b;
-            --light-border: #e5e5e5;
-            --dark-bg: #121212;
-            --dark-card-bg: #1e1e1e;
+            --light-text-sub: #333333; /* 視認性のため少し濃く */
             --dark-text: #e0e0e0;
-            --dark-text-sub: #a0a0a0;
-            --dark-border: #333333;
-            --ecg-alive-color: rgba(46, 204, 113, 0.4);
-            --ecg-lost-color: rgba(48, 209, 201, 0.4);
+            --dark-text-sub: #cccccc;
+            --ecg-alive-color: rgba(46, 204, 113, 0.6);
+            --ecg-lost-color: rgba(48, 209, 201, 0.6);
+            --grad-color-1: #ff9a9e;
+            --grad-color-2: #fad0c4;
+            --grad-color-3: #a1c4fd;
+            --grad-color-4: #c2e9fb;
         }
+
+        /* --- 流体的な背景アニメーション --- */
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             margin: 0;
             padding: 2em;
-            transition: background-color 0.5s, color 0.5s;
+            color: var(--light-text);
+            background: linear-gradient(-45deg, var(--grad-color-1), var(--grad-color-2), var(--grad-color-3), var(--grad-color-4));
+            background-size: 400% 400%;
+            animation: gradient-animation 25s ease infinite;
+            transition: color 0.5s;
+            overflow: hidden;
         }
+        body.dark-mode { color: var(--dark-text); }
 
-        /* --- ライト/ダークモード (CSS継承を利用) --- */
-        body.light-mode { background-color: var(--light-bg); color: var(--light-text); }
-        body.dark-mode { background-color: var(--dark-bg); color: var(--dark-text); }
-        .light-mode .container { background-color: var(--light-card-bg); }
-        .dark-mode .container { background-color: var(--dark-card-bg); }
-        .light-mode h2, .light-mode #liveness-header { border-bottom-color: var(--light-border); }
-        .dark-mode h2, .dark-mode #liveness-header { border-bottom-color: var(--dark-border); }
-        .light-mode .timestamp { color: var(--light-text-sub); }
-        .dark-mode .timestamp { color: var(--dark-text-sub); }
-        .dark-mode #liveness-subtext a { color: #0a84ff; }
-        .dark-mode .profile-image { filter: invert(1) grayscale(1); }
+
+        /* --- Liquid Glass コンテナ --- */
+        .container {
+            background: rgba(255, 255, 255, 0.15); /* ガラスの透明度 */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            padding: 2em;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .dark-mode .container {
+            background: rgba(40, 40, 40, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
         /* --- レイアウト --- */
         .wrapper {
@@ -75,28 +94,16 @@
                 transition: filter 0.5s;
             }
             .details-container { flex: 1; min-height: 0; }
+            .dark-mode .profile-image { filter: invert(1) grayscale(1); }
         }
 
         /* --- スマホ表示 (縦長) --- */
         @media (max-aspect-ratio: 1/1) {
             .profile-container { display: none; }
-            .details-container {
-                width: 100%;
-                max-width: 600px;
-                margin: 0 auto;
-                height: 100%;
-                overflow-y: auto;
-            }
+            .details-container { width: 100%; max-width: 600px; margin: 0 auto; height: 100%; }
         }
         
-        .container {
-            padding: 2em;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-        }
+        .container { height: 100%; }
         .details-content { 
             flex-grow: 1;
             overflow-y: auto;
@@ -104,9 +111,13 @@
         }
 
         /* --- UI要素のスタイル --- */
-        #liveness-header { text-align: center; padding-bottom: 1em; margin-bottom: 1em; border-bottom: 2px solid; }
+        #liveness-header { text-align: center; padding-bottom: 1em; margin-bottom: 1em; border-bottom: 1px solid; }
+        .light-mode #liveness-header { border-bottom-color: rgba(0,0,0,0.1); }
+        .dark-mode #liveness-header { border-bottom-color: rgba(255,255,255,0.1); }
         #liveness-message { font-size: clamp(1.5rem, 5vw, 2.2rem); font-weight: bold; }
         #liveness-subtext { font-size: clamp(0.9rem, 2vw, 1rem); margin-top: 0.5rem; min-height: 1.2em; }
+        .dark-mode #liveness-subtext a { color: #0a84ff; }
+        .light-mode #liveness-subtext a { color: #0066cc; }
         
         .timestamp {
             font-size: 0.8em;
@@ -114,9 +125,14 @@
             margin-top: 1em;
             padding-top: 1em;
             flex-shrink: 0;
+            color: var(--light-text-sub);
         }
+        .dark-mode .timestamp { color: var(--dark-text-sub); }
 
-        h2 { border-bottom-width: 2px; border-bottom-style: solid; padding-bottom: 0.5em; white-space: nowrap; }
+        h2 { border-bottom: 1px solid; padding-bottom: 0.5em; white-space: nowrap; margin-top: 1.5em; margin-bottom: 1em; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; }
+        .light-mode h2 { border-bottom-color: rgba(0,0,0,0.1); }
+        .dark-mode h2 { border-bottom-color: rgba(255,255,255,0.1); }
+
         .status { margin-bottom: 1.2em; font-size: 1.1em; }
         .label {
             font-weight: 600;
@@ -124,6 +140,9 @@
             width: 120px;
             white-space: nowrap;
         }
+        .status span:not(.label) { color: var(--light-text-sub); }
+        .dark-mode .status span:not(.label) { color: var(--dark-text-sub); }
+
 
         /* --- 心電図アニメーション --- */
         #ecg-canvas {
@@ -144,7 +163,7 @@
     <div class="wrapper">
         <div class="main-content">
             <div class="profile-container">
-                <img src="ogp.png" alt="プロフィール画像" class="profile-image">
+                <img src="https://muraseryosuke.info/assets/img/ogp.png" alt="プロフィール画像" class="profile-image">
             </div>
 
             <div class="details-container">
@@ -272,7 +291,7 @@
                     document.getElementById('wakeup_time').textContent = wakeupDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
                 }
 
-                const hrv = parseFloat(content.health.condition_hry);
+                const hrv = parseFloat(content.health.condition_hrv);
                 const conditionEl = document.getElementById('condition');
                 if (hrv > 50) { conditionEl.textContent = '良好 ✅'; conditionEl.style.color = 'green'; }
                 else if (hrv > 30) { conditionEl.textContent = '普通 😐'; conditionEl.style.color = 'orange'; }
