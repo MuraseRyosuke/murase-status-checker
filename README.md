@@ -4,7 +4,7 @@
 
 Apple WatchとiPhoneで取得した自身のバイタルデータを、Web上にリアルタイムで表示するパーソナル・ステータスチェッカーです。
 
-**[▶︎ 公開サイトはこちら](https://muraseryosuke.github.io/murase-status-checker/)**
++ **[▶︎ 公開サイトはこちら](https://status.muraseryosuke.info)**
 
 ---
 
