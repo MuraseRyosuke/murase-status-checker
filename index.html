@@ -3,7 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>村瀨亮介のリアルタイム健康診断</title>
+    <meta name="description" content="村瀨亮介(vl_lvoO)の現在の体調、位置情報、安否状況をApple Watchのデータを用いてリアルタイムに可視化・公開するステータスチェッカーサイトです。">
+    <meta name="keywords" content="村瀨亮介, Ryosuke Murase, vl_lvoO, ステータス, 安否確認, Apple Watch, ヘルスケア, HealthKit, リアルタイム, ダッシュボード">
+    <meta name="author" content="Ryosuke Murase">
+    <meta name="copyright" content="© 2025 Ryosuke Murase">
+    <link rel="canonical" href="https://status.muraseryosuke.info/">
+
+    <meta property="og:title" content="村瀨亮介のリアルタイム健康診断">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://status.muraseryosuke.info/">
+    <meta property="og:description" content="村瀨亮介は今、生きているか？心拍数、歩数、位置情報をリアルタイムで公開中。">
+    <meta property="og:site_name" content="Murase Status Checker">
+    <meta property="og:locale" content="ja_JP">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@vl_lvoO">
+    <meta name="twitter:creator" content="@vl_lvoO">
+
     <style>
         /* --- 基本設定とカラーパレット --- */
         :root {
@@ -15,12 +33,11 @@
             --dark-bg: #121212;
             --dark-card-bg: #1e1e1e;
             --dark-text: #e0e0e0;
-            --dark-text-sub: #cccccc;
+            --dark-text-sub: #a0a0a0;
             --dark-border: #333333;
-            --ecg-alive-color: rgba(46, 204, 113, 0.6);
-            --ecg-lost-color: rgba(48, 209, 201, 0.6);
+            --ecg-alive-color: rgba(46, 204, 113, 0.4);
+            --ecg-lost-color: rgba(48, 209, 201, 0.4);
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             margin: 0;
@@ -29,30 +46,17 @@
             overflow: hidden;
         }
 
-        /* --- ライト/ダークモード --- */
+        /* --- ライト/ダークモード (CSS継承を利用) --- */
         body.light-mode { background-color: var(--light-bg); color: var(--light-text); }
         body.dark-mode { background-color: var(--dark-bg); color: var(--dark-text); }
+        .light-mode .container { background-color: var(--light-card-bg); }
+        .dark-mode .container { background-color: var(--dark-card-bg); }
+        .light-mode h2, .light-mode #liveness-header { border-bottom-color: var(--light-border); }
+        .dark-mode h2, .dark-mode #liveness-header { border-bottom-color: var(--dark-border); }
+        .light-mode .timestamp { color: var(--light-text-sub); }
+        .dark-mode .timestamp { color: var(--dark-text-sub); }
         .dark-mode #liveness-subtext a { color: #0a84ff; }
-        .light-mode #liveness-subtext a { color: #0066cc; }
         .dark-mode .profile-image { filter: invert(1) grayscale(1); }
-
-        /* --- Liquid Glass コンテナ --- */
-        .container {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-            padding: 2em;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-        }
-        .dark-mode .container {
-            background: rgba(40, 40, 40, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
 
         /* --- レイアウト --- */
         .wrapper {
@@ -95,10 +99,23 @@
         /* --- スマホ表示 (縦長) --- */
         @media (max-aspect-ratio: 1/1) {
             .profile-container { display: none; }
-            .details-container { width: 100%; max-width: 600px; margin: 0 auto; height: 100%; }
+            .details-container {
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+                height: 100%;
+                overflow-y: auto;
+            }
         }
         
-        .container { height: 100%; }
+        .container {
+            padding: 2em;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
         .details-content { 
             flex-grow: 1;
             overflow-y: auto;
@@ -106,9 +123,7 @@
         }
 
         /* --- UI要素のスタイル --- */
-        #liveness-header { text-align: center; padding-bottom: 1em; margin-bottom: 1em; border-bottom: 1px solid; }
-        .light-mode #liveness-header { border-bottom-color: rgba(0,0,0,0.1); }
-        .dark-mode #liveness-header { border-bottom-color: rgba(255,255,255,0.1); }
+        #liveness-header { text-align: center; padding-bottom: 1em; margin-bottom: 1em; border-bottom: 2px solid; }
         #liveness-message { font-size: clamp(1.5rem, 5vw, 2.2rem); font-weight: bold; }
         #liveness-subtext { font-size: clamp(0.9rem, 2vw, 1rem); margin-top: 0.5rem; min-height: 1.2em; }
         
@@ -118,14 +133,9 @@
             margin-top: 1em;
             padding-top: 1em;
             flex-shrink: 0;
-            color: var(--light-text-sub);
         }
-        .dark-mode .timestamp { color: var(--dark-text-sub); }
 
-        h2 { border-bottom: 1px solid; padding-bottom: 0.5em; white-space: nowrap; margin-top: 1.5em; margin-bottom: 1em; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; }
-        .light-mode h2 { border-bottom-color: rgba(0,0,0,0.1); color: var(--light-text-sub); }
-        .dark-mode h2 { border-bottom-color: rgba(255,255,255,0.1); color: var(--dark-text-sub); }
-
+        h2 { border-bottom-width: 2px; border-bottom-style: solid; padding-bottom: 0.5em; white-space: nowrap; }
         .status { margin-bottom: 1.2em; font-size: 1.1em; }
         .label {
             font-weight: 600;
@@ -133,8 +143,6 @@
             width: 120px;
             white-space: nowrap;
         }
-        .dark-mode .status span:not(.label) { color: var(--dark-text-sub); }
-
 
         /* --- 心電図アニメーション --- */
         #ecg-canvas {
