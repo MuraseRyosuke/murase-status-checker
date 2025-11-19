@@ -14,6 +14,7 @@
     <meta property="og:title" content="村瀨亮介のリアルタイム健康診断">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://status.muraseryosuke.info/">
+    <meta property="og:image" content="https://muraseryosuke.info/assets/img/ogp.png">
     <meta property="og:description" content="村瀨亮介は今、生きているか？心拍数、歩数、位置情報をリアルタイムで公開中。">
     <meta property="og:site_name" content="Murase Status Checker">
     <meta property="og:locale" content="ja_JP">
@@ -23,128 +24,92 @@
     <meta name="twitter:creator" content="@vl_lvoO">
 
     <style>
-        /* --- 基本設定とカラーパレット --- */
+        /* --- Variables --- */
         :root {
-            --light-bg: #f5f5f7;
-            --light-card-bg: #ffffff;
-            --light-text: #1d1d1f;
-            --light-text-sub: #333333;
-            --light-border: #e5e5e5;
-            --dark-bg: #121212;
-            --dark-card-bg: #1e1e1e;
-            --dark-text: #e0e0e0;
-            --dark-text-sub: #a0a0a0;
-            --dark-border: #333333;
-            --ecg-alive-color: rgba(46, 204, 113, 0.4);
-            --ecg-lost-color: rgba(48, 209, 201, 0.4);
+            /* Colors */
+            --color-light-bg: #f5f5f7;
+            --color-light-card: rgba(255, 255, 255, 0.15);
+            --color-light-text: #1d1d1f;
+            --color-light-sub: #333333;
+            --color-light-border: rgba(255, 255, 255, 0.2);
+            
+            --color-dark-bg: #121212;
+            --color-dark-card: rgba(40, 40, 40, 0.25);
+            --color-dark-text: #e0e0e0;
+            --color-dark-sub: #cccccc;
+            --color-dark-border: rgba(255, 255, 255, 0.1);
+
+            /* Status Colors */
+            --color-ecg-alive: rgba(46, 204, 113, 0.6);
+            --color-ecg-lost: rgba(48, 209, 201, 0.6);
+            --color-accent-link-light: #0066cc;
+            --color-accent-link-dark: #0a84ff;
+            --color-status-good: #34c759;
+            --color-status-avg: #ff9500;
+            --color-status-bad: #ff3b30;
+
+            /* Glassmorphism */
+            --glass-blur: 25px;
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
         }
+
+        /* --- Reset & Base --- */
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             margin: 0;
             padding: 2em;
-            transition: background-color 0.5s, color 0.5s;
-            overflow: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow: hidden; /* PC default */
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- ライト/ダークモード (CSS継承を利用) --- */
-        body.light-mode { background-color: var(--light-bg); color: var(--light-text); }
-        body.dark-mode { background-color: var(--dark-bg); color: var(--dark-text); }
-        .light-mode .container { background-color: var(--light-card-bg); }
-        .dark-mode .container { background-color: var(--dark-card-bg); }
-        .light-mode h2, .light-mode #liveness-header { border-bottom-color: var(--light-border); }
-        .dark-mode h2, .dark-mode #liveness-header { border-bottom-color: var(--dark-border); }
-        .light-mode .timestamp { color: var(--light-text-sub); }
-        .dark-mode .timestamp { color: var(--dark-text-sub); }
-        .dark-mode #liveness-subtext a { color: #0a84ff; }
-        .dark-mode .profile-image { filter: invert(1) grayscale(1); }
+        a { text-decoration: none; }
+        a:hover { text-decoration: underline; }
 
-        /* --- レイアウト --- */
-        .wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: calc(100vh - 4em);
+        /* --- Theme Styles --- */
+        /* Light Mode (Default) */
+        body.light-mode {
+            background-color: var(--color-light-bg);
+            color: var(--color-light-text);
         }
-        .main-content {
-            display: flex;
-            width: 100%;
-            max-width: 1200px;
-            max-height: 800px;
-            height: 100%;
+        body.light-mode .glass-container {
+            background: var(--color-light-card);
+            border: 1px solid var(--color-light-border);
         }
+        body.light-mode h2, 
+        body.light-mode #liveness-header {
+            border-bottom-color: rgba(0,0,0,0.1);
+        }
+        body.light-mode h2 { color: var(--color-light-sub); }
+        body.light-mode .timestamp { color: var(--color-light-sub); }
+        body.light-mode #liveness-subtext a { color: var(--color-accent-link-light); }
 
-        /* --- PC/タブレット表示 (横長) --- */
-        @media (min-aspect-ratio: 1/1) {
-            body { overflow: hidden; }
-            #liveness-message { white-space: nowrap; }
-            .profile-container {
-                flex: 0 0 40%;
-                padding-right: 2em;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .profile-image {
-                width: 100%;
-                height: auto;
-                aspect-ratio: 1 / 1;
-                object-fit: cover;
-                border-radius: 12px;
-                transition: filter 0.5s;
-            }
-            .details-container { flex: 1; min-height: 0; }
+        /* Dark Mode */
+        body.dark-mode {
+            background-color: var(--color-dark-bg);
+            color: var(--color-dark-text);
         }
+        body.dark-mode .glass-container {
+            background: var(--color-dark-card);
+            border: 1px solid var(--color-dark-border);
+        }
+        body.dark-mode h2, 
+        body.dark-mode #liveness-header {
+            border-bottom-color: rgba(255,255,255,0.1);
+        }
+        body.dark-mode h2 { color: var(--color-dark-sub); }
+        body.dark-mode .timestamp { color: var(--color-dark-sub); }
+        body.dark-mode #liveness-subtext a { color: var(--color-accent-link-dark); }
+        body.dark-mode .profile-image { filter: invert(1) grayscale(1); }
+        body.dark-mode .status span:not(.label) { color: var(--color-dark-sub); }
 
-        /* --- スマホ表示 (縦長) --- */
-        @media (max-aspect-ratio: 1/1) {
-            .profile-container { display: none; }
-            .details-container {
-                width: 100%;
-                max-width: 600px;
-                margin: 0 auto;
-                height: 100%;
-                overflow-y: auto;
-            }
-        }
+        /* --- Components --- */
         
-        .container {
-            padding: 2em;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-        }
-        .details-content { 
-            flex-grow: 1;
-            overflow-y: auto;
-            min-height: 0;
-        }
-
-        /* --- UI要素のスタイル --- */
-        #liveness-header { text-align: center; padding-bottom: 1em; margin-bottom: 1em; border-bottom: 2px solid; }
-        #liveness-message { font-size: clamp(1.5rem, 5vw, 2.2rem); font-weight: bold; }
-        #liveness-subtext { font-size: clamp(0.9rem, 2vw, 1rem); margin-top: 0.5rem; min-height: 1.2em; }
-        
-        .timestamp {
-            font-size: 0.8em;
-            text-align: right;
-            margin-top: 1em;
-            padding-top: 1em;
-            flex-shrink: 0;
-        }
-
-        h2 { border-bottom-width: 2px; border-bottom-style: solid; padding-bottom: 0.5em; white-space: nowrap; }
-        .status { margin-bottom: 1.2em; font-size: 1.1em; }
-        .label {
-            font-weight: 600;
-            display: inline-block;
-            width: 120px;
-            white-space: nowrap;
-        }
-
-        /* --- 心電図アニメーション --- */
+        /* Canvas */
         #ecg-canvas {
             position: fixed;
             top: 0;
@@ -153,6 +118,170 @@
             height: 100%;
             z-index: -1;
             opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Layout Wrappers */
+        .wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: calc(100vh - 4em);
+        }
+
+        .main-content {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            max-height: 800px;
+            height: 100%;
+            gap: 2em;
+        }
+
+        /* Profile Section */
+        .profile-section {
+            flex: 0 0 40%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .profile-image {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: filter 0.5s ease;
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* Details Section */
+        .details-section {
+            flex: 1;
+            min-height: 0; /* Flex child scrolling fix */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .glass-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2em;
+            border-radius: 24px;
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            box-shadow: var(--glass-shadow);
+            height: 100%;
+        }
+
+        #liveness-header {
+            text-align: center;
+            padding-bottom: 1em;
+            margin-bottom: 1em;
+            border-bottom: 1px solid;
+            flex-shrink: 0;
+        }
+
+        #liveness-message {
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        #liveness-subtext {
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            margin-top: 0.5rem;
+            min-height: 1.2em;
+        }
+
+        .details-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 0.5em; /* Scrollbar spacing */
+        }
+
+        /* Scrollbar styling for Webkit */
+        .details-content::-webkit-scrollbar { width: 6px; }
+        .details-content::-webkit-scrollbar-track { background: transparent; }
+        .details-content::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 3px; }
+        body.dark-mode .details-content::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.1); }
+
+        h2 {
+            border-bottom: 1px solid;
+            padding-bottom: 0.5em;
+            margin-top: 1.5em;
+            margin-bottom: 1em;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .status-row {
+            margin-bottom: 1.2em;
+            font-size: 1.1em;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .label {
+            font-weight: 600;
+            width: 140px; /* Fixed width for alignment */
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .value {
+            color: var(--color-light-sub);
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            text-align: right;
+            margin-top: 1em;
+            padding-top: 1em;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+        body.dark-mode .timestamp { border-top-color: rgba(255,255,255,0.05); }
+
+        /* --- Responsive Design --- */
+        
+        /* Desktop/Tablet (Horizontal) */
+        @media (min-aspect-ratio: 1/1) {
+            body { overflow: hidden; }
+            #liveness-message { white-space: nowrap; }
+        }
+
+        /* Mobile (Vertical) */
+        @media (max-aspect-ratio: 1/1) {
+            body { 
+                padding: 1em;
+                overflow: auto; /* Enable scroll on mobile */
+            }
+            .wrapper {
+                height: auto;
+                min-height: 100vh;
+                display: block;
+            }
+            .main-content {
+                display: block;
+                height: auto;
+            }
+            .profile-section { display: none; }
+            .details-section {
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+                height: auto;
+            }
+            .glass-container {
+                height: auto;
+                min-height: 80vh; /* Ensure visual weight */
+            }
+            .details-content { overflow: visible; }
         }
     </style>
 </head>
@@ -160,152 +289,233 @@
     
     <canvas id="ecg-canvas"></canvas>
 
-    <div class="wrapper">
+    <main class="wrapper">
         <div class="main-content">
-            <div class="profile-container">
-                <img src="ogp.png" alt="プロフィール画像" class="profile-image">
-            </div>
+            <section class="profile-section">
+                <img src="ogp.png" alt="Ryosuke Murase Profile" class="profile-image">
+            </section>
 
-            <div class="details-container">
-                <div class="container">
+            <section class="details-section">
+                <div class="glass-container">
                     
-                    <div id="liveness-header">
-                        <div id="liveness-message">---</div>
+                    <header id="liveness-header">
+                        <div id="liveness-message">Checking status...</div>
                         <div id="liveness-subtext"></div>
-                    </div>
+                    </header>
 
                     <div class="details-content">
                         <h2><span>❤️ ヘルスケア</span></h2>
-                        <div class="status"><span class="label">❤️ 心拍数:</span> <span id="heart_rate">---</span> bpm</div>
-                        <div class="status"><span class="label">👟 歩数:</span> <span id="steps">---</span> 歩</div>
-                        <div class="status"><span class="label">🔥 カロリー:</span> <span id="calories">---</span> kcal</div>
-                        <div class="status"><span class="label">🩺 体調:</span> <span id="condition">---</span></div>
-                        <div class="status"><span class="label">☀️ 起床時間:</span> <span id="wakeup_time">---</span></div>
+                        <div class="status-row"><span class="label">❤️ 心拍数:</span> <span id="heart_rate" class="value">---</span> <span class="unit">bpm</span></div>
+                        <div class="status-row"><span class="label">👟 歩数:</span> <span id="steps" class="value">---</span> <span class="unit">歩</span></div>
+                        <div class="status-row"><span class="label">🔥 カロリー:</span> <span id="calories" class="value">---</span> <span class="unit">kcal</span></div>
+                        <div class="status-row"><span class="label">🩺 体調:</span> <span id="condition" class="value">---</span></div>
+                        <div class="status-row"><span class="label">☀️ 起床時間:</span> <span id="wakeup_time" class="value">---</span></div>
 
                         <h2><span>📍 ロケーション</span></h2>
-                        <div class="status"><span class="label">📍 現在地:</span> <span id="location">---</span></div>
+                        <div class="status-row"><span class="label">📍 現在地:</span> <span id="location" class="value">---</span></div>
                         
                         <h2><span>📱 デバイス</span></h2>
-                        <div class="status"><span class="label">🔋 バッテリー:</span> <span id="device_status">---</span></div>
+                        <div class="status-row"><span class="label">🔋 バッテリー:</span> <span id="device_status" class="value">---</span></div>
                     </div>
 
-                    <div class="timestamp">最終更新: <span id="last_updated">---</span></div>
+                    <footer class="timestamp">最終更新: <span id="last_updated">---</span></footer>
                 </div>
-            </div>
+            </section>
         </div>
-    </div>
+    </main>
 
     <script>
-        // --- 設定項目 ---
-        const gistId = '1f81b107b898201a865a613c319d579b'; 
-        const gistFileName = 'murase_status.json';
+        /**
+         * Configuration
+         */
+        const CONFIG = {
+            gistId: '1f81b107b898201a865a613c319d579b',
+            gistFileName: 'murase_status.json',
+            thresholdHours: 13,
+            links: {
+                twitter: 'https://twitter.com/vl_lvoO',
+                dosei: 'https://muraseryosuke.github.io/murase-dosei/'
+            }
+        };
 
-        // --- 心電図アニメーション ---
-        const canvas = document.getElementById('ecg-canvas');
-        const ctx = canvas.getContext('2d');
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
-        let x = 0, y = height / 2, heartRateBPM = 60, lastBeatTime = 0, isAlive = true;
-
-        function drawEcg() {
-            const currentBPM = isAlive ? heartRateBPM : 0;
-            const beatInterval = currentBPM > 0 ? 60000 / currentBPM : Infinity;
-            const now = Date.now();
-            ctx.clearRect(x, 0, 10, height);
-            ctx.beginPath();
-            ctx.moveTo(x - 2, y);
-            
-            let newY = height / 2;
-            const amplitude = height * 0.25;
-            
-            if (currentBPM > 0 && (now - lastBeatTime > beatInterval)) {
-                lastBeatTime = now;
-                newY = height / 2 - amplitude;
-            } else if (currentBPM > 0 && (now - lastBeatTime < 50)) {
-                newY = height / 2 + (amplitude * 0.2);
-            } else if (currentBPM > 0 && (now - lastBeatTime > beatInterval - 200)) {
-                 newY = height / 2 + (amplitude * 0.4);
+        /**
+         * ECG Animation Controller
+         */
+        class ECGMonitor {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.x = 0;
+                this.y = this.height / 2;
+                this.targetBPM = 60;
+                this.lastBeatTime = 0;
+                this.isAlive = true;
+                
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
             }
 
-            y = y * 0.9 + newY * 0.1;
-            ctx.lineTo(x, y);
-            ctx.strokeStyle = document.body.classList.contains('dark-mode') ? 'var(--ecg-lost-color)' : 'var(--ecg-alive-color)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            resize() {
+                this.width = this.canvas.width = window.innerWidth;
+                this.height = this.canvas.height = window.innerHeight;
+                this.x = 0;
+                this.y = this.height / 2;
+            }
 
-            x = (x + 1) % width;
-            if (x === 0) ctx.clearRect(0,0,width,height);
-            
-            requestAnimationFrame(drawEcg);
+            setBPM(bpm, isAlive) {
+                this.targetBPM = bpm > 0 ? bpm : 60;
+                this.isAlive = isAlive;
+            }
+
+            draw() {
+                // BPM logic
+                const currentBPM = this.isAlive ? this.targetBPM : 0;
+                const beatInterval = currentBPM > 0 ? 60000 / currentBPM : Infinity;
+                const now = Date.now();
+
+                // Clear current column
+                this.ctx.clearRect(this.x, 0, 10, this.height);
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.x - 2, this.y);
+
+                let newY = this.height / 2;
+                const amplitude = this.height * 0.25;
+
+                // Waveform Logic (P-Q-R-S-T complex simulation)
+                if (currentBPM > 0) {
+                    const timeSinceBeat = now - this.lastBeatTime;
+                    
+                    if (timeSinceBeat > beatInterval) {
+                        this.lastBeatTime = now;
+                        newY = this.height / 2 - amplitude; // R wave (Peak)
+                    } else if (timeSinceBeat < 50) {
+                        newY = this.height / 2 + (amplitude * 0.2); // S wave
+                    } else if (timeSinceBeat > beatInterval - 200) {
+                        newY = this.height / 2 + (amplitude * 0.4); // T wave (Preparation)
+                    }
+                }
+
+                // Smooth line
+                this.y = this.y * 0.9 + newY * 0.1;
+
+                this.ctx.lineTo(this.x, this.y);
+                
+                // Style
+                const isDark = document.body.classList.contains('dark-mode');
+                const colorVar = isDark ? '--ecg-lost-color' : '--ecg-alive-color';
+                // Get color value from CSS variable
+                const style = getComputedStyle(document.body);
+                this.ctx.strokeStyle = style.getPropertyValue(colorVar).trim();
+                
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+
+                // Advance x
+                this.x++;
+                if (this.x > this.width) {
+                    this.x = 0;
+                    this.ctx.clearRect(0, 0, this.width, this.height);
+                }
+
+                requestAnimationFrame(() => this.draw());
+            }
+
+            start() {
+                this.draw();
+            }
         }
 
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            x = 0; y = height / 2;
-        });
+        /**
+         * Main Application Logic
+         */
+        const ecg = new ECGMonitor('ecg-canvas');
+        ecg.start();
 
-        // Gistから最新ステータスを取得してページに反映するメイン関数
         async function updateStatus() {
-            try {
-                const response = await fetch(`https://api.github.com/gists/${gistId}`);
-                const gist = await response.json();
-                if (!response.ok || !gist.files || !gist.files[gistFileName]) {
-                    throw new Error('Gist data is not available.');
-                }
-                const content = JSON.parse(gist.files[gistFileName].content);
+            const els = {
+                body: document.body,
+                message: document.getElementById('liveness-message'),
+                subtext: document.getElementById('liveness-subtext'),
+                updated: document.getElementById('last_updated'),
+                heart: document.getElementById('heart_rate'),
+                steps: document.getElementById('steps'),
+                calories: document.getElementById('calories'),
+                location: document.getElementById('location'),
+                device: document.getElementById('device_status'),
+                wakeup: document.getElementById('wakeup_time'),
+                condition: document.getElementById('condition')
+            };
 
+            try {
+                const response = await fetch(`https://api.github.com/gists/${CONFIG.gistId}`);
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                
+                const gist = await response.json();
+                if (!gist.files || !gist.files[CONFIG.gistFileName]) {
+                    throw new Error('Gist file not found');
+                }
+
+                const content = JSON.parse(gist.files[CONFIG.gistFileName].content);
                 const lastUpdated = new Date(content.last_updated);
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 
-                const livenessMessageEl = document.getElementById('liveness-message');
-                const livenessSubtextEl = document.getElementById('liveness-subtext');
-
-                if (diffHours > 13) {
-                    document.body.className = 'dark-mode';
-                    isAlive = false;
-                    livenessMessageEl.textContent = '村瀨亮介からの応答がありません。';
-                    livenessSubtextEl.innerHTML = `安否確認は <a href="https://twitter.com/vl_lvoO" target="_blank" rel="noopener noreferrer">X</a> または <a href="https://muraseryosuke.github.io/murase-dosei/" target="_blank" rel="noopener noreferrer">村瀨動静</a> へ`;
+                // 1. Liveness Check & Theme
+                const isAlive = diffHours <= CONFIG.thresholdHours;
+                
+                if (isAlive) {
+                    els.body.className = 'light-mode';
+                    els.message.textContent = '村瀨亮介は生きています。';
+                    els.subtext.textContent = '';
                 } else {
-                    document.body.className = 'light-mode';
-                    isAlive = true;
-                    livenessMessageEl.textContent = '村瀨亮介は生きています。';
-                    livenessSubtextEl.textContent = '';
+                    els.body.className = 'dark-mode';
+                    els.message.textContent = '村瀨亮介からの応答がありません。';
+                    els.subtext.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank" rel="noopener noreferrer">X</a> または <a href="${CONFIG.links.dosei}" target="_blank" rel="noopener noreferrer">村瀨動静</a> へ`;
                 }
 
-                document.getElementById('last_updated').textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
-                
+                // 2. Update ECG
                 const currentHeartRate = parseInt(content.health.heart_rate, 10);
-                document.getElementById('heart_rate').textContent = currentHeartRate || 'N/A';
-                if(currentHeartRate) heartRateBPM = currentHeartRate;
+                ecg.setBPM(currentHeartRate, isAlive);
 
-                document.getElementById('steps').textContent = content.health.steps || 'N/A';
-                document.getElementById('calories').textContent = content.health.active_calories ? Math.round(content.health.active_calories) : 'N/A';
-                document.getElementById('location').textContent = content.location.city || 'N/A';
-                
-                const deviceStatus = `${content.device.battery}% ${content.device.is_charging === true ? '⚡️ 充電中' : ''}`;
-                document.getElementById('device_status').textContent = deviceStatus;
-                
+                // 3. Render Data
+                els.updated.textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
+                els.heart.textContent = currentHeartRate || 'N/A';
+                els.steps.textContent = content.health.steps || 'N/A';
+                els.calories.textContent = content.health.active_calories ? Math.round(content.health.active_calories) : 'N/A';
+                els.location.textContent = content.location.city || 'N/A';
+                els.device.textContent = `${content.device.battery}% ${content.device.is_charging === true ? '⚡️ 充電中' : ''}`;
+
                 if (content.health.wakeup_time) {
                     const wakeupDate = new Date(content.health.wakeup_time);
-                    document.getElementById('wakeup_time').textContent = wakeupDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+                    els.wakeup.textContent = wakeupDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+                } else {
+                    els.wakeup.textContent = '---';
                 }
 
+                // 4. Condition Logic
                 const hrv = parseFloat(content.health.condition_hrv);
-                const conditionEl = document.getElementById('condition');
-                if (hrv > 50) { conditionEl.textContent = '良好 ✅'; conditionEl.style.color = 'green'; }
-                else if (hrv > 30) { conditionEl.textContent = '普通 😐'; conditionEl.style.color = 'orange'; }
-                else if (hrv) { conditionEl.textContent = '要注意 ⚠️'; conditionEl.style.color = 'red'; }
-                else { conditionEl.textContent = 'N/A'; }
+                if (hrv > 50) {
+                    els.condition.textContent = '良好 ✅';
+                    els.condition.style.color = 'var(--color-status-good)';
+                } else if (hrv > 30) {
+                    els.condition.textContent = '普通 😐';
+                    els.condition.style.color = 'var(--color-status-avg)';
+                } else if (hrv) {
+                    els.condition.textContent = '要注意 ⚠️';
+                    els.condition.style.color = 'var(--color-status-bad)';
+                } else {
+                    els.condition.textContent = 'N/A';
+                }
 
             } catch (error) {
-                console.error('Failed to update status:', error);
-                document.getElementById('liveness-message').textContent = 'データの取得に失敗しました。';
+                console.error('Status Update Failed:', error);
+                els.message.textContent = 'データの取得に失敗しました。';
             }
         }
 
-        // --- 関数の実行 ---
-        drawEcg();
+        // Initialize
         updateStatus();
 
     </script>
