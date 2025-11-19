@@ -24,9 +24,9 @@
     <meta name="twitter:creator" content="@vl_lvoO">
 
     <style>
-        /* --- Variables --- */
+        /* --- Design Tokens (CSS Variables) --- */
         :root {
-            /* Colors */
+            /* Color Palette */
             --color-light-bg: #f5f5f7;
             --color-light-card: rgba(255, 255, 255, 0.15);
             --color-light-text: #1d1d1f;
@@ -39,21 +39,23 @@
             --color-dark-sub: #cccccc;
             --color-dark-border: rgba(255, 255, 255, 0.1);
 
-            /* Status Colors */
-            --color-ecg-alive: rgba(46, 204, 113, 0.6);
-            --color-ecg-lost: rgba(48, 209, 201, 0.6);
-            --color-accent-link-light: #0066cc;
-            --color-accent-link-dark: #0a84ff;
+            /* Status Indicators */
+            --color-ecg-alive: rgba(46, 204, 113, 0.4);
+            --color-ecg-lost: rgba(48, 209, 201, 0.4);
             --color-status-good: #34c759;
             --color-status-avg: #ff9500;
             --color-status-bad: #ff3b30;
+            
+            /* Links */
+            --color-link-light: #0066cc;
+            --color-link-dark: #0a84ff;
 
-            /* Glassmorphism */
+            /* Effects */
             --glass-blur: 25px;
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            --shadow-default: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
         }
 
-        /* --- Reset & Base --- */
+        /* --- Base Styles --- */
         * {
             box-sizing: border-box;
         }
@@ -63,15 +65,14 @@
             margin: 0;
             padding: 2em;
             transition: background-color 0.5s ease, color 0.5s ease;
-            overflow: hidden; /* PC default */
+            overflow: hidden; /* Default for PC */
             -webkit-font-smoothing: antialiased;
         }
 
         a { text-decoration: none; }
         a:hover { text-decoration: underline; }
 
-        /* --- Theme Styles --- */
-        /* Light Mode (Default) */
+        /* --- Theme: Light Mode --- */
         body.light-mode {
             background-color: var(--color-light-bg);
             color: var(--color-light-text);
@@ -81,14 +82,16 @@
             border: 1px solid var(--color-light-border);
         }
         body.light-mode h2, 
-        body.light-mode #liveness-header {
+        body.light-mode header {
             border-bottom-color: rgba(0,0,0,0.1);
         }
-        body.light-mode h2 { color: var(--color-light-sub); }
-        body.light-mode .timestamp { color: var(--color-light-sub); }
-        body.light-mode #liveness-subtext a { color: var(--color-accent-link-light); }
+        body.light-mode h2,
+        body.light-mode .timestamp {
+            color: var(--color-light-sub);
+        }
+        body.light-mode #liveness-subtext a { color: var(--color-link-light); }
 
-        /* Dark Mode */
+        /* --- Theme: Dark Mode --- */
         body.dark-mode {
             background-color: var(--color-dark-bg);
             color: var(--color-dark-text);
@@ -98,18 +101,20 @@
             border: 1px solid var(--color-dark-border);
         }
         body.dark-mode h2, 
-        body.dark-mode #liveness-header {
+        body.dark-mode header {
             border-bottom-color: rgba(255,255,255,0.1);
         }
-        body.dark-mode h2 { color: var(--color-dark-sub); }
-        body.dark-mode .timestamp { color: var(--color-dark-sub); }
-        body.dark-mode #liveness-subtext a { color: var(--color-accent-link-dark); }
+        body.dark-mode h2,
+        body.dark-mode .timestamp,
+        body.dark-mode .value {
+            color: var(--color-dark-sub);
+        }
+        body.dark-mode #liveness-subtext a { color: var(--color-link-dark); }
         body.dark-mode .profile-image { filter: invert(1) grayscale(1); }
-        body.dark-mode .status span:not(.label) { color: var(--color-dark-sub); }
 
         /* --- Components --- */
         
-        /* Canvas */
+        /* Background Animation */
         #ecg-canvas {
             position: fixed;
             top: 0;
@@ -121,7 +126,7 @@
             pointer-events: none;
         }
 
-        /* Layout Wrappers */
+        /* Layout Containers */
         .wrapper {
             display: flex;
             align-items: center;
@@ -136,7 +141,7 @@
             max-width: 1200px;
             max-height: 800px;
             height: 100%;
-            gap: 2em;
+            gap: 2em; /* Gap between profile and details */
         }
 
         /* Profile Section */
@@ -146,6 +151,7 @@
             align-items: center;
             justify-content: center;
         }
+
         .profile-image {
             width: 100%;
             height: auto;
@@ -153,13 +159,13 @@
             object-fit: cover;
             border-radius: 12px;
             transition: filter 0.5s ease;
-            box-shadow: var(--glass-shadow);
+            box-shadow: var(--shadow-default);
         }
 
         /* Details Section */
         .details-section {
             flex: 1;
-            min-height: 0; /* Flex child scrolling fix */
+            min-height: 0; /* Prevent flex item from overflowing */
             display: flex;
             flex-direction: column;
         }
@@ -172,11 +178,12 @@
             border-radius: 24px;
             backdrop-filter: blur(var(--glass-blur));
             -webkit-backdrop-filter: blur(var(--glass-blur));
-            box-shadow: var(--glass-shadow);
+            box-shadow: var(--shadow-default);
             height: 100%;
         }
 
-        #liveness-header {
+        /* Typography & Elements */
+        header {
             text-align: center;
             padding-bottom: 1em;
             margin-bottom: 1em;
@@ -196,17 +203,17 @@
             min-height: 1.2em;
         }
 
-        .details-content {
+        .scrollable-content {
             flex-grow: 1;
             overflow-y: auto;
-            padding-right: 0.5em; /* Scrollbar spacing */
+            padding-right: 4px; /* Space for scrollbar */
         }
 
-        /* Scrollbar styling for Webkit */
-        .details-content::-webkit-scrollbar { width: 6px; }
-        .details-content::-webkit-scrollbar-track { background: transparent; }
-        .details-content::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 3px; }
-        body.dark-mode .details-content::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.1); }
+        /* Custom Scrollbar */
+        .scrollable-content::-webkit-scrollbar { width: 6px; }
+        .scrollable-content::-webkit-scrollbar-track { background: transparent; }
+        .scrollable-content::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 3px; }
+        body.dark-mode .scrollable-content::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.1); }
 
         h2 {
             border-bottom: 1px solid;
@@ -228,7 +235,7 @@
 
         .label {
             font-weight: 600;
-            width: 140px; /* Fixed width for alignment */
+            width: 140px;
             flex-shrink: 0;
             white-space: nowrap;
         }
@@ -249,7 +256,7 @@
 
         /* --- Responsive Design --- */
         
-        /* Desktop/Tablet (Horizontal) */
+        /* Desktop (Horizontal) */
         @media (min-aspect-ratio: 1/1) {
             body { overflow: hidden; }
             #liveness-message { white-space: nowrap; }
@@ -259,7 +266,7 @@
         @media (max-aspect-ratio: 1/1) {
             body { 
                 padding: 1em;
-                overflow: auto; /* Enable scroll on mobile */
+                overflow: auto;
             }
             .wrapper {
                 height: auto;
@@ -279,9 +286,9 @@
             }
             .glass-container {
                 height: auto;
-                min-height: 80vh; /* Ensure visual weight */
+                min-height: 80vh; /* Ensure visual weight on mobile */
             }
-            .details-content { overflow: visible; }
+            .scrollable-content { overflow: visible; }
         }
     </style>
 </head>
@@ -292,18 +299,18 @@
     <main class="wrapper">
         <div class="main-content">
             <section class="profile-section">
-                <img src="ogp.png" alt="Ryosuke Murase Profile" class="profile-image">
+                <img src="ogp.png" alt="Ryosuke Murase" class="profile-image">
             </section>
 
             <section class="details-section">
-                <div class="glass-container">
+                <article class="glass-container">
                     
-                    <header id="liveness-header">
+                    <header>
                         <div id="liveness-message">Checking status...</div>
                         <div id="liveness-subtext"></div>
                     </header>
 
-                    <div class="details-content">
+                    <div class="scrollable-content">
                         <h2><span>❤️ ヘルスケア</span></h2>
                         <div class="status-row"><span class="label">❤️ 心拍数:</span> <span id="heart_rate" class="value">---</span> <span class="unit">bpm</span></div>
                         <div class="status-row"><span class="label">👟 歩数:</span> <span id="steps" class="value">---</span> <span class="unit">歩</span></div>
@@ -319,7 +326,7 @@
                     </div>
 
                     <footer class="timestamp">最終更新: <span id="last_updated">---</span></footer>
-                </div>
+                </article>
             </section>
         </div>
     </main>
@@ -339,7 +346,8 @@
         };
 
         /**
-         * ECG Animation Controller
+         * Class: ECGMonitor
+         * Handles the ECG animation logic independently from the UI thread logic.
          */
         class ECGMonitor {
             constructor(canvasId) {
@@ -353,6 +361,7 @@
                 this.lastBeatTime = 0;
                 this.isAlive = true;
                 
+                // Bind resize event
                 this.resize();
                 window.addEventListener('resize', () => this.resize());
             }
@@ -364,18 +373,17 @@
                 this.y = this.height / 2;
             }
 
-            setBPM(bpm, isAlive) {
+            setStatus(bpm, isAlive) {
                 this.targetBPM = bpm > 0 ? bpm : 60;
                 this.isAlive = isAlive;
             }
 
             draw() {
-                // BPM logic
                 const currentBPM = this.isAlive ? this.targetBPM : 0;
                 const beatInterval = currentBPM > 0 ? 60000 / currentBPM : Infinity;
                 const now = Date.now();
 
-                // Clear current column
+                // Clear current drawing column
                 this.ctx.clearRect(this.x, 0, 10, this.height);
                 
                 this.ctx.beginPath();
@@ -384,7 +392,7 @@
                 let newY = this.height / 2;
                 const amplitude = this.height * 0.25;
 
-                // Waveform Logic (P-Q-R-S-T complex simulation)
+                // P-Q-R-S-T Wave Simulation
                 if (currentBPM > 0) {
                     const timeSinceBeat = now - this.lastBeatTime;
                     
@@ -394,26 +402,25 @@
                     } else if (timeSinceBeat < 50) {
                         newY = this.height / 2 + (amplitude * 0.2); // S wave
                     } else if (timeSinceBeat > beatInterval - 200) {
-                        newY = this.height / 2 + (amplitude * 0.4); // T wave (Preparation)
+                        newY = this.height / 2 + (amplitude * 0.4); // T wave
                     }
                 }
 
-                // Smooth line
+                // Smooth transition
                 this.y = this.y * 0.9 + newY * 0.1;
 
                 this.ctx.lineTo(this.x, this.y);
                 
-                // Style
+                // Determine stroke color based on theme
                 const isDark = document.body.classList.contains('dark-mode');
-                const colorVar = isDark ? '--ecg-lost-color' : '--ecg-alive-color';
-                // Get color value from CSS variable
+                const colorVar = isDark ? '--color-ecg-lost' : '--color-ecg-alive';
                 const style = getComputedStyle(document.body);
                 this.ctx.strokeStyle = style.getPropertyValue(colorVar).trim();
                 
                 this.ctx.lineWidth = 2;
                 this.ctx.stroke();
 
-                // Advance x
+                // Loop canvas
                 this.x++;
                 if (this.x > this.width) {
                     this.x = 0;
@@ -435,6 +442,7 @@
         ecg.start();
 
         async function updateStatus() {
+            // Cache DOM elements
             const els = {
                 body: document.body,
                 message: document.getElementById('liveness-message'),
@@ -455,14 +463,14 @@
                 
                 const gist = await response.json();
                 if (!gist.files || !gist.files[CONFIG.gistFileName]) {
-                    throw new Error('Gist file not found');
+                    throw new Error('Target Gist file not found');
                 }
 
                 const content = JSON.parse(gist.files[CONFIG.gistFileName].content);
                 const lastUpdated = new Date(content.last_updated);
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 
-                // 1. Liveness Check & Theme
+                // 1. Liveness Check & Theme Setting
                 const isAlive = diffHours <= CONFIG.thresholdHours;
                 
                 if (isAlive) {
@@ -475,11 +483,11 @@
                     els.subtext.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank" rel="noopener noreferrer">X</a> または <a href="${CONFIG.links.dosei}" target="_blank" rel="noopener noreferrer">村瀨動静</a> へ`;
                 }
 
-                // 2. Update ECG
+                // 2. Update ECG Monitor
                 const currentHeartRate = parseInt(content.health.heart_rate, 10);
-                ecg.setBPM(currentHeartRate, isAlive);
+                ecg.setStatus(currentHeartRate, isAlive);
 
-                // 3. Render Data
+                // 3. Update UI Elements
                 els.updated.textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 els.heart.textContent = currentHeartRate || 'N/A';
                 els.steps.textContent = content.health.steps || 'N/A';
@@ -494,7 +502,7 @@
                     els.wakeup.textContent = '---';
                 }
 
-                // 4. Condition Logic
+                // 4. Condition Evaluation
                 const hrv = parseFloat(content.health.condition_hrv);
                 if (hrv > 50) {
                     els.condition.textContent = '良好 ✅';
@@ -507,6 +515,7 @@
                     els.condition.style.color = 'var(--color-status-bad)';
                 } else {
                     els.condition.textContent = 'N/A';
+                    els.condition.style.color = 'inherit';
                 }
 
             } catch (error) {
