@@ -11,10 +11,13 @@
     <meta name="copyright" content="© 2025 Ryosuke Murase">
     <link rel="canonical" href="https://status.muraseryosuke.info/">
 
+    <link rel="preconnect" href="https://api.github.com">
+    <link rel="dns-prefetch" href="https://api.github.com">
+
     <meta property="og:title" content="村瀨亮介のリアルタイム健康診断">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://status.muraseryosuke.info/">
-    <meta property="og:image" content="https://muraseryosuke.info/assets/img/ogp.png">
+    <meta property="og:image" content="ogp.png">
     <meta property="og:description" content="村瀨亮介は今、生きているか？心拍数、歩数、位置情報をリアルタイムで公開中。">
     <meta property="og:site_name" content="Murase Status Checker">
     <meta property="og:locale" content="ja_JP">
@@ -56,9 +59,7 @@
         }
 
         /* --- Base Styles --- */
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -73,243 +74,93 @@
         a:hover { text-decoration: underline; }
 
         /* --- Theme: Light Mode --- */
-        body.light-mode {
-            background-color: var(--color-light-bg);
-            color: var(--color-light-text);
-        }
-        body.light-mode .glass-container {
-            background: var(--color-light-card);
-            border: 1px solid var(--color-light-border);
-        }
-        body.light-mode h2, 
-        body.light-mode header {
-            border-bottom-color: rgba(0,0,0,0.1);
-        }
-        body.light-mode h2,
-        body.light-mode .timestamp {
-            color: var(--color-light-sub);
-        }
+        body.light-mode { background-color: var(--color-light-bg); color: var(--color-light-text); }
+        body.light-mode .glass-container { background: var(--color-light-card); border: 1px solid var(--color-light-border); }
+        body.light-mode h2, body.light-mode header { border-bottom-color: rgba(0,0,0,0.1); }
+        body.light-mode h2, body.light-mode .timestamp { color: var(--color-light-sub); }
         body.light-mode #liveness-subtext a { color: var(--color-link-light); }
 
         /* --- Theme: Dark Mode --- */
-        body.dark-mode {
-            background-color: var(--color-dark-bg);
-            color: var(--color-dark-text);
-        }
-        body.dark-mode .glass-container {
-            background: var(--color-dark-card);
-            border: 1px solid var(--color-dark-border);
-        }
-        body.dark-mode h2, 
-        body.dark-mode header {
-            border-bottom-color: rgba(255,255,255,0.1);
-        }
-        body.dark-mode h2,
-        body.dark-mode .timestamp,
-        body.dark-mode .value {
-            color: var(--color-dark-sub);
-        }
+        body.dark-mode { background-color: var(--color-dark-bg); color: var(--color-dark-text); }
+        body.dark-mode .glass-container { background: var(--color-dark-card); border: 1px solid var(--color-dark-border); }
+        body.dark-mode h2, body.dark-mode header { border-bottom-color: rgba(255,255,255,0.1); }
+        body.dark-mode h2, body.dark-mode .timestamp, body.dark-mode .value { color: var(--color-dark-sub); }
         body.dark-mode #liveness-subtext a { color: var(--color-link-dark); }
         body.dark-mode .profile-image { filter: invert(1) grayscale(1); }
 
         /* --- Components --- */
-        
-        /* Background Animation */
-        #ecg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.5;
-            pointer-events: none;
-        }
+        #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.5; pointer-events: none; }
 
-        /* Layout Containers */
-        .wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: calc(100vh - 4em);
-        }
+        .wrapper { display: flex; align-items: center; justify-content: center; width: 100%; height: calc(100vh - 4em); }
+        .main-content { display: flex; width: 100%; max-width: 1200px; max-height: 800px; height: 100%; gap: 2em; }
 
-        .main-content {
-            display: flex;
-            width: 100%;
-            max-width: 1200px;
-            max-height: 800px;
-            height: 100%;
-            gap: 2em; /* Gap between profile and details */
-        }
-
-        /* Profile Section */
-        .profile-section {
-            flex: 0 0 40%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .profile-image {
-            width: 100%;
-            height: auto;
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-            border-radius: 12px;
-            transition: filter 0.5s ease;
+        .profile-section { flex: 0 0 40%; display: flex; align-items: center; justify-content: center; }
+        .profile-image { 
+            width: 100%; 
+            height: auto; 
+            aspect-ratio: 1 / 1; 
+            object-fit: cover; 
+            border-radius: 12px; 
+            transition: filter 0.5s ease; 
             box-shadow: var(--shadow-default);
+            /* パフォーマンス向上のため、レンダリングヒントを追加 */
+            will-change: filter;
         }
 
-        /* Details Section */
-        .details-section {
-            flex: 1;
-            min-height: 0; /* Prevent flex item from overflowing */
-            display: flex;
-            flex-direction: column;
-        }
+        .details-section { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+        .glass-container { flex: 1; display: flex; flex-direction: column; padding: 2em; border-radius: 24px; backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); box-shadow: var(--shadow-default); height: 100%; }
 
-        .glass-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 2em;
-            border-radius: 24px;
-            backdrop-filter: blur(var(--glass-blur));
-            -webkit-backdrop-filter: blur(var(--glass-blur));
-            box-shadow: var(--shadow-default);
-            height: 100%;
-        }
+        header { text-align: center; padding-bottom: 1em; margin-bottom: 1em; border-bottom: 1px solid; flex-shrink: 0; }
+        #liveness-message { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; line-height: 1.2; }
+        #liveness-subtext { font-size: clamp(0.9rem, 2vw, 1rem); margin-top: 0.5rem; min-height: 1.2em; }
 
-        /* Typography & Elements */
-        header {
-            text-align: center;
-            padding-bottom: 1em;
-            margin-bottom: 1em;
-            border-bottom: 1px solid;
-            flex-shrink: 0;
-        }
-
-        #liveness-message {
-            font-size: clamp(1.5rem, 4vw, 2.2rem);
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        #liveness-subtext {
-            font-size: clamp(0.9rem, 2vw, 1rem);
-            margin-top: 0.5rem;
-            min-height: 1.2em;
-        }
-
-        .scrollable-content {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding-right: 4px; /* Space for scrollbar */
-        }
-
-        /* Custom Scrollbar */
+        .scrollable-content { flex-grow: 1; overflow-y: auto; padding-right: 4px; }
         .scrollable-content::-webkit-scrollbar { width: 6px; }
         .scrollable-content::-webkit-scrollbar-track { background: transparent; }
         .scrollable-content::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 3px; }
         body.dark-mode .scrollable-content::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.1); }
 
-        h2 {
-            border-bottom: 1px solid;
-            padding-bottom: 0.5em;
-            margin-top: 1.5em;
-            margin-bottom: 1em;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-weight: 600;
-        }
+        h2 { border-bottom: 1px solid; padding-bottom: 0.5em; margin-top: 1.5em; margin-bottom: 1em; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+        .status-row { margin-bottom: 1.2em; font-size: 1.1em; display: flex; align-items: baseline; }
+        .label { font-weight: 600; width: 140px; flex-shrink: 0; white-space: nowrap; }
+        .value { color: var(--color-light-sub); }
 
-        .status-row {
-            margin-bottom: 1.2em;
-            font-size: 1.1em;
-            display: flex;
-            align-items: baseline;
-        }
-
-        .label {
-            font-weight: 600;
-            width: 140px;
-            flex-shrink: 0;
-            white-space: nowrap;
-        }
-
-        .value {
-            color: var(--color-light-sub);
-        }
-
-        .timestamp {
-            font-size: 0.8em;
-            text-align: right;
-            margin-top: 1em;
-            padding-top: 1em;
-            border-top: 1px solid rgba(0,0,0,0.05);
-            flex-shrink: 0;
-        }
+        .timestamp { font-size: 0.8em; text-align: right; margin-top: 1em; padding-top: 1em; border-top: 1px solid rgba(0,0,0,0.05); flex-shrink: 0; }
         body.dark-mode .timestamp { border-top-color: rgba(255,255,255,0.05); }
 
         /* --- Responsive Design --- */
-        
-        /* Desktop (Horizontal) */
         @media (min-aspect-ratio: 1/1) {
             body { overflow: hidden; }
             #liveness-message { white-space: nowrap; }
         }
-
-        /* Mobile (Vertical) */
         @media (max-aspect-ratio: 1/1) {
-            body { 
-                padding: 1em;
-                overflow: auto;
-            }
-            .wrapper {
-                height: auto;
-                min-height: 100vh;
-                display: block;
-            }
-            .main-content {
-                display: block;
-                height: auto;
-            }
+            body { padding: 1em; overflow: auto; }
+            .wrapper { height: auto; min-height: 100vh; display: block; }
+            .main-content { display: block; height: auto; }
             .profile-section { display: none; }
-            .details-section {
-                width: 100%;
-                max-width: 600px;
-                margin: 0 auto;
-                height: auto;
-            }
-            .glass-container {
-                height: auto;
-                min-height: 80vh; /* Ensure visual weight on mobile */
-            }
+            .details-section { width: 100%; max-width: 600px; margin: 0 auto; height: auto; }
+            .glass-container { height: auto; min-height: 80vh; }
             .scrollable-content { overflow: visible; }
         }
     </style>
 </head>
 <body class="light-mode">
-    
     <canvas id="ecg-canvas"></canvas>
-
     <main class="wrapper">
         <div class="main-content">
             <section class="profile-section">
-                <img src="ogp.png" alt="Ryosuke Murase" class="profile-image">
+                <img src="ogp.png" 
+                     alt="Ryosuke Murase" 
+                     class="profile-image"
+                     width="500" height="500"
+                     fetchpriority="high">
             </section>
-
             <section class="details-section">
                 <article class="glass-container">
-                    
                     <header>
                         <div id="liveness-message">Checking status...</div>
                         <div id="liveness-subtext"></div>
                     </header>
-
                     <div class="scrollable-content">
                         <h2><span>❤️ ヘルスケア</span></h2>
                         <div class="status-row"><span class="label">❤️ 心拍数:</span> <span id="heart_rate" class="value">---</span> <span class="unit">bpm</span></div>
@@ -317,14 +168,11 @@
                         <div class="status-row"><span class="label">🔥 カロリー:</span> <span id="calories" class="value">---</span> <span class="unit">kcal</span></div>
                         <div class="status-row"><span class="label">🩺 体調:</span> <span id="condition" class="value">---</span></div>
                         <div class="status-row"><span class="label">☀️ 起床時間:</span> <span id="wakeup_time" class="value">---</span></div>
-
                         <h2><span>📍 ロケーション</span></h2>
                         <div class="status-row"><span class="label">📍 現在地:</span> <span id="location" class="value">---</span></div>
-                        
                         <h2><span>📱 デバイス</span></h2>
                         <div class="status-row"><span class="label">🔋 バッテリー:</span> <span id="device_status" class="value">---</span></div>
                     </div>
-
                     <footer class="timestamp">最終更新: <span id="last_updated">---</span></footer>
                 </article>
             </section>
@@ -332,201 +180,111 @@
     </main>
 
     <script>
-        /**
-         * Configuration
-         */
         const CONFIG = {
             gistId: '1f81b107b898201a865a613c319d579b',
             gistFileName: 'murase_status.json',
             thresholdHours: 13,
-            links: {
-                twitter: 'https://twitter.com/vl_lvoO',
-                dosei: 'https://muraseryosuke.github.io/murase-dosei/'
-            }
+            links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://muraseryosuke.github.io/murase-dosei/' }
         };
 
-        /**
-         * Class: ECGMonitor
-         * Handles the ECG animation logic independently from the UI thread logic.
-         */
         class ECGMonitor {
             constructor(canvasId) {
                 this.canvas = document.getElementById(canvasId);
                 this.ctx = this.canvas.getContext('2d');
-                this.width = window.innerWidth;
-                this.height = window.innerHeight;
-                this.x = 0;
-                this.y = this.height / 2;
-                this.targetBPM = 60;
-                this.lastBeatTime = 0;
-                this.isAlive = true;
-                
-                // Bind resize event
+                this.x = 0; this.y = window.innerHeight / 2;
+                this.targetBPM = 60; this.lastBeatTime = 0; this.isAlive = true;
                 this.resize();
                 window.addEventListener('resize', () => this.resize());
             }
-
             resize() {
                 this.width = this.canvas.width = window.innerWidth;
                 this.height = this.canvas.height = window.innerHeight;
-                this.x = 0;
-                this.y = this.height / 2;
+                this.x = 0; this.y = this.height / 2;
             }
-
             setStatus(bpm, isAlive) {
                 this.targetBPM = bpm > 0 ? bpm : 60;
                 this.isAlive = isAlive;
             }
-
             draw() {
                 const currentBPM = this.isAlive ? this.targetBPM : 0;
                 const beatInterval = currentBPM > 0 ? 60000 / currentBPM : Infinity;
                 const now = Date.now();
-
-                // Clear current drawing column
                 this.ctx.clearRect(this.x, 0, 10, this.height);
-                
-                this.ctx.beginPath();
-                this.ctx.moveTo(this.x - 2, this.y);
-
+                this.ctx.beginPath(); this.ctx.moveTo(this.x - 2, this.y);
                 let newY = this.height / 2;
                 const amplitude = this.height * 0.25;
-
-                // P-Q-R-S-T Wave Simulation
                 if (currentBPM > 0) {
                     const timeSinceBeat = now - this.lastBeatTime;
-                    
-                    if (timeSinceBeat > beatInterval) {
-                        this.lastBeatTime = now;
-                        newY = this.height / 2 - amplitude; // R wave (Peak)
-                    } else if (timeSinceBeat < 50) {
-                        newY = this.height / 2 + (amplitude * 0.2); // S wave
-                    } else if (timeSinceBeat > beatInterval - 200) {
-                        newY = this.height / 2 + (amplitude * 0.4); // T wave
-                    }
+                    if (timeSinceBeat > beatInterval) { this.lastBeatTime = now; newY = this.height / 2 - amplitude; }
+                    else if (timeSinceBeat < 50) { newY = this.height / 2 + (amplitude * 0.2); }
+                    else if (timeSinceBeat > beatInterval - 200) { newY = this.height / 2 + (amplitude * 0.4); }
                 }
-
-                // Smooth transition
                 this.y = this.y * 0.9 + newY * 0.1;
-
                 this.ctx.lineTo(this.x, this.y);
-                
-                // Determine stroke color based on theme
                 const isDark = document.body.classList.contains('dark-mode');
-                const colorVar = isDark ? '--color-ecg-lost' : '--color-ecg-alive';
                 const style = getComputedStyle(document.body);
-                this.ctx.strokeStyle = style.getPropertyValue(colorVar).trim();
-                
-                this.ctx.lineWidth = 2;
-                this.ctx.stroke();
-
-                // Loop canvas
+                this.ctx.strokeStyle = style.getPropertyValue(isDark ? '--color-ecg-lost' : '--color-ecg-alive').trim();
+                this.ctx.lineWidth = 2; this.ctx.stroke();
                 this.x++;
-                if (this.x > this.width) {
-                    this.x = 0;
-                    this.ctx.clearRect(0, 0, this.width, this.height);
-                }
-
+                if (this.x > this.width) { this.x = 0; this.ctx.clearRect(0, 0, this.width, this.height); }
                 requestAnimationFrame(() => this.draw());
             }
-
-            start() {
-                this.draw();
-            }
+            start() { this.draw(); }
         }
 
-        /**
-         * Main Application Logic
-         */
         const ecg = new ECGMonitor('ecg-canvas');
         ecg.start();
 
         async function updateStatus() {
-            // Cache DOM elements
             const els = {
-                body: document.body,
-                message: document.getElementById('liveness-message'),
-                subtext: document.getElementById('liveness-subtext'),
-                updated: document.getElementById('last_updated'),
-                heart: document.getElementById('heart_rate'),
-                steps: document.getElementById('steps'),
-                calories: document.getElementById('calories'),
-                location: document.getElementById('location'),
-                device: document.getElementById('device_status'),
-                wakeup: document.getElementById('wakeup_time'),
-                condition: document.getElementById('condition')
+                body: document.body, message: document.getElementById('liveness-message'), subtext: document.getElementById('liveness-subtext'),
+                updated: document.getElementById('last_updated'), heart: document.getElementById('heart_rate'), steps: document.getElementById('steps'),
+                calories: document.getElementById('calories'), location: document.getElementById('location'), device: document.getElementById('device_status'),
+                wakeup: document.getElementById('wakeup_time'), condition: document.getElementById('condition')
             };
-
             try {
-                const response = await fetch(`https://api.github.com/gists/${CONFIG.gistId}`);
+                // タイムスタンプを付与してキャッシュを回避しつつ、新しいデータを取得
+                const response = await fetch(`https://api.github.com/gists/${CONFIG.gistId}?t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                
                 const gist = await response.json();
-                if (!gist.files || !gist.files[CONFIG.gistFileName]) {
-                    throw new Error('Target Gist file not found');
-                }
-
+                if (!gist.files || !gist.files[CONFIG.gistFileName]) throw new Error('Gist file not found');
                 const content = JSON.parse(gist.files[CONFIG.gistFileName].content);
                 const lastUpdated = new Date(content.last_updated);
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 
-                // 1. Liveness Check & Theme Setting
                 const isAlive = diffHours <= CONFIG.thresholdHours;
-                
                 if (isAlive) {
-                    els.body.className = 'light-mode';
-                    els.message.textContent = '村瀨亮介は生きています。';
-                    els.subtext.textContent = '';
+                    els.body.className = 'light-mode'; els.message.textContent = '村瀨亮介は生きています。'; els.subtext.textContent = '';
                 } else {
-                    els.body.className = 'dark-mode';
-                    els.message.textContent = '村瀨亮介からの応答がありません。';
+                    els.body.className = 'dark-mode'; els.message.textContent = '村瀨亮介からの応答がありません。';
                     els.subtext.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank" rel="noopener noreferrer">X</a> または <a href="${CONFIG.links.dosei}" target="_blank" rel="noopener noreferrer">村瀨動静</a> へ`;
                 }
 
-                // 2. Update ECG Monitor
                 const currentHeartRate = parseInt(content.health.heart_rate, 10);
                 ecg.setStatus(currentHeartRate, isAlive);
 
-                // 3. Update UI Elements
                 els.updated.textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 els.heart.textContent = currentHeartRate || 'N/A';
                 els.steps.textContent = content.health.steps || 'N/A';
                 els.calories.textContent = content.health.active_calories ? Math.round(content.health.active_calories) : 'N/A';
                 els.location.textContent = content.location.city || 'N/A';
                 els.device.textContent = `${content.device.battery}% ${content.device.is_charging === true ? '⚡️ 充電中' : ''}`;
-
+                
                 if (content.health.wakeup_time) {
-                    const wakeupDate = new Date(content.health.wakeup_time);
-                    els.wakeup.textContent = wakeupDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-                } else {
-                    els.wakeup.textContent = '---';
-                }
+                    els.wakeup.textContent = new Date(content.health.wakeup_time).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+                } else { els.wakeup.textContent = '---'; }
 
-                // 4. Condition Evaluation
                 const hrv = parseFloat(content.health.condition_hrv);
-                if (hrv > 50) {
-                    els.condition.textContent = '良好 ✅';
-                    els.condition.style.color = 'var(--color-status-good)';
-                } else if (hrv > 30) {
-                    els.condition.textContent = '普通 😐';
-                    els.condition.style.color = 'var(--color-status-avg)';
-                } else if (hrv) {
-                    els.condition.textContent = '要注意 ⚠️';
-                    els.condition.style.color = 'var(--color-status-bad)';
-                } else {
-                    els.condition.textContent = 'N/A';
-                    els.condition.style.color = 'inherit';
-                }
-
+                if (hrv > 50) { els.condition.textContent = '良好 ✅'; els.condition.style.color = 'var(--color-status-good)'; }
+                else if (hrv > 30) { els.condition.textContent = '普通 😐'; els.condition.style.color = 'var(--color-status-avg)'; }
+                else if (hrv) { els.condition.textContent = '要注意 ⚠️'; els.condition.style.color = 'var(--color-status-bad)'; }
+                else { els.condition.textContent = 'N/A'; els.condition.style.color = 'inherit'; }
             } catch (error) {
                 console.error('Status Update Failed:', error);
                 els.message.textContent = 'データの取得に失敗しました。';
             }
         }
-
-        // Initialize
         updateStatus();
-
     </script>
 </body>
 </html>
