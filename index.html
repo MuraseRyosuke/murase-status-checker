@@ -39,7 +39,11 @@
             --color-dark-sub: #86868b;
             --color-dark-border: rgba(255, 255, 255, 0.1);
 
-            /* Status Colors */
+            /* Status Colors (Original Liquid Glass Palette) */
+            /* 生存時: ネオングリーン, 安否不明時: ネオンシアン */
+            --color-ecg-alive: rgba(46, 204, 113, 0.6);
+            --color-ecg-lost: rgba(48, 209, 201, 0.6);
+            
             --color-good: #34c759;
             --color-avg: #ff9f0a;
             --color-bad: #ff3b30;
@@ -163,7 +167,6 @@
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
-            /* 中央揃え */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -226,12 +229,12 @@
 
             .card { padding: 1.25rem; min-height: auto; }
             
-            /* スマホではプロフィール画像を非表示にする */
+            /* スマホではプロフィール画像を非表示 */
             .card-profile {
                 display: none !important;
             }
             
-            /* 心拍数を大きく目立たせる */
+            /* 心拍数を大きく */
             .card-heart {
                 text-align: center;
             }
@@ -361,6 +364,7 @@
                 this.ctx.lineTo(this.x, this.y);
                 const isDark = document.body.classList.contains('dark-mode');
                 const style = getComputedStyle(document.body);
+                // ここで変数名を確認
                 this.ctx.strokeStyle = style.getPropertyValue(isDark ? '--color-ecg-lost' : '--color-ecg-alive').trim();
                 this.ctx.lineWidth = 2; this.ctx.stroke();
                 this.x++;
@@ -373,7 +377,6 @@
         const ecg = new ECGMonitor('ecg-canvas');
         ecg.start();
 
-        // 経過時間を計算してテキストを返す関数
         function getRelativeTime(date) {
             const now = new Date();
             const diffMs = now - date;
@@ -391,7 +394,7 @@
             const els = {
                 body: document.body, message: document.getElementById('liveness-message'), subtext: document.getElementById('liveness-subtext'),
                 updated: document.getElementById('last_updated'), heart: document.getElementById('heart_rate'), 
-                heartTime: document.getElementById('heart_relative_time'), // 追加
+                heartTime: document.getElementById('heart_relative_time'),
                 steps: document.getElementById('steps'),
                 calories: document.getElementById('calories'), location: document.getElementById('location'), device: document.getElementById('device_status'),
                 wakeup: document.getElementById('wakeup_time'), condition: document.getElementById('condition')
@@ -416,11 +419,8 @@
                 const currentHeartRate = parseInt(content.health.heart_rate, 10);
                 ecg.setStatus(currentHeartRate, isAlive);
 
-                // 各種データ反映
                 els.updated.textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 els.heart.textContent = currentHeartRate || 'N/A';
-                
-                // 相対時間の表示
                 els.heartTime.textContent = getRelativeTime(lastUpdated);
 
                 els.steps.textContent = content.health.steps || 'N/A';
