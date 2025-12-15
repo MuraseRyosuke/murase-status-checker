@@ -46,6 +46,11 @@
             --color-good: #34c759;
             --color-avg: #ff9f0a;
             --color-bad: #ff3b30;
+
+            /* Tune Button Color (Yellow) */
+            --color-tune: #ffcc00;
+            --color-tune-bg: rgba(255, 204, 0, 0.15);
+            --color-tune-border: rgba(255, 204, 0, 0.5);
             
             /* Links */
             --color-link-light: #007aff;
@@ -101,6 +106,38 @@
             border: 1px solid var(--color-dark-border);
         }
 
+        /* Tune Button Style */
+        .card-tune {
+            background: var(--color-tune-bg) !important;
+            border: 1px solid var(--color-tune-border) !important;
+            color: var(--color-tune) !important;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease !important;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-tune:active {
+            transform: scale(0.96);
+            opacity: 0.8;
+        }
+        .card-tune.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.8);
+        }
+        .tune-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.2em;
+        }
+        .tune-label {
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
         /* Text Utilities */
         .label {
             font-size: 0.85rem;
@@ -111,7 +148,6 @@
             display: flex;
             align-items: center;
             gap: 0.4em;
-            /* タイトルは常に左寄せで統一 */
             align-self: flex-start;
             width: 100%;
         }
@@ -142,38 +178,34 @@
             max-width: 900px;
         }
 
-        /* 1. Status Message (Top, Full Width) */
+        /* 1. Status Message */
         .card-status {
             grid-column: span 4;
-            /* 中央配置設定 */
             justify-content: center; 
             align-items: center;
             text-align: center;
             padding: 2rem 1rem;
-            min-height: 160px; /* 最小高さを確保（これ以上伸びる場合は自動で伸びる） */
-            gap: 0.8rem; /* メッセージとサブテキストの間隔 */
+            min-height: 160px;
+            gap: 0.8rem;
         }
         #liveness-message {
             font-size: clamp(1.8rem, 5vw, 2.8rem);
             font-weight: 800;
             line-height: 1.2;
             margin: 0;
-            word-wrap: break-word; /* 長い単語の折り返し */
+            word-wrap: break-word;
         }
         #liveness-subtext {
             font-size: 0.95rem;
             opacity: 0.8;
-            line-height: 1.5; /* 複数行になった時の読みやすさ */
+            line-height: 1.5;
         }
-        #liveness-subtext:empty {
-            display: none;
-        }
+        #liveness-subtext:empty { display: none; }
 
-        /* 2. Profile (Icon) */
+        /* 2. Profile */
         .card-profile {
             grid-column: span 1;
             padding: 0;
-            overflow: hidden;
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
@@ -192,26 +224,24 @@
         }
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
 
-        /* 3. Heart Rate (Vital) */
+        /* 3. Heart Rate */
         .card-heart {
             grid-column: span 3;
             position: relative;
-            align-items: center; /* 子要素（Value）を中央寄せ */
+            align-items: center;
         }
-        /* 数値のコンテナ */
         .heart-value-container {
             text-align: center;
             width: 100%;
         }
         .card-heart .value { font-size: 4rem; letter-spacing: -0.05em; }
 
-        /* 4. Activity & Stats (Small Cards) */
+        /* 4. Activity & Stats */
         .card-small { grid-column: span 1; }
 
-        /* 5. Device & Location */
-        .card-device-location {
-            grid-column: span 2;
-        }
+        /* 5. Device & Location & Tune */
+        .card-device-location { grid-column: span 1; }
+        .card-tune-container { grid-column: span 2; } /* Tuneボタン用 */
 
         .footer-info {
             grid-column: span 4;
@@ -221,7 +251,6 @@
             margin-top: 0.5rem;
         }
 
-        /* --- ECG Canvas (Background) --- */
         #ecg-canvas {
             position: fixed;
             top: 0;
@@ -236,35 +265,18 @@
         /* --- Responsive Design --- */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; }
-            
-            .dashboard-grid {
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
-            }
-
+            .dashboard-grid { display: flex; flex-direction: column; gap: 1rem; }
             .card { padding: 1.25rem; min-height: auto; }
-            
-            /* スマホ: プロフィール画像非表示 */
             .card-profile { display: none !important; }
-            
-            /* スマホ: 心拍数カード */
-            .card-heart {
-                min-height: 150px;
-                justify-content: center; /* 縦方向も中央 */
-            }
-            /* タイトルは左、数値は中央という配置を維持 */
-            
-            /* スマホ: 2カラムグリッド */
-            .mobile-grid-2 {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 1rem;
-            }
-            
-            /* スマホ: 文字サイズ調整 */
-            .value { font-size: 1.6rem; }
+            .card-heart { min-height: 150px; justify-content: center; }
             .card-heart .value { font-size: 4rem; }
+            .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+            .value { font-size: 1.6rem; }
+            
+            /* スマホでのTuneボタンの配置 */
+            .card-tune-container {
+                height: 80px; /* 少し高さを抑える */
+            }
         }
     </style>
 </head>
@@ -333,6 +345,11 @@
             </div>
         </div>
 
+        <div class="card card-tune card-tune-container" onclick="sendTune()">
+            <div class="tune-icon">⚡️</div>
+            <div class="tune-label" id="tune-text">Tune</div>
+        </div>
+
         <div class="footer-info">
             最終更新: <span id="last_updated">---</span>
         </div>
@@ -340,6 +357,10 @@
     </main>
 
     <script>
+        // --- 設定 ---
+        // ★ここにあなたのトピック名を入力してください★
+        const NTFY_TOPIC = 'murase_status_tune'; 
+
         const CONFIG = {
             gistId: '1f81b107b898201a865a613c319d579b',
             gistFileName: 'murase_status.json',
@@ -347,6 +368,55 @@
             links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://muraseryosuke.github.io/murase-dosei/' }
         };
 
+        // --- Tune 機能 ---
+        function sendTune() {
+            const btn = document.querySelector('.card-tune');
+            const label = document.getElementById('tune-text');
+            
+            // クールダウンチェック
+            if (btn.classList.contains('disabled')) return;
+
+            // 送信中の表示
+            label.textContent = 'Sending...';
+            btn.classList.add('disabled');
+
+            // ntfy.sh へ送信
+            fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+                method: 'POST',
+                body: '村瀨亮介へのTune(更新リクエスト)を受信しました。',
+                headers: {
+                    'Title': '⚡️ Tune Received',
+                    'Priority': 'default',
+                    'Tags': 'zap,yellow_circle'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    label.textContent = 'Signal Sent';
+                    // 5分間のクールダウン
+                    setTimeout(() => {
+                        btn.classList.remove('disabled');
+                        label.textContent = 'Tune';
+                    }, 300000);
+                } else {
+                    label.textContent = 'Error';
+                    setTimeout(() => {
+                        btn.classList.remove('disabled');
+                        label.textContent = 'Tune';
+                    }, 3000);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                label.textContent = 'Error';
+                setTimeout(() => {
+                    btn.classList.remove('disabled');
+                    label.textContent = 'Tune';
+                }, 3000);
+            });
+        }
+
+        // --- ECG Monitor ---
         class ECGMonitor {
             constructor(canvasId) {
                 this.canvas = document.getElementById(canvasId);
