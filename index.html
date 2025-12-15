@@ -357,8 +357,9 @@
 
     <script>
         // --- CONFIGURATION ---
-        // ntfy.sh Topic Name (KEEP SECRET)
-        const NTFY_TOPIC = 'murase_status_tune'; // ★公開前にご自身のトピック名か確認してください★
+        // ★ここをアプリで設定したトピック名に書き換えてください★
+        const NTFY_TOPIC = 'murase_status_tune'; 
+        
         const TUNE_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
 
         const CONFIG = {
@@ -383,7 +384,7 @@
             const btn = document.querySelector('.card-tune');
             const label = document.getElementById('tune-text');
             btn.classList.add('disabled');
-            label.textContent = 'Stay Tuned'; // クールダウン中の文言
+            label.textContent = 'Stay Tuned'; 
             
             // 時間が来たら復活
             setTimeout(() => {
@@ -401,25 +402,22 @@
 
             // UI Update
             label.textContent = 'Tuning...';
-            btn.classList.add('disabled'); // Prevent double click
+            btn.classList.add('disabled'); 
 
-            // API Request
-            fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+            // URLパラメータでタイトルやタグを指定して、Simple Requestにする（CORS回避の鍵）
+            const url = `https://ntfy.sh/${NTFY_TOPIC}?title=%E2%9A%A1%EF%B8%8F%20Tune%20Received&priority=default&tags=zap,yellow_circle`;
+
+            // API Request (Simple POST)
+            fetch(url, {
                 method: 'POST',
-                body: 'Tuneを受信しました。',
-                headers: {
-                    'Title': '⚡️ Tune Received',
-                    'Priority': 'default',
-                    'Tags': 'zap,yellow_circle'
-                }
+                body: 'Tuneを受信しました。'
+                // headers は削除（これがCORSエラーの原因だったため）
             })
             .then(response => {
                 if (response.ok) {
                     // Success
                     label.textContent = 'Stay Tuned';
-                    // Save timestamp
                     localStorage.setItem('lastTuneTime', Date.now().toString());
-                    // Start Cooldown
                     disableTuneBtn(TUNE_COOLDOWN_MS);
                 } else {
                     // Server Error
