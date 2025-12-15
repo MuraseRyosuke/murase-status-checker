@@ -39,8 +39,7 @@
             --color-dark-sub: #86868b;
             --color-dark-border: rgba(255, 255, 255, 0.1);
 
-            /* Status Colors (Original Liquid Glass Palette) */
-            /* 生存時: ネオングリーン, 安否不明時: ネオンシアン */
+            /* Status Colors */
             --color-ecg-alive: rgba(46, 204, 113, 0.6);
             --color-ecg-lost: rgba(48, 209, 201, 0.6);
             
@@ -112,6 +111,9 @@
             display: flex;
             align-items: center;
             gap: 0.4em;
+            /* タイトルは常に左寄せで統一 */
+            align-self: flex-start;
+            width: 100%;
         }
         .value {
             font-size: 1.8rem;
@@ -134,7 +136,7 @@
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-auto-rows: minmax(100px, auto);
+            grid-auto-rows: minmax(110px, auto);
             gap: 1.25rem;
             width: 100%;
             max-width: 900px;
@@ -143,20 +145,28 @@
         /* 1. Status Message (Top, Full Width) */
         .card-status {
             grid-column: span 4;
-            text-align: center;
+            /* 中央配置設定 */
+            justify-content: center; 
             align-items: center;
-            justify-content: center;
+            text-align: center;
             padding: 2rem 1rem;
-            gap: 0.5rem;
+            min-height: 160px; /* 最小高さを確保（これ以上伸びる場合は自動で伸びる） */
+            gap: 0.8rem; /* メッセージとサブテキストの間隔 */
         }
         #liveness-message {
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
             font-weight: 800;
             line-height: 1.2;
+            margin: 0;
+            word-wrap: break-word; /* 長い単語の折り返し */
         }
         #liveness-subtext {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             opacity: 0.8;
+            line-height: 1.5; /* 複数行になった時の読みやすさ */
+        }
+        #liveness-subtext:empty {
+            display: none;
         }
 
         /* 2. Profile (Icon) */
@@ -186,8 +196,14 @@
         .card-heart {
             grid-column: span 3;
             position: relative;
+            align-items: center; /* 子要素（Value）を中央寄せ */
         }
-        .card-heart .value { font-size: 3.5rem; letter-spacing: -0.05em; }
+        /* 数値のコンテナ */
+        .heart-value-container {
+            text-align: center;
+            width: 100%;
+        }
+        .card-heart .value { font-size: 4rem; letter-spacing: -0.05em; }
 
         /* 4. Activity & Stats (Small Cards) */
         .card-small { grid-column: span 1; }
@@ -229,23 +245,26 @@
 
             .card { padding: 1.25rem; min-height: auto; }
             
-            /* スマホではプロフィール画像を非表示 */
-            .card-profile {
-                display: none !important;
-            }
+            /* スマホ: プロフィール画像非表示 */
+            .card-profile { display: none !important; }
             
-            /* 心拍数を大きく */
+            /* スマホ: 心拍数カード */
             .card-heart {
-                text-align: center;
+                min-height: 150px;
+                justify-content: center; /* 縦方向も中央 */
             }
-            .card-heart .value { font-size: 4rem; }
-
-            /* 2カラム表示用のラッパー */
+            /* タイトルは左、数値は中央という配置を維持 */
+            
+            /* スマホ: 2カラムグリッド */
             .mobile-grid-2 {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 1rem;
             }
+            
+            /* スマホ: 文字サイズ調整 */
+            .value { font-size: 1.6rem; }
+            .card-heart .value { font-size: 4rem; }
         }
     </style>
 </head>
@@ -266,11 +285,11 @@
 
         <div class="card card-heart">
             <div class="label">❤️ 心拍数</div>
-            <div>
+            <div class="heart-value-container">
                 <span id="heart_rate" class="value">---</span>
                 <span class="unit">BPM</span>
             </div>
-            <div id="heart_relative_time" class="sub-value">---</div>
+            <div id="heart_relative_time" class="sub-value" style="text-align: center; width: 100%;">---</div>
         </div>
 
         <div class="mobile-grid-2" style="display: contents;">
@@ -364,7 +383,6 @@
                 this.ctx.lineTo(this.x, this.y);
                 const isDark = document.body.classList.contains('dark-mode');
                 const style = getComputedStyle(document.body);
-                // ここで変数名を確認
                 this.ctx.strokeStyle = style.getPropertyValue(isDark ? '--color-ecg-lost' : '--color-ecg-alive').trim();
                 this.ctx.lineWidth = 2; this.ctx.stroke();
                 this.x++;
