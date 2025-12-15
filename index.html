@@ -40,8 +40,6 @@
             --color-dark-border: rgba(255, 255, 255, 0.1);
 
             /* Status Colors */
-            --color-ecg-alive: rgba(50, 215, 75, 0.5);
-            --color-ecg-lost: rgba(255, 69, 58, 0.5);
             --color-good: #34c759;
             --color-avg: #ff9f0a;
             --color-bad: #ff3b30;
@@ -128,7 +126,7 @@
             margin-top: 0.2em;
         }
 
-        /* --- Grid Layout (Bento Grid) --- */
+        /* --- Grid Layout (Dashboard) --- */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -157,29 +155,31 @@
             opacity: 0.8;
         }
 
-        /* 2. Profile (Icon only) */
+        /* 2. Profile (Icon) */
         .card-profile {
             grid-column: span 1;
-            align-items: center;
-            justify-content: center;
-            padding: 0; /* 画像をいっぱいに */
+            padding: 0;
             overflow: hidden;
-            background: transparent !important; /* カード背景なしでアイコン感を出す */
+            background: transparent !important;
             border: none !important;
             box-shadow: none !important;
+            /* 中央揃え */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .profile-img {
             width: 100%;
             height: 100%;
             aspect-ratio: 1/1;
-            border-radius: 24px; /* カードと同じR */
+            border-radius: 24px;
             object-fit: cover;
             box-shadow: var(--shadow-card);
             transition: filter 0.5s;
         }
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
 
-        /* 3. Heart Rate (Vital) - Large */
+        /* 3. Heart Rate (Vital) */
         .card-heart {
             grid-column: span 3;
             position: relative;
@@ -189,7 +189,7 @@
         /* 4. Activity & Stats (Small Cards) */
         .card-small { grid-column: span 1; }
 
-        /* 5. Footer Info (Full Width) */
+        /* 5. Device & Location */
         .card-device-location {
             grid-column: span 2;
         }
@@ -226,21 +226,16 @@
 
             .card { padding: 1.25rem; min-height: auto; }
             
-            /* スマホではプロフィールと心拍数を横並びにしてみる */
-            .mobile-split-row {
-                display: grid;
-                grid-template-columns: 100px 1fr;
-                gap: 1rem;
-            }
+            /* スマホではプロフィール画像を非表示にする */
             .card-profile {
-                grid-column: span 1;
-                width: 100px; height: 100px;
+                display: none !important;
             }
+            
+            /* 心拍数を大きく目立たせる */
             .card-heart {
-                grid-column: span 1;
-                justify-content: center;
+                text-align: center;
             }
-            .card-heart .value { font-size: 2.5rem; }
+            .card-heart .value { font-size: 4rem; }
 
             /* 2カラム表示用のラッパー */
             .mobile-grid-2 {
@@ -262,19 +257,17 @@
             <div id="liveness-subtext"></div>
         </div>
 
-        <div class="mobile-split-row" style="display: contents;">
-            <div class="card card-profile">
-                <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
-            </div>
+        <div class="card card-profile">
+            <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
+        </div>
 
-            <div class="card card-heart">
-                <div class="label">❤️ 心拍数</div>
-                <div>
-                    <span id="heart_rate" class="value">---</span>
-                    <span class="unit">BPM</span>
-                </div>
-                <div class="sub-value">リアルタイム計測</div>
+        <div class="card card-heart">
+            <div class="label">❤️ 心拍数</div>
+            <div>
+                <span id="heart_rate" class="value">---</span>
+                <span class="unit">BPM</span>
             </div>
+            <div id="heart_relative_time" class="sub-value">---</div>
         </div>
 
         <div class="mobile-grid-2" style="display: contents;">
@@ -380,10 +373,26 @@
         const ecg = new ECGMonitor('ecg-canvas');
         ecg.start();
 
+        // 経過時間を計算してテキストを返す関数
+        function getRelativeTime(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffMins < 1) return 'たった今';
+            if (diffMins < 60) return `${diffMins}分前`;
+            if (diffHours < 24) return `${diffHours}時間前`;
+            return `${diffDays}日前`;
+        }
+
         async function updateStatus() {
             const els = {
                 body: document.body, message: document.getElementById('liveness-message'), subtext: document.getElementById('liveness-subtext'),
-                updated: document.getElementById('last_updated'), heart: document.getElementById('heart_rate'), steps: document.getElementById('steps'),
+                updated: document.getElementById('last_updated'), heart: document.getElementById('heart_rate'), 
+                heartTime: document.getElementById('heart_relative_time'), // 追加
+                steps: document.getElementById('steps'),
                 calories: document.getElementById('calories'), location: document.getElementById('location'), device: document.getElementById('device_status'),
                 wakeup: document.getElementById('wakeup_time'), condition: document.getElementById('condition')
             };
@@ -407,8 +416,13 @@
                 const currentHeartRate = parseInt(content.health.heart_rate, 10);
                 ecg.setStatus(currentHeartRate, isAlive);
 
+                // 各種データ反映
                 els.updated.textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 els.heart.textContent = currentHeartRate || 'N/A';
+                
+                // 相対時間の表示
+                els.heartTime.textContent = getRelativeTime(lastUpdated);
+
                 els.steps.textContent = content.health.steps || 'N/A';
                 els.calories.textContent = content.health.active_calories ? Math.round(content.health.active_calories) : 'N/A';
                 els.location.textContent = content.location.city || 'N/A';
