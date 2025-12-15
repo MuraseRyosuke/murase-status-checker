@@ -14,7 +14,7 @@
     <meta property="og:title" content="村瀨亮介のリアルタイム健康診断">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://status.muraseryosuke.info/">
-    <meta property="og:image" content="https://muraseryosuke.info/assets/img/ogp.webp">
+    <meta property="og:image" content="ogp.webp">
     <meta property="og:description" content="村瀨亮介は今、生きているか？心拍数、歩数、位置情報をリアルタイムで公開中。">
     <meta property="og:site_name" content="Murase Status Checker">
     <meta property="og:locale" content="ja_JP">
@@ -28,7 +28,7 @@
         :root {
             /* Colors */
             --color-light-bg: #f5f5f7;
-            --color-light-card: rgba(255, 255, 255, 0.65); /* カードの透明度調整 */
+            --color-light-card: rgba(255, 255, 255, 0.65);
             --color-light-text: #1d1d1f;
             --color-light-sub: #86868b;
             --color-light-border: rgba(255, 255, 255, 0.4);
@@ -62,7 +62,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 2em; /* スマホではパディングを減らす調整あり */
+            padding: 2rem;
             transition: background-color 0.5s ease, color 0.5s ease;
             -webkit-font-smoothing: antialiased;
             min-height: 100vh;
@@ -91,7 +91,6 @@
             transition: transform 0.2s ease;
         }
         
-        /* Glass Effect per theme */
         body.light-mode .card {
             background: var(--color-light-card);
             border: 1px solid var(--color-light-border);
@@ -105,13 +104,12 @@
         .label {
             font-size: 0.85rem;
             font-weight: 600;
-            text-transform: uppercase;
             letter-spacing: 0.05em;
             opacity: 0.7;
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
-            gap: 0.5em;
+            gap: 0.4em;
         }
         .value {
             font-size: 1.8rem;
@@ -125,72 +123,77 @@
             margin-left: 0.2em;
         }
         .sub-value {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             opacity: 0.6;
             margin-top: 0.2em;
         }
 
-        /* --- Grid Layout (Dashboard) --- */
+        /* --- Grid Layout (Bento Grid) --- */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: auto auto; /* 行の高さはコンテンツなり */
-            gap: 1.5rem;
+            grid-auto-rows: minmax(100px, auto);
+            gap: 1.25rem;
             width: 100%;
-            max-width: 1000px;
+            max-width: 900px;
         }
 
-        /* 1. Hero Card (Profile & Message) - Spans 2 cols, 2 rows */
-        .card-hero {
-            grid-column: span 2;
-            grid-row: span 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        /* 1. Status Message (Top, Full Width) */
+        .card-status {
+            grid-column: span 4;
             text-align: center;
+            align-items: center;
             justify-content: center;
-            gap: 1rem;
+            padding: 2rem 1rem;
+            gap: 0.5rem;
         }
-        .profile-img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-            transition: filter 0.5s;
-        }
-        body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
-        
         #liveness-message {
-            font-size: 1.5rem;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
             font-weight: 800;
+            line-height: 1.2;
         }
         #liveness-subtext {
             font-size: 0.9rem;
             opacity: 0.8;
         }
 
-        /* 2. Heart Rate Card (Vital) - Spans 2 cols */
+        /* 2. Profile (Icon only) */
+        .card-profile {
+            grid-column: span 1;
+            align-items: center;
+            justify-content: center;
+            padding: 0; /* 画像をいっぱいに */
+            overflow: hidden;
+            background: transparent !important; /* カード背景なしでアイコン感を出す */
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .profile-img {
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 1/1;
+            border-radius: 24px; /* カードと同じR */
+            object-fit: cover;
+            box-shadow: var(--shadow-card);
+            transition: filter 0.5s;
+        }
+        body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
+
+        /* 3. Heart Rate (Vital) - Large */
         .card-heart {
-            grid-column: span 2;
+            grid-column: span 3;
             position: relative;
-            overflow: hidden; /* For ECG canvas clip */
         }
         .card-heart .value { font-size: 3.5rem; letter-spacing: -0.05em; }
-        
-        /* 3. Activity Cards */
-        .card-steps { grid-column: span 1; }
-        .card-calories { grid-column: span 1; }
 
-        /* 4. Secondary Stats */
-        .card-condition { grid-column: span 1; }
-        .card-sleep { grid-column: span 1; }
+        /* 4. Activity & Stats (Small Cards) */
+        .card-small { grid-column: span 1; }
 
-        /* 5. Device & Location - Spans 2 cols for better text fit */
-        .card-device { grid-column: span 1; }
-        .card-location { grid-column: span 1; }
+        /* 5. Footer Info (Full Width) */
+        .card-device-location {
+            grid-column: span 2;
+        }
 
-        /* Footer / Timestamp */
         .footer-info {
             grid-column: span 4;
             text-align: right;
@@ -221,19 +224,26 @@
                 gap: 1rem;
             }
 
-            .card { padding: 1.25rem; min-height: 120px; }
+            .card { padding: 1.25rem; min-height: auto; }
             
-            .card-hero {
-                flex-direction: row;
-                text-align: left;
-                justify-content: start;
-                min-height: auto;
+            /* スマホではプロフィールと心拍数を横並びにしてみる */
+            .mobile-split-row {
+                display: grid;
+                grid-template-columns: 100px 1fr;
+                gap: 1rem;
             }
-            .profile-img { width: 80px; height: 80px; }
-            #liveness-message { font-size: 1.2rem; }
+            .card-profile {
+                grid-column: span 1;
+                width: 100px; height: 100px;
+            }
+            .card-heart {
+                grid-column: span 1;
+                justify-content: center;
+            }
+            .card-heart .value { font-size: 2.5rem; }
 
-            /* グリッド風に並べたい要素を横並びに */
-            .mobile-row {
+            /* 2カラム表示用のラッパー */
+            .mobile-grid-2 {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 1rem;
@@ -247,33 +257,36 @@
 
     <main class="dashboard-grid">
         
-        <div class="card card-hero">
-            <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="120" height="120" fetchpriority="high">
-            <div>
-                <div id="liveness-message">Status Check...</div>
-                <div id="liveness-subtext"></div>
+        <div class="card card-status">
+            <div id="liveness-message">ステータス確認中...</div>
+            <div id="liveness-subtext"></div>
+        </div>
+
+        <div class="mobile-split-row" style="display: contents;">
+            <div class="card card-profile">
+                <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
+            </div>
+
+            <div class="card card-heart">
+                <div class="label">❤️ 心拍数</div>
+                <div>
+                    <span id="heart_rate" class="value">---</span>
+                    <span class="unit">BPM</span>
+                </div>
+                <div class="sub-value">リアルタイム計測</div>
             </div>
         </div>
 
-        <div class="card card-heart">
-            <div class="label">❤️ Heart Rate</div>
-            <div>
-                <span id="heart_rate" class="value">---</span>
-                <span class="unit">BPM</span>
-            </div>
-            <div class="sub-value">Real-time Pulse</div>
-        </div>
-
-        <div class="mobile-row" style="display: contents;">
-            <div class="card card-steps">
-                <div class="label">👟 Steps</div>
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-small">
+                <div class="label">👟 歩数</div>
                 <div>
                     <span id="steps" class="value">---</span>
                 </div>
             </div>
 
-            <div class="card card-calories">
-                <div class="label">🔥 Calories</div>
+            <div class="card card-small">
+                <div class="label">🔥 カロリー</div>
                 <div>
                     <span id="calories" class="value">---</span>
                     <span class="unit">kcal</span>
@@ -281,32 +294,32 @@
             </div>
         </div>
 
-        <div class="mobile-row" style="display: contents;">
-            <div class="card card-condition">
-                <div class="label">🩺 Condition</div>
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-small">
+                <div class="label">🩺 体調</div>
                 <div id="condition" class="value" style="font-size: 1.5rem;">---</div>
             </div>
 
-            <div class="card card-sleep">
-                <div class="label">☀️ Wake Up</div>
+            <div class="card card-small">
+                <div class="label">☀️ 起床時間</div>
                 <div id="wakeup_time" class="value" style="font-size: 1.5rem;">---</div>
             </div>
         </div>
 
-        <div class="mobile-row" style="display: contents;">
-            <div class="card card-device">
-                <div class="label">🔋 Battery</div>
-                <div id="device_status" class="value" style="font-size: 1.2rem;">---</div>
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-device-location">
+                <div class="label">📍 現在地</div>
+                <div id="location" class="value" style="font-size: 1.4rem;">---</div>
             </div>
-
-            <div class="card card-location">
-                <div class="label">📍 Location</div>
-                <div id="location" class="value" style="font-size: 1.2rem;">---</div>
+            
+            <div class="card card-device-location">
+                <div class="label">🔋 バッテリー</div>
+                <div id="device_status" class="value" style="font-size: 1.4rem;">---</div>
             </div>
         </div>
 
         <div class="footer-info">
-            Last Update: <span id="last_updated">---</span>
+            最終更新: <span id="last_updated">---</span>
         </div>
 
     </main>
@@ -406,13 +419,13 @@
                 } else { els.wakeup.textContent = '---'; }
 
                 const hrv = parseFloat(content.health.condition_hrv);
-                if (hrv > 50) { els.condition.textContent = 'Good ✅'; els.condition.style.color = 'var(--color-good)'; }
-                else if (hrv > 30) { els.condition.textContent = 'Avg 😐'; els.condition.style.color = 'var(--color-avg)'; }
-                else if (hrv) { els.condition.textContent = 'Bad ⚠️'; els.condition.style.color = 'var(--color-bad)'; }
+                if (hrv > 50) { els.condition.textContent = '良好 ✅'; els.condition.style.color = 'var(--color-good)'; }
+                else if (hrv > 30) { els.condition.textContent = '普通 😐'; els.condition.style.color = 'var(--color-avg)'; }
+                else if (hrv) { els.condition.textContent = '要注意 ⚠️'; els.condition.style.color = 'var(--color-bad)'; }
                 else { els.condition.textContent = 'N/A'; els.condition.style.color = 'inherit'; }
             } catch (error) {
                 console.error('Status Update Failed:', error);
-                els.message.textContent = 'Load Failed';
+                els.message.textContent = '読み込み失敗';
             }
         }
         updateStatus();
