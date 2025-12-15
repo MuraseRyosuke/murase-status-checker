@@ -117,15 +117,18 @@
             transition: all 0.2s ease !important;
             position: relative;
             overflow: hidden;
+            user-select: none;
         }
         .card-tune:active {
             transform: scale(0.96);
             opacity: 0.8;
         }
+        /* 無効化状態のスタイル */
         .card-tune.disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            filter: grayscale(0.8);
+            filter: grayscale(0.5);
+            pointer-events: none; /* クリック不可に */
         }
         .tune-icon {
             font-size: 1.5rem;
@@ -134,8 +137,8 @@
         .tune-label {
             font-weight: 700;
             font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
+            text-transform: none; /* 大文字強制を解除 */
+            letter-spacing: 0.05em;
         }
 
         /* Text Utilities */
@@ -353,10 +356,10 @@
     </main>
 
     <script>
-        // --- 設定 ---
-        // ★ここにあなたのトピック名を入力してください★
-        // ※アプリで Subscribe した名前と一致させてください
-        const NTFY_TOPIC = 'murase_status_tune'; 
+        // --- CONFIGURATION ---
+        // ntfy.sh Topic Name (KEEP SECRET)
+        const NTFY_TOPIC = 'murase_status_tune'; // ★公開前にご自身のトピック名か確認してください★
+        const TUNE_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
 
         const CONFIG = {
             gistId: '1f81b107b898201a865a613c319d579b',
@@ -365,49 +368,83 @@
             links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://muraseryosuke.github.io/murase-dosei/' }
         };
 
-        // --- Tune 機能 (デバッグ版) ---
+        // --- Tune Feature Logic ---
+        function checkCooldown() {
+            const lastTune = localStorage.getItem('lastTuneTime');
+            if (lastTune) {
+                const elapsed = Date.now() - parseInt(lastTune, 10);
+                if (elapsed < TUNE_COOLDOWN_MS) {
+                    disableTuneBtn(TUNE_COOLDOWN_MS - elapsed);
+                }
+            }
+        }
+
+        function disableTuneBtn(remainingTime) {
+            const btn = document.querySelector('.card-tune');
+            const label = document.getElementById('tune-text');
+            btn.classList.add('disabled');
+            label.textContent = 'Stay Tuned'; // クールダウン中の文言
+            
+            // 時間が来たら復活
+            setTimeout(() => {
+                btn.classList.remove('disabled');
+                label.textContent = 'Tune';
+                localStorage.removeItem('lastTuneTime');
+            }, remainingTime);
+        }
+
         function sendTune() {
             const btn = document.querySelector('.card-tune');
             const label = document.getElementById('tune-text');
             
             if (btn.classList.contains('disabled')) return;
 
-            label.textContent = 'Sending...';
-            btn.classList.add('disabled');
+            // UI Update
+            label.textContent = 'Tuning...';
+            btn.classList.add('disabled'); // Prevent double click
 
-            // シンプルなPOSTリクエスト
+            // API Request
             fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
                 method: 'POST',
-                body: '村瀨亮介へのTune(更新リクエスト)を受信しました。'
+                body: 'Tuneを受信しました。',
+                headers: {
+                    'Title': '⚡️ Tune Received',
+                    'Priority': 'default',
+                    'Tags': 'zap,yellow_circle'
+                }
             })
             .then(response => {
                 if (response.ok) {
-                    label.textContent = 'Signal Sent';
+                    // Success
+                    label.textContent = 'Stay Tuned';
+                    // Save timestamp
+                    localStorage.setItem('lastTuneTime', Date.now().toString());
+                    // Start Cooldown
+                    disableTuneBtn(TUNE_COOLDOWN_MS);
+                } else {
+                    // Server Error
+                    console.error('Tune Error:', response.status);
+                    label.textContent = 'エラー';
                     setTimeout(() => {
                         btn.classList.remove('disabled');
                         label.textContent = 'Tune';
-                    }, 300000); // 5分間のクールダウン
-                } else {
-                    console.error('Server Error:', response.status);
-                    alert(`送信失敗: サーバーエラー (${response.status})`);
-                    label.textContent = 'Error';
-                    resetBtn();
+                    }, 3000);
                 }
             })
             .catch(err => {
-                console.error('Network Error:', err);
-                alert(`通信エラー: ${err.message}\n※ローカルファイル(file://)では動作しません。GitHub Pagesにアップロードして試してください。`);
-                label.textContent = 'Error';
-                resetBtn();
-            });
-
-            function resetBtn() {
+                // Network Error
+                console.error('Tune Network Error:', err);
+                label.textContent = '通信エラー';
                 setTimeout(() => {
                     btn.classList.remove('disabled');
                     label.textContent = 'Tune';
                 }, 3000);
-            }
+            });
         }
+
+        // Initialize Cooldown Check
+        document.addEventListener('DOMContentLoaded', checkCooldown);
+
 
         // --- ECG Monitor ---
         class ECGMonitor {
