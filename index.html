@@ -26,7 +26,7 @@
     <style>
         /* --- Design Tokens --- */
         :root {
-            /* Colors */
+            /* Color Palette */
             --color-light-bg: #f5f5f7;
             --color-light-card: rgba(255, 255, 255, 0.65);
             --color-light-text: #1d1d1f;
@@ -39,7 +39,7 @@
             --color-dark-sub: #86868b;
             --color-dark-border: rgba(255, 255, 255, 0.1);
 
-            /* Status Colors */
+            /* Status Indicators */
             --color-ecg-alive: rgba(46, 204, 113, 0.6);
             --color-ecg-lost: rgba(48, 209, 201, 0.6);
             
@@ -47,8 +47,7 @@
             --color-avg: #ff9f0a;
             --color-bad: #ff3b30;
 
-            /* Tune Button Color Defaults */
-            --color-tune-base: #ffcc00;
+            /* Tune Button Theme */
             --color-tune-bg: rgba(255, 204, 0, 0.15);
             --color-tune-border: rgba(255, 204, 0, 0.5);
             
@@ -56,7 +55,7 @@
             --color-link-light: #007aff;
             --color-link-dark: #0a84ff;
 
-            /* Effects */
+            /* Visual Effects */
             --glass-blur: 20px;
             --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
             --radius-card: 24px;
@@ -81,22 +80,22 @@
         a { text-decoration: none; }
         a:hover { text-decoration: underline; }
 
-        /* --- Theme Switching & Tune Color Adjustment --- */
+        /* --- Theme Switching --- */
+        /* Light Mode Settings */
         body.light-mode { 
             background-color: var(--color-light-bg); 
             color: var(--color-light-text); 
-            /* ライトモードではTuneの文字色を濃くして可読性を確保 */
-            --color-tune-text: #b38f00; 
+            --color-tune-text: #b38f00; /* Darker yellow for contrast */
         }
         
+        /* Dark Mode Settings */
         body.dark-mode { 
             background-color: var(--color-dark-bg); 
             color: var(--color-dark-text); 
-            /* ダークモードでは明るいイエローのまま */
-            --color-tune-text: #ffcc00;
+            --color-tune-text: #ffcc00; /* Neon yellow */
         }
 
-        /* Card Styles */
+        /* --- Component: Glass Card --- */
         .card {
             backdrop-filter: blur(var(--glass-blur));
             -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -118,11 +117,11 @@
             border: 1px solid var(--color-dark-border);
         }
 
-        /* Tune Button Style */
+        /* --- Component: Tune Button --- */
         .card-tune {
             background: var(--color-tune-bg) !important;
             border: 1px solid var(--color-tune-border) !important;
-            color: var(--color-tune-text) !important; /* 変数を使用 */
+            color: var(--color-tune-text) !important;
             cursor: pointer;
             align-items: center;
             justify-content: center;
@@ -153,7 +152,7 @@
             letter-spacing: 0.05em;
         }
 
-        /* --- Tooltip (Caption) --- */
+        /* Tooltip (Caption) */
         .card-tune::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -175,6 +174,7 @@
             margin-bottom: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
+        /* Tooltip Arrow */
         .card-tune::before {
             content: '';
             position: absolute;
@@ -195,13 +195,26 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* --- Reaction Animation --- */
+        /* Dark Mode Tooltip Border */
+        body.dark-mode .card-tune::after,
+        body.dark-mode .card-tune::before {
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+        }
+        body.dark-mode .card-tune::before {
+            border-bottom: none; border-left: none; border-right: none; /* Only top border for arrow base if needed, or remove border for arrow */
+            border: none; /* Arrow doesn't handle border well, reset */
+        }
+        body.dark-mode .card-tune::after {
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+        }
+
+        /* Reaction Animation */
         .tune-reaction {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: var(--color-tune-text); /* 文字色変数を使用 */
+            color: var(--color-tune-text);
             font-weight: 800;
             font-size: 1.2rem;
             white-space: nowrap;
@@ -218,7 +231,7 @@
             100% { opacity: 0; transform: translate(-50%, -250%) scale(1); }
         }
 
-        /* Text Utilities */
+        /* --- Text Utilities --- */
         .label {
             font-size: 0.85rem;
             font-weight: 600;
@@ -248,7 +261,7 @@
             margin-top: 0.2em;
         }
 
-        /* --- Grid Layout (Dashboard) --- */
+        /* --- Layout: Dashboard Grid --- */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -258,7 +271,7 @@
             max-width: 900px;
         }
 
-        /* 1. Status Message */
+        /* 1. Status Message (Full Width) */
         .card-status {
             grid-column: span 4;
             justify-content: center; 
@@ -282,7 +295,7 @@
         }
         #liveness-subtext:empty { display: none; }
 
-        /* 2. Profile */
+        /* 2. Profile Image */
         .card-profile {
             grid-column: span 1;
             padding: 0;
@@ -304,7 +317,7 @@
         }
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
 
-        /* 3. Heart Rate */
+        /* 3. Heart Rate (Main Vital) */
         .card-heart {
             grid-column: span 3;
             position: relative;
@@ -327,8 +340,7 @@
             grid-column: span 4;
             text-align: right;
             font-size: 0.8rem;
-            /* コントラスト改善のため、透過度を0.5から0.8へ変更 */
-            opacity: 0.8; 
+            opacity: 0.8;
             margin-top: 0.5rem;
         }
 
@@ -343,7 +355,7 @@
             pointer-events: none;
         }
 
-        /* --- Responsive Design --- */
+        /* --- Responsive Design (Mobile) --- */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; }
             .dashboard-grid { display: flex; flex-direction: column; gap: 1rem; }
@@ -354,7 +366,7 @@
             .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
             .value { font-size: 1.6rem; }
             .card-tune-container { height: 80px; }
-            /* スマホではキャプション(Tooltip)を非表示 */
+            /* Hide tooltip on touch devices */
             .card-tune::after, .card-tune::before { display: none; }
         }
     </style>
@@ -375,7 +387,7 @@
         </div>
 
         <div class="card card-heart">
-            <div class="label">❤️ 心拍数</div>
+            <div class="label">❤️心拍数</div>
             <div class="heart-value-container">
                 <span id="heart_rate" class="value">---</span>
                 <span class="unit">BPM</span>
@@ -385,14 +397,14 @@
 
         <div class="mobile-grid-2" style="display: contents;">
             <div class="card card-small">
-                <div class="label">👟 歩数</div>
+                <div class="label">👟歩数</div>
                 <div>
                     <span id="steps" class="value">---</span>
                 </div>
             </div>
 
             <div class="card card-small">
-                <div class="label">🔥 カロリー</div>
+                <div class="label">🔥カロリー</div>
                 <div>
                     <span id="calories" class="value">---</span>
                     <span class="unit">kcal</span>
@@ -402,29 +414,29 @@
 
         <div class="mobile-grid-2" style="display: contents;">
             <div class="card card-small">
-                <div class="label">🩺 体調</div>
+                <div class="label">🩺体調</div>
                 <div id="condition" class="value" style="font-size: 1.5rem;">---</div>
             </div>
 
             <div class="card card-small">
-                <div class="label">☀️ 起床時間</div>
+                <div class="label">☀️起床時間</div>
                 <div id="wakeup_time" class="value" style="font-size: 1.5rem;">---</div>
             </div>
         </div>
 
         <div class="mobile-grid-2" style="display: contents;">
             <div class="card card-device-location">
-                <div class="label">📍 現在地</div>
+                <div class="label">📍現在地</div>
                 <div id="location" class="value" style="font-size: 1.4rem;">---</div>
             </div>
             
             <div class="card card-device-location">
-                <div class="label">🔋 バッテリー</div>
+                <div class="label">🔋バッテリー</div>
                 <div id="device_status" class="value" style="font-size: 1.4rem;">---</div>
             </div>
         </div>
 
-        <div class="card card-tune card-tune-container" onclick="sendTune()" data-tooltip="更新の合図を送る">
+        <div class="card card-tune card-tune-container" onclick="sendTune()" data-tooltip="更新の合図を送る！">
             <div class="tune-icon">⚡️</div>
             <div class="tune-label" id="tune-text">Tune</div>
         </div>
@@ -436,9 +448,8 @@
     </main>
 
     <script>
-        // --- CONFIGURATION ---
+        // --- Configuration ---
         const NTFY_TOPIC = 'murase_status_tune'; 
-        
         const TUNE_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
 
         const CONFIG = {
@@ -474,25 +485,14 @@
 
         function showTuneReaction() {
             const btn = document.querySelector('.card-tune');
-            
-            // リアクションメッセージ
-            const messages = [
-                '⚡️ Tune!', 
-                '📡 送信しました！', 
-                '👍 Thanks!', 
-                '💫 届きました！'
-            ];
+            const messages = ['⚡️Tune!', '📡送信しました！', '👍Thanks!', '💫届きました！'];
             const randomMsg = messages[Math.floor(Math.random() * messages.length)];
 
-            // ポップアップ要素の作成
             const reaction = document.createElement('div');
             reaction.className = 'tune-reaction';
             reaction.textContent = randomMsg;
-            
-            // ボタンに追加
             btn.appendChild(reaction);
 
-            // アニメーション終了後に削除
             setTimeout(() => {
                 reaction.remove();
             }, 1500);
@@ -504,29 +504,24 @@
             
             if (btn.classList.contains('disabled')) return;
 
-            // 即座にリアクションを表示！
             showTuneReaction();
 
-            // UI Update
             label.textContent = 'Tuning...';
             btn.classList.add('disabled'); 
 
-            // URLパラメータでタイトルやタグを指定
+            // Simple Request via URL Parameters (Avoids CORS preflight)
             const url = `https://ntfy.sh/${NTFY_TOPIC}?title=%E2%9A%A1%EF%B8%8F%20Tune%20Received&priority=default&tags=zap,yellow_circle`;
 
-            // API Request (Simple POST)
             fetch(url, {
                 method: 'POST',
                 body: 'Tuneを受信しました。'
             })
             .then(response => {
                 if (response.ok) {
-                    // Success
                     label.textContent = 'Stay Tuned!';
                     localStorage.setItem('lastTuneTime', Date.now().toString());
                     disableTuneBtn(TUNE_COOLDOWN_MS);
                 } else {
-                    // Server Error
                     console.error('Tune Error:', response.status);
                     label.textContent = 'エラー';
                     setTimeout(() => {
@@ -536,7 +531,6 @@
                 }
             })
             .catch(err => {
-                // Network Error
                 console.error('Tune Network Error:', err);
                 label.textContent = '通信エラー';
                 setTimeout(() => {
@@ -546,11 +540,11 @@
             });
         }
 
-        // Initialize Cooldown Check
+        // Initialize Tune Cooldown
         document.addEventListener('DOMContentLoaded', checkCooldown);
 
 
-        // --- ECG Monitor ---
+        // --- ECG Animation Monitor ---
         class ECGMonitor {
             constructor(canvasId) {
                 this.canvas = document.getElementById(canvasId);
@@ -599,6 +593,7 @@
         const ecg = new ECGMonitor('ecg-canvas');
         ecg.start();
 
+        // --- Data Handling & UI Updates ---
         function getRelativeTime(date) {
             const now = new Date();
             const diffMs = now - date;
@@ -622,14 +617,17 @@
                 wakeup: document.getElementById('wakeup_time'), condition: document.getElementById('condition')
             };
             try {
+                // Fetch data with timestamp to avoid caching
                 const response = await fetch(`https://api.github.com/gists/${CONFIG.gistId}?t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error(`API Error: ${response.status}`);
                 const gist = await response.json();
                 if (!gist.files || !gist.files[CONFIG.gistFileName]) throw new Error('Gist file not found');
+                
                 const content = JSON.parse(gist.files[CONFIG.gistFileName].content);
                 const lastUpdated = new Date(content.last_updated);
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 
+                // Determine Liveness Mode
                 const isAlive = diffHours <= CONFIG.thresholdHours;
                 if (isAlive) {
                     els.body.className = 'light-mode'; els.message.textContent = '村瀨亮介は生きています。'; els.subtext.textContent = '';
@@ -638,6 +636,7 @@
                     els.subtext.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank" rel="noopener noreferrer">X</a> または <a href="${CONFIG.links.dosei}" target="_blank" rel="noopener noreferrer">村瀨動静</a> へ`;
                 }
 
+                // Update Visuals
                 const currentHeartRate = parseInt(content.health.heart_rate, 10);
                 ecg.setStatus(currentHeartRate, isAlive);
 
@@ -655,9 +654,9 @@
                 } else { els.wakeup.textContent = '---'; }
 
                 const hrv = parseFloat(content.health.condition_hrv);
-                if (hrv > 50) { els.condition.textContent = '良好 ✅'; els.condition.style.color = 'var(--color-good)'; }
-                else if (hrv > 30) { els.condition.textContent = '普通 😐'; els.condition.style.color = 'var(--color-avg)'; }
-                else if (hrv) { els.condition.textContent = '要注意 ⚠️'; els.condition.style.color = 'var(--color-bad)'; }
+                if (hrv > 50) { els.condition.textContent = '良好✅'; els.condition.style.color = 'var(--color-good)'; }
+                else if (hrv > 30) { els.condition.textContent = '普通😐'; els.condition.style.color = 'var(--color-avg)'; }
+                else if (hrv) { els.condition.textContent = '要注意⚠️'; els.condition.style.color = 'var(--color-bad)'; }
                 else { els.condition.textContent = 'N/A'; els.condition.style.color = 'inherit'; }
             } catch (error) {
                 console.error('Status Update Failed:', error);
