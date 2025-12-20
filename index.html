@@ -47,8 +47,8 @@
             --color-avg: #ff9f0a;
             --color-bad: #ff3b30;
 
-            /* Tune Button Color (Yellow) */
-            --color-tune: #ffcc00;
+            /* Tune Button Color Defaults */
+            --color-tune-base: #ffcc00;
             --color-tune-bg: rgba(255, 204, 0, 0.15);
             --color-tune-border: rgba(255, 204, 0, 0.5);
             
@@ -81,9 +81,20 @@
         a { text-decoration: none; }
         a:hover { text-decoration: underline; }
 
-        /* --- Theme Switching --- */
-        body.light-mode { background-color: var(--color-light-bg); color: var(--color-light-text); }
-        body.dark-mode { background-color: var(--color-dark-bg); color: var(--color-dark-text); }
+        /* --- Theme Switching & Tune Color Adjustment --- */
+        body.light-mode { 
+            background-color: var(--color-light-bg); 
+            color: var(--color-light-text); 
+            /* ライトモードではTuneの文字色を濃くして可読性を確保 */
+            --color-tune-text: #b38f00; 
+        }
+        
+        body.dark-mode { 
+            background-color: var(--color-dark-bg); 
+            color: var(--color-dark-text); 
+            /* ダークモードでは明るいイエローのまま */
+            --color-tune-text: #ffcc00;
+        }
 
         /* Card Styles */
         .card {
@@ -111,12 +122,12 @@
         .card-tune {
             background: var(--color-tune-bg) !important;
             border: 1px solid var(--color-tune-border) !important;
-            color: var(--color-tune) !important;
+            color: var(--color-tune-text) !important; /* 変数を使用 */
             cursor: pointer;
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease !important;
-            position: relative; /* Tooltip基準点 */
+            position: relative; 
             overflow: visible; 
             user-select: none;
             z-index: 10;
@@ -149,7 +160,7 @@
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%) translateY(10px);
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(4px);
             color: #fff;
             padding: 8px 12px;
@@ -164,7 +175,6 @@
             margin-bottom: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        /* 吹き出しの▼ */
         .card-tune::before {
             content: '';
             position: absolute;
@@ -172,14 +182,13 @@
             left: 50%;
             transform: translateX(-50%) translateY(10px);
             border: 6px solid transparent;
-            border-top-color: rgba(0, 0, 0, 0.8);
+            border-top-color: rgba(0, 0, 0, 0.85);
             opacity: 0;
             transition: opacity 0.2s, transform 0.2s;
             pointer-events: none;
             z-index: 30;
             margin-bottom: 0px;
         }
-        /* ホバー時の表示 */
         .card-tune:hover::after,
         .card-tune:hover::before {
             opacity: 1;
@@ -192,12 +201,12 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: var(--color-tune);
+            color: var(--color-tune-text); /* 文字色変数を使用 */
             font-weight: 800;
             font-size: 1.2rem;
             white-space: nowrap;
             pointer-events: none;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             opacity: 0;
             z-index: 20;
             animation: popUpFade 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
@@ -318,7 +327,8 @@
             grid-column: span 4;
             text-align: right;
             font-size: 0.8rem;
-            opacity: 0.5;
+            /* コントラスト改善のため、透過度を0.5から0.8へ変更 */
+            opacity: 0.8; 
             margin-top: 0.5rem;
         }
 
@@ -427,7 +437,6 @@
 
     <script>
         // --- CONFIGURATION ---
-        // ★ここをアプリで設定したトピック名に書き換えてください★
         const NTFY_TOPIC = 'murase_status_tune'; 
         
         const TUNE_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
@@ -466,7 +475,7 @@
         function showTuneReaction() {
             const btn = document.querySelector('.card-tune');
             
-            // リアクションメッセージ (指定された4種)
+            // リアクションメッセージ
             const messages = [
                 '⚡️ Tune!', 
                 '📡 送信しました！', 
@@ -502,7 +511,7 @@
             label.textContent = 'Tuning...';
             btn.classList.add('disabled'); 
 
-            // URLパラメータでタイトルやタグを指定して、Simple Requestにする
+            // URLパラメータでタイトルやタグを指定
             const url = `https://ntfy.sh/${NTFY_TOPIC}?title=%E2%9A%A1%EF%B8%8F%20Tune%20Received&priority=default&tags=zap,yellow_circle`;
 
             // API Request (Simple POST)
@@ -513,7 +522,7 @@
             .then(response => {
                 if (response.ok) {
                     // Success
-                    label.textContent = 'Stay Tuned';
+                    label.textContent = 'Stay Tuned!';
                     localStorage.setItem('lastTuneTime', Date.now().toString());
                     disableTuneBtn(TUNE_COOLDOWN_MS);
                 } else {
