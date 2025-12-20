@@ -75,6 +75,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow-x: hidden; 
         }
 
         a { text-decoration: none; }
@@ -115,20 +116,20 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease !important;
-            position: relative;
-            overflow: hidden;
+            position: relative; /* Tooltip基準点 */
+            overflow: visible; 
             user-select: none;
+            z-index: 10;
         }
         .card-tune:active {
             transform: scale(0.96);
             opacity: 0.8;
         }
-        /* 無効化状態のスタイル */
         .card-tune.disabled {
             opacity: 0.5;
             cursor: not-allowed;
             filter: grayscale(0.5);
-            pointer-events: none; /* クリック不可に */
+            pointer-events: none; 
         }
         .tune-icon {
             font-size: 1.5rem;
@@ -137,8 +138,75 @@
         .tune-label {
             font-weight: 700;
             font-size: 1rem;
-            text-transform: none; /* 大文字強制を解除 */
+            text-transform: none; 
             letter-spacing: 0.05em;
+        }
+
+        /* --- Tooltip (Caption) --- */
+        .card-tune::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 30;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        /* 吹き出しの▼ */
+        .card-tune::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            z-index: 30;
+            margin-bottom: 0px;
+        }
+        /* ホバー時の表示 */
+        .card-tune:hover::after,
+        .card-tune:hover::before {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* --- Reaction Animation --- */
+        .tune-reaction {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--color-tune);
+            font-weight: 800;
+            font-size: 1.2rem;
+            white-space: nowrap;
+            pointer-events: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            opacity: 0;
+            z-index: 20;
+            animation: popUpFade 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        @keyframes popUpFade {
+            0% { opacity: 0; transform: translate(-50%, -20%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -100%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -250%) scale(1); }
         }
 
         /* Text Utilities */
@@ -276,6 +344,8 @@
             .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
             .value { font-size: 1.6rem; }
             .card-tune-container { height: 80px; }
+            /* スマホではキャプション(Tooltip)を非表示 */
+            .card-tune::after, .card-tune::before { display: none; }
         }
     </style>
 </head>
@@ -344,7 +414,7 @@
             </div>
         </div>
 
-        <div class="card card-tune card-tune-container" onclick="sendTune()">
+        <div class="card card-tune card-tune-container" onclick="sendTune()" data-tooltip="更新の合図を送る">
             <div class="tune-icon">⚡️</div>
             <div class="tune-label" id="tune-text">Tune</div>
         </div>
@@ -366,7 +436,7 @@
             gistId: '1f81b107b898201a865a613c319d579b',
             gistFileName: 'murase_status.json',
             thresholdHours: 13,
-            links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://muraseryosuke.github.io/murase-dosei/' }
+            links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' }
         };
 
         // --- Tune Feature Logic ---
@@ -384,14 +454,39 @@
             const btn = document.querySelector('.card-tune');
             const label = document.getElementById('tune-text');
             btn.classList.add('disabled');
-            label.textContent = 'Stay Tuned'; 
+            label.textContent = 'Stay Tuned!'; 
             
-            // 時間が来たら復活
             setTimeout(() => {
                 btn.classList.remove('disabled');
                 label.textContent = 'Tune';
                 localStorage.removeItem('lastTuneTime');
             }, remainingTime);
+        }
+
+        function showTuneReaction() {
+            const btn = document.querySelector('.card-tune');
+            
+            // リアクションメッセージ (指定された4種)
+            const messages = [
+                '⚡️ Tune!', 
+                '📡 送信しました！', 
+                '👍 Thanks!', 
+                '💫 届きました！'
+            ];
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+
+            // ポップアップ要素の作成
+            const reaction = document.createElement('div');
+            reaction.className = 'tune-reaction';
+            reaction.textContent = randomMsg;
+            
+            // ボタンに追加
+            btn.appendChild(reaction);
+
+            // アニメーション終了後に削除
+            setTimeout(() => {
+                reaction.remove();
+            }, 1500);
         }
 
         function sendTune() {
@@ -400,18 +495,20 @@
             
             if (btn.classList.contains('disabled')) return;
 
+            // 即座にリアクションを表示！
+            showTuneReaction();
+
             // UI Update
             label.textContent = 'Tuning...';
             btn.classList.add('disabled'); 
 
-            // URLパラメータでタイトルやタグを指定して、Simple Requestにする（CORS回避の鍵）
+            // URLパラメータでタイトルやタグを指定して、Simple Requestにする
             const url = `https://ntfy.sh/${NTFY_TOPIC}?title=%E2%9A%A1%EF%B8%8F%20Tune%20Received&priority=default&tags=zap,yellow_circle`;
 
             // API Request (Simple POST)
             fetch(url, {
                 method: 'POST',
                 body: 'Tuneを受信しました。'
-                // headers は削除（これがCORSエラーの原因だったため）
             })
             .then(response => {
                 if (response.ok) {
