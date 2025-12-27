@@ -24,7 +24,9 @@
     <meta name="twitter:creator" content="@vl_lvoO">
 
     <style>
-        /* --- Design Tokens --- */
+        /* =========================================
+           Design Tokens & Variables
+           ========================================= */
         :root {
             /* Color Palette */
             --color-light-bg: #f5f5f7;
@@ -51,6 +53,13 @@
             --color-tune-bg: rgba(155, 89, 182, 0.15); 
             --color-tune-border: rgba(155, 89, 182, 0.5); 
 
+            /* [Reserved] Future Theme for 72h Notification Button (Yellow)
+            --color-72h-bg: rgba(255, 204, 0, 0.15);
+            --color-72h-border: rgba(255, 204, 0, 0.5);
+            --color-72h-text-light: #b38f00;
+            --color-72h-text-dark: #ffcc00;
+            */
+            
             /* Links */
             --color-link-light: #007aff;
             --color-link-dark: #0a84ff;
@@ -61,7 +70,9 @@
             --radius-card: 24px;
         }
 
-        /* --- Base Styles --- */
+        /* =========================================
+           Base Styles
+           ========================================= */
         * { box-sizing: border-box; }
 
         body {
@@ -97,7 +108,11 @@
             --color-bubble-text: #a569bd; 
         }
 
-        /* --- Component: Glass Card --- */
+        /* =========================================
+           Components
+           ========================================= */
+        
+        /* Glass Card */
         .card {
             backdrop-filter: blur(var(--glass-blur));
             -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -109,7 +124,6 @@
             box-shadow: var(--shadow-card);
             transition: transform 0.2s ease;
         }
-        
         body.light-mode .card {
             background: var(--color-light-card);
             border: 1px solid var(--color-light-border);
@@ -119,7 +133,7 @@
             border: 1px solid var(--color-dark-border);
         }
 
-        /* --- Component: Tune Button --- */
+        /* Tune Button */
         .card-tune {
             background: var(--color-tune-bg) !important;
             border: 1px solid var(--color-tune-border) !important;
@@ -154,7 +168,7 @@
             letter-spacing: 0.05em;
         }
 
-        /* Tooltip */
+        /* Tune Button Tooltip (PC only) */
         .card-tune::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -204,7 +218,7 @@
             box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
         }
 
-        /* --- Reaction Animations --- */
+        /* Reaction Animations */
         .tune-bubble {
             position: absolute;
             top: 10%;
@@ -259,7 +273,7 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
         }
 
-        /* --- Text Utilities --- */
+        /* Text Utilities */
         .label {
             font-size: 0.85rem;
             font-weight: 600;
@@ -289,7 +303,9 @@
             margin-top: 0.2em;
         }
 
-        /* --- Layout: Dashboard Grid --- */
+        /* =========================================
+           Layout & Grid
+           ========================================= */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -299,7 +315,7 @@
             max-width: 900px;
         }
 
-        /* Card: Status Message */
+        /* Grid Items */
         .card-status {
             grid-column: span 4;
             justify-content: center; 
@@ -323,7 +339,6 @@
         }
         #liveness-subtext:empty { display: none; }
 
-        /* Card: Profile Image */
         .card-profile {
             grid-column: span 1;
             padding: 0;
@@ -347,7 +362,6 @@
         }
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
 
-        /* Card: Heart Rate (Vital) */
         .card-heart {
             grid-column: span 3;
             position: relative;
@@ -359,10 +373,7 @@
         }
         .card-heart .value { font-size: 4rem; letter-spacing: -0.05em; }
 
-        /* Card: Small Items */
         .card-small { grid-column: span 1; }
-
-        /* Card: Device & Location & Tune */
         .card-device-location { grid-column: span 1; }
         .card-tune-container { grid-column: span 2; }
 
@@ -385,7 +396,9 @@
             pointer-events: none;
         }
 
-        /* --- Responsive Design (Mobile) --- */
+        /* =========================================
+           Mobile Responsiveness
+           ========================================= */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; }
             .dashboard-grid { display: flex; flex-direction: column; gap: 1rem; }
@@ -398,14 +411,14 @@
             .card-tune-container { height: 80px; }
             .card-tune::after, .card-tune::before { display: none; }
 
-            /* 【追加】応答なし（ダークモード）の時だけTuneボタンを上に移動する */
+            /* [Priority Reordering] 
+               When in Dark Mode (Not Responding), move Tune Button up for quick access */
             body.dark-mode .card-status { order: 1; }
             body.dark-mode .card-heart  { order: 2; }
             body.dark-mode .card-tune-container { 
                 order: 3; 
                 margin-top: 0.5rem; 
                 margin-bottom: 1rem;
-                /* 緊急時は少し目立たせる */
                 background-color: rgba(155, 89, 182, 0.25) !important; 
                 border-color: rgba(155, 89, 182, 0.8) !important;
             }
@@ -427,7 +440,7 @@
         </div>
 
         <div class="card card-profile" id="profile-card">
-            <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
+            <img src="https://status.muraseryosuke.info/ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
         </div>
 
         <div class="card card-heart">
@@ -495,7 +508,9 @@
     </main>
 
     <script>
-        // --- Configuration ---
+        // =========================================
+        // Configuration & Constants
+        // =========================================
         const NTFY_TOPIC = 'murase_status_tune'; 
         const TUNE_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -506,7 +521,10 @@
             links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' }
         };
 
-        // --- Helper: 安全に数値をパースする関数 (空文字対策) ---
+        // =========================================
+        // Helpers
+        // =========================================
+        // Parse numbers safely from JSON strings (handles empty strings as 0)
         function safeParseInt(val) {
             if (!val || val === "") return 0;
             return parseInt(val, 10);
@@ -516,7 +534,22 @@
             return parseFloat(val);
         }
 
-        // --- Tune Feature Logic ---
+        function getRelativeTime(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffMins < 1) return 'たった今';
+            if (diffMins < 60) return `${diffMins}分前`;
+            if (diffHours < 24) return `${diffHours}時間前`;
+            return `${diffDays}日前`;
+        }
+
+        // =========================================
+        // Tune Feature Logic
+        // =========================================
         function checkCooldown() {
             const lastTune = localStorage.getItem('lastTuneTime');
             if (lastTune) {
@@ -603,10 +636,9 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', checkCooldown);
-
-
-        // --- ECG Animation Monitor ---
+        // =========================================
+        // ECG Animation Monitor
+        // =========================================
         class ECGMonitor {
             constructor(canvasId) {
                 this.canvas = document.getElementById(canvasId);
@@ -652,23 +684,9 @@
             start() { this.draw(); }
         }
 
-        const ecg = new ECGMonitor('ecg-canvas');
-        ecg.start();
-
-        // --- Data Handling ---
-        function getRelativeTime(date) {
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMins / 60);
-            const diffDays = Math.floor(diffHours / 24);
-
-            if (diffMins < 1) return 'たった今';
-            if (diffMins < 60) return `${diffMins}分前`;
-            if (diffHours < 24) return `${diffHours}時間前`;
-            return `${diffDays}日前`;
-        }
-
+        // =========================================
+        // Main Logic: Data Fetch & UI Update
+        // =========================================
         async function updateStatus() {
             const els = {
                 body: document.body, message: document.getElementById('liveness-message'), subtext: document.getElementById('liveness-subtext'),
@@ -697,45 +715,36 @@
                     els.subtext.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank" rel="noopener noreferrer">X</a> または <a href="${CONFIG.links.dosei}" target="_blank" rel="noopener noreferrer">村瀨動静</a> へ`;
                 }
 
-                // --- 1. Heart Rate (Vital) ---
+                // --- 1. Heart Rate ---
                 const currentHeartRate = safeParseInt(content.health.heart_rate); 
                 ecg.setStatus(currentHeartRate, isAlive);
                 els.heart.textContent = currentHeartRate || 'N/A';
                 els.heartSub.textContent = getRelativeTime(lastUpdated);
 
-                // --- 2. Activity (Movement) ---
+                // --- 2. Activity ---
                 const steps = safeParseInt(content.health.steps);
                 els.steps.textContent = steps ? steps.toLocaleString() : 'N/A';
                 const cal = safeParseInt(content.health.active_calories);
                 els.calories.textContent = cal ? Math.round(cal).toLocaleString() : 'N/A';
 
-                // --- 3. Condition (HRV) ---
+                // --- 3. Condition ---
                 const hrv = safeParseFloat(content.health.condition_hrv);
                 if (hrv > 50) { els.condition.textContent = '良好✅'; els.condition.style.color = 'var(--color-good)'; }
                 else if (hrv > 30) { els.condition.textContent = '普通😐'; els.condition.style.color = 'var(--color-avg)'; }
                 else if (hrv > 0) { els.condition.textContent = '要注意⚠️'; els.condition.style.color = 'var(--color-bad)'; }
                 else { els.condition.textContent = 'N/A'; els.condition.style.color = 'inherit'; }
 
-                // --- 4. Environment (Sound Level) ---
+                // --- 4. Environment (Sound) ---
                 const dbStr = content.environment && content.environment.sound_level_db;
                 const db = safeParseFloat(dbStr);
 
                 if (db > 0) {
                     els.soundVal.textContent = `${Math.round(db)}dB`;
+                    let labelText = '', labelColor = 'inherit';
+                    if (db < 40) { labelText = '(静寂)'; labelColor = 'var(--color-good)'; }
+                    else if (db < 70) { labelText = '(普通)'; labelColor = 'var(--color-avg)'; }
+                    else { labelText = '(騒音)'; labelColor = 'var(--color-bad)'; }
                     
-                    let labelText = '';
-                    let labelColor = 'inherit';
-
-                    if (db < 40) {
-                        labelText = '(静寂)';
-                        labelColor = 'var(--color-good)';
-                    } else if (db < 70) {
-                        labelText = '(普通)';
-                        labelColor = 'var(--color-avg)';
-                    } else {
-                        labelText = '(騒音)';
-                        labelColor = 'var(--color-bad)';
-                    }
                     els.soundLabel.textContent = labelText;
                     els.soundLabel.style.color = labelColor;
                 } else {
@@ -743,7 +752,7 @@
                     els.soundLabel.textContent = '';
                 }
 
-                // --- 5. Context (Device & Location) ---
+                // --- 5. Context ---
                 els.updated.textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 els.location.textContent = content.location.city || 'N/A';
                 els.device.textContent = `${content.device.battery}% ${content.device.is_charging === 'Yes' || content.device.is_charging === true ? '⚡️' : ''}`;
@@ -753,6 +762,11 @@
                 els.message.textContent = '読み込み失敗';
             }
         }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', checkCooldown);
+        const ecg = new ECGMonitor('ecg-canvas');
+        ecg.start();
         updateStatus();
     </script>
 </body>
