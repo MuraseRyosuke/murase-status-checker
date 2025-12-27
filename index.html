@@ -51,13 +51,6 @@
             --color-tune-bg: rgba(155, 89, 182, 0.15); 
             --color-tune-border: rgba(155, 89, 182, 0.5); 
 
-            /* 【保存用】将来の「72時間通知ボタン」用配色 (旧Tuneカラー)
-            --color-72h-bg: rgba(255, 204, 0, 0.15);
-            --color-72h-border: rgba(255, 204, 0, 0.5);
-            ライトモード文字色: #b38f00
-            ダークモード文字色: #ffcc00
-            */
-            
             /* Links */
             --color-link-light: #007aff;
             --color-link-dark: #0a84ff;
@@ -446,7 +439,10 @@
         <div class="mobile-grid-2" style="display: contents;">
             <div class="card card-small">
                 <div class="label">🔊騒音レベル</div>
-                <div id="sound_level" class="value" style="font-size: 1.4rem;">---</div>
+                <div class="value" style="font-size: 1.4rem;">
+                    <span id="sound_value">---</span>
+                    <span id="sound_label" class="unit" style="font-weight: 600;"></span>
+                </div>
             </div>
 
             <div class="card card-small">
@@ -664,7 +660,9 @@
                 updated: document.getElementById('last_updated'), 
                 heart: document.getElementById('heart_rate'), heartSub: document.getElementById('heart_sub'),
                 steps: document.getElementById('steps'), calories: document.getElementById('calories'), 
-                condition: document.getElementById('condition'), sound: document.getElementById('sound_level'),
+                condition: document.getElementById('condition'),
+                // 騒音レベルの要素を分離して取得 【修正箇所】
+                soundVal: document.getElementById('sound_value'), soundLabel: document.getElementById('sound_label'),
                 location: document.getElementById('location'), device: document.getElementById('device_status')
             };
             try {
@@ -689,41 +687,50 @@
                 const currentHeartRate = safeParseInt(content.health.heart_rate); 
                 ecg.setStatus(currentHeartRate, isAlive);
                 els.heart.textContent = currentHeartRate || 'N/A';
-                
-                // 心拍数の下には「更新時間」を表示（最も重要な情報のため）
                 els.heartSub.textContent = getRelativeTime(lastUpdated);
 
                 // --- 2. Activity (Movement) ---
                 const steps = safeParseInt(content.health.steps);
                 els.steps.textContent = steps ? steps.toLocaleString() : 'N/A';
-                
                 const cal = safeParseInt(content.health.active_calories);
                 els.calories.textContent = cal ? Math.round(cal).toLocaleString() : 'N/A';
 
-                // --- 3. Condition & Environment ---
+                // --- 3. Condition (HRV) ---
                 const hrv = safeParseFloat(content.health.condition_hrv);
                 if (hrv > 50) { els.condition.textContent = '良好✅'; els.condition.style.color = 'var(--color-good)'; }
                 else if (hrv > 30) { els.condition.textContent = '普通😐'; els.condition.style.color = 'var(--color-avg)'; }
                 else if (hrv > 0) { els.condition.textContent = '要注意⚠️'; els.condition.style.color = 'var(--color-bad)'; }
                 else { els.condition.textContent = 'N/A'; els.condition.style.color = 'inherit'; }
 
-                // Sound Level logic
-                if (content.environment && content.environment.sound_level_db) {
-                    const db = safeParseFloat(content.environment.sound_level_db);
-                    if (db > 0) {
-                        let dbLabel = '';
-                        if (db < 40) dbLabel = '(静寂)';
-                        else if (db < 70) dbLabel = '(普通)';
-                        else dbLabel = '(騒音)';
-                        els.sound.textContent = `${Math.round(db)}dB ${dbLabel}`;
+                // --- 4. Environment (Sound Level) 【修正箇所】 ---
+                // 騒音レベルの値とラベルを個別に設定し、ラベルに色を付ける
+                const dbStr = content.environment && content.environment.sound_level_db;
+                const db = safeParseFloat(dbStr);
+
+                if (db > 0) {
+                    els.soundVal.textContent = `${Math.round(db)}dB`;
+                    
+                    let labelText = '';
+                    let labelColor = 'inherit';
+
+                    if (db < 40) {
+                        labelText = '(静寂)';
+                        labelColor = 'var(--color-good)'; // 緑
+                    } else if (db < 70) {
+                        labelText = '(普通)';
+                        labelColor = 'var(--color-avg)'; // オレンジ
                     } else {
-                        els.sound.textContent = 'N/A';
+                        labelText = '(騒音)';
+                        labelColor = 'var(--color-bad)'; // 赤
                     }
+                    els.soundLabel.textContent = labelText;
+                    els.soundLabel.style.color = labelColor;
                 } else {
-                    els.sound.textContent = 'N/A';
+                    els.soundVal.textContent = 'N/A';
+                    els.soundLabel.textContent = '';
                 }
 
-                // --- 4. Context (Device & Location) ---
+                // --- 5. Context (Device & Location) ---
                 els.updated.textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 els.location.textContent = content.location.city || 'N/A';
                 els.device.textContent = `${content.device.battery}% ${content.device.is_charging === 'Yes' || content.device.is_charging === true ? '⚡️' : ''}`;
