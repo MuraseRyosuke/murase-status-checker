@@ -397,6 +397,21 @@
             .value { font-size: 1.6rem; }
             .card-tune-container { height: 80px; }
             .card-tune::after, .card-tune::before { display: none; }
+
+            /* 【追加】応答なし（ダークモード）の時だけTuneボタンを上に移動する */
+            body.dark-mode .card-status { order: 1; }
+            body.dark-mode .card-heart  { order: 2; }
+            body.dark-mode .card-tune-container { 
+                order: 3; 
+                margin-top: 0.5rem; 
+                margin-bottom: 1rem;
+                /* 緊急時は少し目立たせる */
+                background-color: rgba(155, 89, 182, 0.25) !important; 
+                border-color: rgba(155, 89, 182, 0.8) !important;
+            }
+            body.dark-mode .card-small, 
+            body.dark-mode .card-device-location { order: 4; }
+            body.dark-mode .footer-info { order: 5; }
         }
     </style>
 </head>
@@ -661,7 +676,6 @@
                 heart: document.getElementById('heart_rate'), heartSub: document.getElementById('heart_sub'),
                 steps: document.getElementById('steps'), calories: document.getElementById('calories'), 
                 condition: document.getElementById('condition'),
-                // 騒音レベルの要素を分離して取得 【修正箇所】
                 soundVal: document.getElementById('sound_value'), soundLabel: document.getElementById('sound_label'),
                 location: document.getElementById('location'), device: document.getElementById('device_status')
             };
@@ -702,8 +716,7 @@
                 else if (hrv > 0) { els.condition.textContent = '要注意⚠️'; els.condition.style.color = 'var(--color-bad)'; }
                 else { els.condition.textContent = 'N/A'; els.condition.style.color = 'inherit'; }
 
-                // --- 4. Environment (Sound Level) 【修正箇所】 ---
-                // 騒音レベルの値とラベルを個別に設定し、ラベルに色を付ける
+                // --- 4. Environment (Sound Level) ---
                 const dbStr = content.environment && content.environment.sound_level_db;
                 const db = safeParseFloat(dbStr);
 
@@ -715,13 +728,13 @@
 
                     if (db < 40) {
                         labelText = '(静寂)';
-                        labelColor = 'var(--color-good)'; // 緑
+                        labelColor = 'var(--color-good)';
                     } else if (db < 70) {
                         labelText = '(普通)';
-                        labelColor = 'var(--color-avg)'; // オレンジ
+                        labelColor = 'var(--color-avg)';
                     } else {
                         labelText = '(騒音)';
-                        labelColor = 'var(--color-bad)'; // 赤
+                        labelColor = 'var(--color-bad)';
                     }
                     els.soundLabel.textContent = labelText;
                     els.soundLabel.style.color = labelColor;
