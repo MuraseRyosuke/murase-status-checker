@@ -28,50 +28,26 @@
            Design Tokens & Variables
            ========================================= */
         :root {
-            /* Color Palette */
-            --color-light-bg: #f5f5f7;
-            --color-light-card: rgba(255, 255, 255, 0.65);
-            --color-light-text: #1d1d1f;
-            --color-light-sub: #86868b;
-            --color-light-border: rgba(255, 255, 255, 0.4);
-            
-            --color-dark-bg: #000000;
-            --color-dark-card: rgba(28, 28, 30, 0.65);
-            --color-dark-text: #f5f5f7;
-            --color-dark-sub: #86868b;
-            --color-dark-border: rgba(255, 255, 255, 0.1);
+            /* Common Colors */
+            --glass-blur: 20px;
+            --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
+            --radius-card: 24px;
 
             /* Status Indicators */
             --color-ecg-alive: rgba(46, 204, 113, 0.6);
             --color-ecg-lost: rgba(48, 209, 201, 0.6);
             
-            --color-good: #34c759;
-            --color-avg: #ff9f0a;
-            --color-bad: #ff3b30;
+            --color-good: #2e8b57; /* 視認性向上のため少し濃く */
+            --color-avg: #d97706;  /* 視認性向上のため少し濃く */
+            --color-bad: #dc2626;  /* 視認性向上のため少し濃く */
 
-            /* Tune Button Theme (Purple - "Yo" Style) */
+            /* Tune Button Theme (Purple) */
             --color-tune-bg: rgba(155, 89, 182, 0.15); 
             --color-tune-border: rgba(155, 89, 182, 0.5); 
-
-            /* [Reserved] Future Theme for 72h Notification Button (Yellow)
-            --color-72h-bg: rgba(255, 204, 0, 0.15);
-            --color-72h-border: rgba(255, 204, 0, 0.5);
-            --color-72h-text-light: #b38f00;
-            --color-72h-text-dark: #ffcc00;
-            */
-            
-            /* Links */
-            --color-link-light: #007aff;
-            --color-link-dark: #0a84ff;
-
-            /* Visual Effects */
-            --glass-blur: 20px;
-            --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
-            --radius-card: 24px;
         }
 
         /* =========================================
-           Base Styles
+           Base Styles & Theme Colors
            ========================================= */
         * { box-sizing: border-box; }
 
@@ -91,18 +67,40 @@
         a { text-decoration: none; }
         a:hover { text-decoration: underline; }
 
-        /* --- Theme Switching --- */
+        /* --- Light Mode Theme --- */
         body.light-mode { 
-            background-color: var(--color-light-bg); 
-            color: var(--color-light-text); 
-            --color-tune-text: #7d3c98; 
+            background-color: #f5f5f7; 
+            color: #1d1d1f; 
+            
+            /* Card Style */
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --card-border: rgba(255, 255, 255, 0.4);
+            
+            /* Text Colors (High Contrast) */
+            /* サブテキストの色を #86868b から #555559 に変更し、コントラスト比4.5:1以上を確保 */
+            --text-sub: #555559; 
+            --link-color: #0066cc;
+
+            /* Tune UI */
+            --color-tune-text: #6c3483; 
             --color-bubble-bg: #ffffff;
-            --color-bubble-text: #7d3c98; 
+            --color-bubble-text: #6c3483; 
         }
         
+        /* --- Dark Mode Theme --- */
         body.dark-mode { 
-            background-color: var(--color-dark-bg); 
-            color: var(--color-dark-text); 
+            background-color: #000000; 
+            color: #f5f5f7; 
+            
+            /* Card Style */
+            --card-bg: rgba(28, 28, 30, 0.65);
+            --card-border: rgba(255, 255, 255, 0.1);
+            
+            /* Text Colors */
+            --text-sub: #a1a1a6; /* ダークモードでも読みやすいグレー */
+            --link-color: #0a84ff;
+
+            /* Tune UI */
             --color-tune-text: #a569bd; 
             --color-bubble-bg: #333333;
             --color-bubble-text: #a569bd; 
@@ -114,6 +112,8 @@
         
         /* Glass Card */
         .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
             backdrop-filter: blur(var(--glass-blur));
             -webkit-backdrop-filter: blur(var(--glass-blur));
             border-radius: var(--radius-card);
@@ -122,15 +122,7 @@
             flex-direction: column;
             justify-content: space-between;
             box-shadow: var(--shadow-card);
-            transition: transform 0.2s ease;
-        }
-        body.light-mode .card {
-            background: var(--color-light-card);
-            border: 1px solid var(--color-light-border);
-        }
-        body.dark-mode .card {
-            background: var(--color-dark-card);
-            border: 1px solid var(--color-dark-border);
+            transition: transform 0.2s ease, background-color 0.5s ease;
         }
 
         /* Tune Button */
@@ -168,7 +160,7 @@
             letter-spacing: 0.05em;
         }
 
-        /* Tune Button Tooltip (PC only) */
+        /* Tune Tooltip (PC) */
         .card-tune::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -209,12 +201,8 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-        body.dark-mode .card-tune::after,
-        body.dark-mode .card-tune::before {
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-        }
-        body.dark-mode .card-tune::before { border: none; }
         body.dark-mode .card-tune::after {
+            border: 1px solid rgba(255, 255, 255, 0.2); 
             box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
         }
 
@@ -273,12 +261,12 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
         }
 
-        /* Text Utilities */
+        /* Text Utilities (Contrast Fixed) */
         .label {
             font-size: 0.85rem;
             font-weight: 600;
             letter-spacing: 0.05em;
-            opacity: 0.7;
+            color: var(--text-sub); /* 色指定に変更 */
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
@@ -294,14 +282,15 @@
         .unit {
             font-size: 0.9rem;
             font-weight: 500;
-            opacity: 0.6;
+            color: var(--text-sub); /* 色指定に変更 */
             margin-left: 0.2em;
         }
         .sub-value {
             font-size: 0.85rem;
-            opacity: 0.6;
+            color: var(--text-sub); /* 色指定に変更 */
             margin-top: 0.2em;
         }
+        a { color: var(--link-color); }
 
         /* =========================================
            Layout & Grid
@@ -334,7 +323,7 @@
         }
         #liveness-subtext {
             font-size: 0.95rem;
-            opacity: 0.8;
+            color: var(--text-sub);
             line-height: 1.5;
         }
         #liveness-subtext:empty { display: none; }
@@ -381,7 +370,7 @@
             grid-column: span 4;
             text-align: right;
             font-size: 0.8rem;
-            opacity: 0.8;
+            color: var(--text-sub);
             margin-top: 0.5rem;
         }
 
@@ -411,8 +400,7 @@
             .card-tune-container { height: 80px; }
             .card-tune::after, .card-tune::before { display: none; }
 
-            /* [Priority Reordering] 
-               When in Dark Mode (Not Responding), move Tune Button up for quick access */
+            /* [Priority Reordering] */
             body.dark-mode .card-status { order: 1; }
             body.dark-mode .card-heart  { order: 2; }
             body.dark-mode .card-tune-container { 
@@ -440,7 +428,7 @@
         </div>
 
         <div class="card card-profile" id="profile-card">
-            <img src="https://status.muraseryosuke.info/ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
+            <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
         </div>
 
         <div class="card card-heart">
@@ -524,7 +512,6 @@
         // =========================================
         // Helpers
         // =========================================
-        // Parse numbers safely from JSON strings (handles empty strings as 0)
         function safeParseInt(val) {
             if (!val || val === "") return 0;
             return parseInt(val, 10);
