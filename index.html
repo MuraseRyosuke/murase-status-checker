@@ -48,10 +48,10 @@
             --color-bad: #ff3b30;
 
             /* Tune Button Theme (Purple - "Yo" Style) */
-            --color-tune-bg: rgba(155, 89, 182, 0.15); /* アメジスト色の半透明背景 */
-            --color-tune-border: rgba(155, 89, 182, 0.5); /* アメジスト色の半透明枠線 */
+            --color-tune-bg: rgba(155, 89, 182, 0.15); 
+            --color-tune-border: rgba(155, 89, 182, 0.5); 
 
-            /* 【将来用】72時間通知ボタンの配色 (旧Tuneカラー)
+            /* 【保存用】将来の「72時間通知ボタン」用配色 (旧Tuneカラー)
             --color-72h-bg: rgba(255, 204, 0, 0.15);
             --color-72h-border: rgba(255, 204, 0, 0.5);
             ライトモード文字色: #b38f00
@@ -91,17 +91,17 @@
         body.light-mode { 
             background-color: var(--color-light-bg); 
             color: var(--color-light-text); 
-            --color-tune-text: #7d3c98; /* ライトモード用の濃い紫 */
+            --color-tune-text: #7d3c98; 
             --color-bubble-bg: #ffffff;
-            --color-bubble-text: #7d3c98; /* 吹き出しの文字色も紫に */
+            --color-bubble-text: #7d3c98; 
         }
         
         body.dark-mode { 
             background-color: var(--color-dark-bg); 
             color: var(--color-dark-text); 
-            --color-tune-text: #a569bd; /* ダークモード用の明るい紫 */
+            --color-tune-text: #a569bd; 
             --color-bubble-bg: #333333;
-            --color-bubble-text: #a569bd; /* 吹き出しの文字色も紫に */
+            --color-bubble-text: #a569bd; 
         }
 
         /* --- Component: Glass Card --- */
@@ -161,7 +161,7 @@
             letter-spacing: 0.05em;
         }
 
-        /* Tooltip (Caption) for PC */
+        /* Tooltip */
         .card-tune::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -202,21 +202,16 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-
         body.dark-mode .card-tune::after,
         body.dark-mode .card-tune::before {
             border: 1px solid rgba(255, 255, 255, 0.2); 
         }
-        body.dark-mode .card-tune::before {
-            border: none; 
-        }
+        body.dark-mode .card-tune::before { border: none; }
         body.dark-mode .card-tune::after {
             box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
         }
 
         /* --- Reaction Animations --- */
-        
-        /* 1. PC: Bubble (Speech Balloon) */
         .tune-bubble {
             position: absolute;
             top: 10%;
@@ -242,7 +237,6 @@
             100% { opacity: 0; transform: scale(0.9) translate(0, -10px); }
         }
 
-        /* 2. Mobile: Toast Notification */
         .tune-toast {
             position: fixed;
             bottom: 30px;
@@ -312,7 +306,7 @@
             max-width: 900px;
         }
 
-        /* 1. Status Message */
+        /* Card: Status Message */
         .card-status {
             grid-column: span 4;
             justify-content: center; 
@@ -336,7 +330,7 @@
         }
         #liveness-subtext:empty { display: none; }
 
-        /* 2. Profile Image */
+        /* Card: Profile Image */
         .card-profile {
             grid-column: span 1;
             padding: 0;
@@ -360,7 +354,7 @@
         }
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
 
-        /* 3. Heart Rate */
+        /* Card: Heart Rate (Vital) */
         .card-heart {
             grid-column: span 3;
             position: relative;
@@ -372,10 +366,10 @@
         }
         .card-heart .value { font-size: 4rem; letter-spacing: -0.05em; }
 
-        /* 4. Activity & Stats */
+        /* Card: Small Items */
         .card-small { grid-column: span 1; }
 
-        /* 5. Device & Location & Tune */
+        /* Card: Device & Location & Tune */
         .card-device-location { grid-column: span 1; }
         .card-tune-container { grid-column: span 2; }
 
@@ -409,7 +403,6 @@
             .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
             .value { font-size: 1.6rem; }
             .card-tune-container { height: 80px; }
-            /* スマホではキャプション(Tooltip)を非表示 */
             .card-tune::after, .card-tune::before { display: none; }
         }
     </style>
@@ -426,7 +419,7 @@
         </div>
 
         <div class="card card-profile" id="profile-card">
-            <img src="https://status.muraseryosuke.info/ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
+            <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
         </div>
 
         <div class="card card-heart">
@@ -435,7 +428,31 @@
                 <span id="heart_rate" class="value">---</span>
                 <span class="unit">BPM</span>
             </div>
-            <div id="heart_relative_time" class="sub-value" style="text-align: center; width: 100%;">---</div>
+            <div id="heart_sub" class="sub-value" style="text-align: center; width: 100%;">---</div>
+        </div>
+
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-device-location">
+                <div class="label">📍現在地</div>
+                <div id="location" class="value" style="font-size: 1.4rem;">---</div>
+            </div>
+            
+            <div class="card card-device-location">
+                <div class="label">🔋バッテリー</div>
+                <div id="device_status" class="value" style="font-size: 1.4rem;">---</div>
+            </div>
+        </div>
+
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-small">
+                <div class="label">🔊騒音レベル</div>
+                <div id="sound_level" class="value" style="font-size: 1.4rem;">---</div>
+            </div>
+
+            <div class="card card-small">
+                <div class="label">🩺体調</div>
+                <div id="condition" class="value" style="font-size: 1.5rem;">---</div>
+            </div>
         </div>
 
         <div class="mobile-grid-2" style="display: contents;">
@@ -452,30 +469,6 @@
                     <span id="calories" class="value">---</span>
                     <span class="unit">kcal</span>
                 </div>
-            </div>
-        </div>
-
-        <div class="mobile-grid-2" style="display: contents;">
-            <div class="card card-small">
-                <div class="label">🩺体調</div>
-                <div id="condition" class="value" style="font-size: 1.5rem;">---</div>
-            </div>
-
-            <div class="card card-small">
-                <div class="label">☀️起床時間</div>
-                <div id="wakeup_time" class="value" style="font-size: 1.5rem;">---</div>
-            </div>
-        </div>
-
-        <div class="mobile-grid-2" style="display: contents;">
-            <div class="card card-device-location">
-                <div class="label">📍現在地</div>
-                <div id="location" class="value" style="font-size: 1.4rem;">---</div>
-            </div>
-            
-            <div class="card card-device-location">
-                <div class="label">🔋バッテリー</div>
-                <div id="device_status" class="value" style="font-size: 1.4rem;">---</div>
             </div>
         </div>
 
@@ -501,6 +494,16 @@
             thresholdHours: 13,
             links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' }
         };
+
+        // --- Helper: 安全に数値をパースする関数 (空文字対策) ---
+        function safeParseInt(val) {
+            if (!val || val === "") return 0;
+            return parseInt(val, 10);
+        }
+        function safeParseFloat(val) {
+            if (!val || val === "") return 0;
+            return parseFloat(val);
+        }
 
         // --- Tune Feature Logic ---
         function checkCooldown() {
@@ -530,25 +533,20 @@
             const profileCard = document.getElementById('profile-card');
             const isMobile = window.getComputedStyle(profileCard).display === 'none';
             
-            // 絵文字を変更
             const messages = ['👋Tune!', '📡送信しました！', '👍Thanks!', '💫届きました！'];
             const randomMsg = messages[Math.floor(Math.random() * messages.length)];
 
             if (isMobile) {
-                // Mobile: Toast Notification at Bottom
                 const toast = document.createElement('div');
                 toast.className = 'tune-toast';
                 toast.innerHTML = `<span>${randomMsg}</span>`;
                 document.body.appendChild(toast);
-                
                 setTimeout(() => toast.remove(), 3000);
             } else {
-                // PC: Speech Bubble from Profile Image
                 const bubble = document.createElement('div');
                 bubble.className = 'tune-bubble';
                 bubble.textContent = randomMsg;
                 profileCard.appendChild(bubble);
-
                 setTimeout(() => bubble.remove(), 2500);
             }
         }
@@ -559,13 +557,11 @@
             
             if (btn.classList.contains('disabled')) return;
 
-            // Trigger visual reaction first
             showTuneReaction();
 
             label.textContent = 'Tuning...';
             btn.classList.add('disabled'); 
 
-            // Simple Request via URL Parameters
             const url = `https://ntfy.sh/${NTFY_TOPIC}?title=%E2%9A%A1%EF%B8%8F%20Tune%20Received&priority=default&tags=zap,yellow_circle`;
 
             fetch(url, {
@@ -596,7 +592,6 @@
             });
         }
 
-        // Initialize Tune Cooldown
         document.addEventListener('DOMContentLoaded', checkCooldown);
 
 
@@ -649,7 +644,7 @@
         const ecg = new ECGMonitor('ecg-canvas');
         ecg.start();
 
-        // --- Data Handling & UI Updates ---
+        // --- Data Handling ---
         function getRelativeTime(date) {
             const now = new Date();
             const diffMs = now - date;
@@ -666,24 +661,22 @@
         async function updateStatus() {
             const els = {
                 body: document.body, message: document.getElementById('liveness-message'), subtext: document.getElementById('liveness-subtext'),
-                updated: document.getElementById('last_updated'), heart: document.getElementById('heart_rate'), 
-                heartTime: document.getElementById('heart_relative_time'),
-                steps: document.getElementById('steps'),
-                calories: document.getElementById('calories'), location: document.getElementById('location'), device: document.getElementById('device_status'),
-                wakeup: document.getElementById('wakeup_time'), condition: document.getElementById('condition')
+                updated: document.getElementById('last_updated'), 
+                heart: document.getElementById('heart_rate'), heartSub: document.getElementById('heart_sub'),
+                steps: document.getElementById('steps'), calories: document.getElementById('calories'), 
+                condition: document.getElementById('condition'), sound: document.getElementById('sound_level'),
+                location: document.getElementById('location'), device: document.getElementById('device_status')
             };
             try {
-                // Fetch data with timestamp to avoid caching
                 const response = await fetch(`https://api.github.com/gists/${CONFIG.gistId}?t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error(`API Error: ${response.status}`);
                 const gist = await response.json();
                 if (!gist.files || !gist.files[CONFIG.gistFileName]) throw new Error('Gist file not found');
-                
                 const content = JSON.parse(gist.files[CONFIG.gistFileName].content);
                 const lastUpdated = new Date(content.last_updated);
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 
-                // Determine Liveness Mode
+                // --- Liveness Check ---
                 const isAlive = diffHours <= CONFIG.thresholdHours;
                 if (isAlive) {
                     els.body.className = 'light-mode'; els.message.textContent = '村瀨亮介は生きています。'; els.subtext.textContent = '';
@@ -692,28 +685,49 @@
                     els.subtext.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank" rel="noopener noreferrer">X</a> または <a href="${CONFIG.links.dosei}" target="_blank" rel="noopener noreferrer">村瀨動静</a> へ`;
                 }
 
-                // Update Visuals
-                const currentHeartRate = parseInt(content.health.heart_rate, 10);
+                // --- 1. Heart Rate (Vital) ---
+                const currentHeartRate = safeParseInt(content.health.heart_rate); 
                 ecg.setStatus(currentHeartRate, isAlive);
-
-                els.updated.textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 els.heart.textContent = currentHeartRate || 'N/A';
-                els.heartTime.textContent = getRelativeTime(lastUpdated);
-
-                els.steps.textContent = content.health.steps || 'N/A';
-                els.calories.textContent = content.health.active_calories ? Math.round(content.health.active_calories) : 'N/A';
-                els.location.textContent = content.location.city || 'N/A';
-                els.device.textContent = `${content.device.battery}% ${content.device.is_charging === true ? '⚡️' : ''}`;
                 
-                if (content.health.wakeup_time) {
-                    els.wakeup.textContent = new Date(content.health.wakeup_time).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-                } else { els.wakeup.textContent = '---'; }
+                // 心拍数の下には「更新時間」を表示（最も重要な情報のため）
+                els.heartSub.textContent = getRelativeTime(lastUpdated);
 
-                const hrv = parseFloat(content.health.condition_hrv);
+                // --- 2. Activity (Movement) ---
+                const steps = safeParseInt(content.health.steps);
+                els.steps.textContent = steps ? steps.toLocaleString() : 'N/A';
+                
+                const cal = safeParseInt(content.health.active_calories);
+                els.calories.textContent = cal ? Math.round(cal).toLocaleString() : 'N/A';
+
+                // --- 3. Condition & Environment ---
+                const hrv = safeParseFloat(content.health.condition_hrv);
                 if (hrv > 50) { els.condition.textContent = '良好✅'; els.condition.style.color = 'var(--color-good)'; }
                 else if (hrv > 30) { els.condition.textContent = '普通😐'; els.condition.style.color = 'var(--color-avg)'; }
-                else if (hrv) { els.condition.textContent = '要注意⚠️'; els.condition.style.color = 'var(--color-bad)'; }
+                else if (hrv > 0) { els.condition.textContent = '要注意⚠️'; els.condition.style.color = 'var(--color-bad)'; }
                 else { els.condition.textContent = 'N/A'; els.condition.style.color = 'inherit'; }
+
+                // Sound Level logic
+                if (content.environment && content.environment.sound_level_db) {
+                    const db = safeParseFloat(content.environment.sound_level_db);
+                    if (db > 0) {
+                        let dbLabel = '';
+                        if (db < 40) dbLabel = '(静寂)';
+                        else if (db < 70) dbLabel = '(普通)';
+                        else dbLabel = '(騒音)';
+                        els.sound.textContent = `${Math.round(db)}dB ${dbLabel}`;
+                    } else {
+                        els.sound.textContent = 'N/A';
+                    }
+                } else {
+                    els.sound.textContent = 'N/A';
+                }
+
+                // --- 4. Context (Device & Location) ---
+                els.updated.textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
+                els.location.textContent = content.location.city || 'N/A';
+                els.device.textContent = `${content.device.battery}% ${content.device.is_charging === 'Yes' || content.device.is_charging === true ? '⚡️' : ''}`;
+
             } catch (error) {
                 console.error('Status Update Failed:', error);
                 els.message.textContent = '読み込み失敗';
