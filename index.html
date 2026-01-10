@@ -28,27 +28,18 @@
            Design Tokens & Variables
            ========================================= */
         :root {
-            /* Common Colors */
             --glass-blur: 20px;
             --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
             --radius-card: 24px;
-
-            /* Status Indicators */
             --color-ecg-alive: rgba(46, 204, 113, 0.6);
             --color-ecg-lost: rgba(48, 209, 201, 0.6);
-            
             --color-good: #2e8b57;
             --color-avg: #d97706;
             --color-bad: #dc2626;
-
-            /* Tune Button Theme (Purple) */
             --color-tune-bg: rgba(155, 89, 182, 0.15); 
             --color-tune-border: rgba(155, 89, 182, 0.5); 
         }
 
-        /* =========================================
-           Base Styles & Theme Colors
-           ========================================= */
         * { box-sizing: border-box; }
 
         body {
@@ -67,49 +58,31 @@
         a { text-decoration: none; }
         a:hover { text-decoration: underline; }
 
-        /* --- Light Mode Theme --- */
+        /* Themes */
         body.light-mode { 
             background-color: #f5f5f7; 
             color: #1d1d1f; 
-            
-            /* Card Style */
             --card-bg: rgba(255, 255, 255, 0.65);
             --card-border: rgba(255, 255, 255, 0.4);
-            
-            /* Text Colors (High Contrast) */
             --text-sub: #555559; 
             --link-color: #0066cc;
-
-            /* Tune UI */
             --color-tune-text: #6c3483; 
             --color-bubble-bg: #ffffff;
             --color-bubble-text: #6c3483; 
         }
-        
-        /* --- Dark Mode Theme --- */
         body.dark-mode { 
             background-color: #000000; 
             color: #f5f5f7; 
-            
-            /* Card Style */
             --card-bg: rgba(28, 28, 30, 0.65);
             --card-border: rgba(255, 255, 255, 0.1);
-            
-            /* Text Colors */
             --text-sub: #a1a1a6; 
             --link-color: #0a84ff;
-
-            /* Tune UI */
             --color-tune-text: #a569bd; 
             --color-bubble-bg: #333333;
             --color-bubble-text: #a569bd; 
         }
 
-        /* =========================================
-           Components
-           ========================================= */
-        
-        /* Glass Card */
+        /* Components */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -124,7 +97,6 @@
             transition: transform 0.2s ease, background-color 0.5s ease;
         }
 
-        /* Tune Button */
         .card-tune {
             background: var(--color-tune-bg) !important;
             border: 1px solid var(--color-tune-border) !important;
@@ -138,120 +110,49 @@
             user-select: none;
             z-index: 10;
         }
-        .card-tune:active {
-            transform: scale(0.96);
-            opacity: 0.8;
-        }
-        .card-tune.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            filter: grayscale(0.5);
-            pointer-events: none; 
-        }
-        .tune-icon {
-            font-size: 1.5rem;
-            margin-bottom: 0.2em;
-        }
-        .tune-label {
-            font-weight: 700;
-            font-size: 1rem;
-            text-transform: none; 
-            letter-spacing: 0.05em;
-        }
+        .card-tune:active { transform: scale(0.96); opacity: 0.8; }
+        .card-tune.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
+        .tune-icon { font-size: 1.5rem; margin-bottom: 0.2em; }
+        .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
 
-        /* Tune Tooltip (PC) */
+        /* Tune Tooltip */
         .card-tune::after {
             content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
+            position: absolute; bottom: 100%; left: 50%;
             transform: translateX(-50%) translateY(10px);
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(4px);
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s, transform 0.2s;
-            z-index: 30;
-            margin-bottom: 12px;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); color: #fff;
+            padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 500;
+            white-space: nowrap; opacity: 0; pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s; z-index: 30; margin-bottom: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        .card-tune::before {
-            content: '';
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(10px);
-            border: 6px solid transparent;
-            border-top-color: rgba(0, 0, 0, 0.85);
-            opacity: 0;
-            transition: opacity 0.2s, transform 0.2s;
-            pointer-events: none;
-            z-index: 30;
-            margin-bottom: 0px;
-        }
-        .card-tune:hover::after,
-        .card-tune:hover::before {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-        body.dark-mode .card-tune::after {
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
-        }
+        .card-tune:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        /* Reaction Animations */
+        /* Animations */
         .tune-bubble {
-            position: absolute;
-            top: 10%;
-            right: -10%;
-            background: var(--color-bubble-bg);
-            color: var(--color-bubble-text);
-            padding: 8px 16px;
-            border-radius: 12px;
-            border-bottom-left-radius: 2px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            opacity: 0;
-            z-index: 100;
-            white-space: nowrap;
+            position: absolute; top: 10%; right: -10%;
+            background: var(--color-bubble-bg); color: var(--color-bubble-text);
+            padding: 8px 16px; border-radius: 12px; border-bottom-left-radius: 2px;
+            font-weight: 700; font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; z-index: 100;
+            white-space: nowrap; pointer-events: none;
             animation: bubblePop 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-            pointer-events: none;
         }
         @keyframes bubblePop {
             0% { opacity: 0; transform: scale(0.8) translate(-10px, 10px); }
             15% { opacity: 1; transform: scale(1) translate(0, 0); }
-            80% { opacity: 1; transform: scale(1) translate(0, 0); }
             100% { opacity: 0; transform: scale(0.9) translate(0, -10px); }
         }
 
         .tune-toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
+            position: fixed; bottom: 30px; left: 50%;
             transform: translateX(-50%) translateY(20px);
-            background: rgba(20, 20, 20, 0.9);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            opacity: 0;
-            z-index: 9999;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            backdrop-filter: blur(8px);
+            background: rgba(20, 20, 20, 0.9); color: #fff;
+            padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; z-index: 9999;
+            white-space: nowrap; display: flex; align-items: center; gap: 8px;
+            backdrop-filter: blur(8px); pointer-events: none;
             animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-            pointer-events: none;
         }
         @keyframes toastSlideUp {
             0% { opacity: 0; transform: translateX(-50%) translateY(30px); }
@@ -260,133 +161,50 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
         }
 
-        /* Text Utilities */
+        /* Typography */
         .label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            color: var(--text-sub); 
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4em;
-            align-self: flex-start;
-            width: 100%;
+            font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; color: var(--text-sub);
+            margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4em; width: 100%;
         }
-        .value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            line-height: 1.1;
-        }
-        .unit {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-sub); 
-            margin-left: 0.2em;
-        }
-        .sub-value {
-            font-size: 0.85rem;
-            color: var(--text-sub); 
-            margin-top: 0.2em;
-        }
+        .value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
+        .unit { font-size: 0.9rem; font-weight: 500; color: var(--text-sub); margin-left: 0.2em; }
+        .sub-value { font-size: 0.85rem; color: var(--text-sub); margin-top: 0.2em; }
         a { color: var(--link-color); }
 
-        /* =========================================
-           Layout & Grid
-           ========================================= */
+        /* Grid */
         .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-auto-rows: minmax(110px, auto);
-            gap: 1.25rem;
-            width: 100%;
-            max-width: 900px;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: minmax(110px, auto); gap: 1.25rem;
+            width: 100%; max-width: 900px;
         }
-
-        /* Grid Items */
         .card-status {
-            grid-column: span 4;
-            justify-content: center; 
-            align-items: center;
-            text-align: center;
-            padding: 2rem 1rem;
-            min-height: 160px;
-            gap: 0.8rem;
+            grid-column: span 4; justify-content: center; align-items: center;
+            text-align: center; padding: 2rem 1rem; min-height: 160px; gap: 0.8rem;
         }
-        #liveness-message {
-            font-size: clamp(1.8rem, 5vw, 2.8rem);
-            font-weight: 800;
-            line-height: 1.2;
-            margin: 0;
-            word-wrap: break-word;
-        }
-        #liveness-subtext {
-            font-size: 0.95rem;
-            color: var(--text-sub);
-            line-height: 1.5;
-        }
-        #liveness-subtext:empty { display: none; }
-
+        #liveness-message { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; }
+        #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; }
+        
         .card-profile {
-            grid-column: span 1;
-            padding: 0;
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: visible !important; 
-            position: relative;
+            grid-column: span 1; padding: 0; background: transparent !important; border: none !important;
+            box-shadow: none !important; display: flex; align-items: center; justify-content: center;
         }
         .profile-img {
-            width: 100%;
-            height: 100%;
-            aspect-ratio: 1/1;
-            border-radius: 24px;
-            object-fit: cover;
-            box-shadow: var(--shadow-card);
-            transition: filter 0.5s;
+            width: 100%; height: 100%; aspect-ratio: 1/1; border-radius: 24px;
+            object-fit: cover; box-shadow: var(--shadow-card); transition: filter 0.5s;
         }
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
 
-        .card-heart {
-            grid-column: span 3;
-            position: relative;
-            align-items: center;
-        }
-        .heart-value-container {
-            text-align: center;
-            width: 100%;
-        }
+        .card-heart { grid-column: span 3; position: relative; align-items: center; }
+        .heart-value-container { text-align: center; width: 100%; }
         .card-heart .value { font-size: 4rem; letter-spacing: -0.05em; }
 
         .card-small { grid-column: span 1; }
         .card-device-location { grid-column: span 1; }
         .card-tune-container { grid-column: span 2; }
+        .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
 
-        .footer-info {
-            grid-column: span 4;
-            text-align: right;
-            font-size: 0.8rem;
-            color: var(--text-sub);
-            margin-top: 0.5rem;
-        }
+        #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
 
-        #ecg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.4;
-            pointer-events: none;
-        }
-
-        /* =========================================
-           Mobile Responsiveness
-           ========================================= */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; }
             .dashboard-grid { display: flex; flex-direction: column; gap: 1rem; }
@@ -397,20 +215,16 @@
             .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
             .value { font-size: 1.6rem; }
             .card-tune-container { height: 80px; }
-            .card-tune::after, .card-tune::before { display: none; }
-
-            /* [Priority Reordering] */
+            .card-tune::after { display: none; }
+            
             body.dark-mode .card-status { order: 1; }
             body.dark-mode .card-heart  { order: 2; }
             body.dark-mode .card-tune-container { 
-                order: 3; 
-                margin-top: 0.5rem; 
-                margin-bottom: 1rem;
+                order: 3; margin-top: 0.5rem; margin-bottom: 1rem;
                 background-color: rgba(155, 89, 182, 0.25) !important; 
                 border-color: rgba(155, 89, 182, 0.8) !important;
             }
-            body.dark-mode .card-small, 
-            body.dark-mode .card-device-location { order: 4; }
+            body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; }
             body.dark-mode .footer-info { order: 5; }
         }
     </style>
@@ -436,42 +250,17 @@
                 <span id="heart_rate" class="value">---</span>
                 <span class="unit">BPM</span>
             </div>
-            <div id="heart_sub" class="sub-value" style="text-align: center; width: 100%;">---</div>
-        </div>
-
-        <div class="mobile-grid-2" style="display: contents;">
-            <div class="card card-device-location">
-                <div class="label">📍現在地</div>
-                <div id="location" class="value" style="font-size: 1.4rem;">---</div>
-            </div>
-            
-            <div class="card card-device-location">
-                <div class="label">🔋バッテリー</div>
-                <div id="device_status" class="value" style="font-size: 1.4rem;">---</div>
-            </div>
-        </div>
-
-        <div class="mobile-grid-2" style="display: contents;">
-            <div class="card card-small">
-                <div class="label">🔊騒音レベル</div>
-                <div class="value" style="font-size: 1.4rem;">
-                    <span id="sound_value">---</span>
-                    <span id="sound_label" class="unit" style="font-weight: 600;"></span>
-                </div>
-            </div>
-
-            <div class="card card-small">
-                <div class="label">🩺体調</div>
-                <div id="condition" class="value" style="font-size: 1.5rem;">---</div>
+            <div class="sub-value" style="text-align: center; width: 100%;">
+                <span id="heart_sub">---</span>
+                <span style="margin: 0 4px; opacity: 0.3;">|</span>
+                <span>安静時: <span id="resting_hr">---</span></span>
             </div>
         </div>
 
         <div class="mobile-grid-2" style="display: contents;">
             <div class="card card-small">
                 <div class="label">👟歩数</div>
-                <div>
-                    <span id="steps" class="value">---</span>
-                </div>
+                <div><span id="steps" class="value">---</span></div>
             </div>
 
             <div class="card card-small">
@@ -480,6 +269,69 @@
                     <span id="calories" class="value">---</span>
                     <span class="unit">kcal</span>
                 </div>
+            </div>
+        </div>
+
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-small">
+                <div class="label">🚶歩行速度</div>
+                <div>
+                    <span id="walking_speed" class="value">---</span>
+                    <span class="unit">km/h</span>
+                </div>
+            </div>
+
+            <div class="card card-small">
+                <div class="label">⚖️バランス(非対称)</div>
+                <div>
+                    <span id="walking_asymmetry" class="value">---</span>
+                    <span class="unit">%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-small">
+                <div class="label">🕴️スタンド</div>
+                <div>
+                    <span id="stand_hours" class="value">---</span>
+                    <span class="unit">時間</span>
+                </div>
+            </div>
+
+            <div class="card card-small">
+                <div class="label">🧗階数</div>
+                <div>
+                    <span id="flights" class="value">---</span>
+                    <span class="unit">階</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-small">
+                <div class="label">🩺体調 (HRV)</div>
+                <div id="condition" class="value" style="font-size: 1.5rem;">---</div>
+            </div>
+
+            <div class="card card-small">
+                <div class="label">🔊騒音</div>
+                <div class="value" style="font-size: 1.4rem;">
+                    <span id="sound_value">---</span>
+                    <span id="sound_label" class="unit" style="font-weight: 600;"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-device-location">
+                <div class="label">📍現在地</div>
+                <div id="location" class="value" style="font-size: 1.4rem;">---</div>
+            </div>
+
+            <div class="card card-device-location">
+                <div class="label">🔋バッテリー</div>
+                <div id="device_status" class="value" style="font-size: 1.4rem;">---</div>
             </div>
         </div>
 
@@ -495,12 +347,8 @@
     </main>
 
     <script>
-        // =========================================
-        // Configuration & Constants
-        // =========================================
         const NTFY_TOPIC = 'murase_status_tune'; 
-        const TUNE_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
-
+        const TUNE_COOLDOWN_MS = 30 * 60 * 1000; 
         const CONFIG = {
             gistId: '1f81b107b898201a865a613c319d579b',
             gistFileName: 'murase_status.json',
@@ -508,17 +356,8 @@
             links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' }
         };
 
-        // =========================================
-        // Helpers
-        // =========================================
-        function safeParseInt(val) {
-            if (!val || val === "") return 0;
-            return parseInt(val, 10);
-        }
-        function safeParseFloat(val) {
-            if (!val || val === "") return 0;
-            return parseFloat(val);
-        }
+        function safeParseInt(val) { if (!val || val === "") return 0; return parseInt(val, 10); }
+        function safeParseFloat(val) { if (!val || val === "") return 0; return parseFloat(val); }
 
         function getRelativeTime(date) {
             const now = new Date();
@@ -526,35 +365,26 @@
             const diffMins = Math.floor(diffMs / 60000);
             const diffHours = Math.floor(diffMins / 60);
             const diffDays = Math.floor(diffHours / 24);
-
             if (diffMins < 1) return 'たった今';
             if (diffMins < 60) return `${diffMins}分前`;
             if (diffHours < 24) return `${diffHours}時間前`;
             return `${diffDays}日前`;
         }
 
-        // =========================================
-        // Tune Feature Logic
-        // =========================================
         function checkCooldown() {
             const lastTune = localStorage.getItem('lastTuneTime');
             if (lastTune) {
                 const elapsed = Date.now() - parseInt(lastTune, 10);
-                if (elapsed < TUNE_COOLDOWN_MS) {
-                    disableTuneBtn(TUNE_COOLDOWN_MS - elapsed);
-                }
+                if (elapsed < TUNE_COOLDOWN_MS) disableTuneBtn(TUNE_COOLDOWN_MS - elapsed);
             }
         }
 
         function disableTuneBtn(remainingTime) {
             const btn = document.querySelector('.card-tune');
             const label = document.getElementById('tune-text');
-            btn.classList.add('disabled');
-            label.textContent = 'Stay Tuned!'; 
-            
+            btn.classList.add('disabled'); label.textContent = 'Stay Tuned!'; 
             setTimeout(() => {
-                btn.classList.remove('disabled');
-                label.textContent = 'Tune';
+                btn.classList.remove('disabled'); label.textContent = 'Tune';
                 localStorage.removeItem('lastTuneTime');
             }, remainingTime);
         }
@@ -562,41 +392,30 @@
         function showTuneReaction() {
             const profileCard = document.getElementById('profile-card');
             const isMobile = window.getComputedStyle(profileCard).display === 'none';
-            
             const messages = ['👋Tune!', '📡送信しました！', '👍Thanks!', '💫届きました！'];
             const randomMsg = messages[Math.floor(Math.random() * messages.length)];
 
             if (isMobile) {
                 const toast = document.createElement('div');
-                toast.className = 'tune-toast';
-                toast.innerHTML = `<span>${randomMsg}</span>`;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 3000);
+                toast.className = 'tune-toast'; toast.innerHTML = `<span>${randomMsg}</span>`;
+                document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000);
             } else {
                 const bubble = document.createElement('div');
-                bubble.className = 'tune-bubble';
-                bubble.textContent = randomMsg;
-                profileCard.appendChild(bubble);
-                setTimeout(() => bubble.remove(), 2500);
+                bubble.className = 'tune-bubble'; bubble.textContent = randomMsg;
+                profileCard.appendChild(bubble); setTimeout(() => bubble.remove(), 2500);
             }
         }
 
         function sendTune() {
             const btn = document.querySelector('.card-tune');
             const label = document.getElementById('tune-text');
-            
             if (btn.classList.contains('disabled')) return;
 
             showTuneReaction();
+            label.textContent = 'Tuning...'; btn.classList.add('disabled'); 
 
-            label.textContent = 'Tuning...';
-            btn.classList.add('disabled'); 
-
-            const url = `https://ntfy.sh/${NTFY_TOPIC}?title=%E2%9A%A1%EF%B8%8F%20Tune%20Received&priority=default&tags=zap,yellow_circle`;
-
-            fetch(url, {
-                method: 'POST',
-                body: 'Tuneを受信しました。'
+            fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=%E2%9A%A1%EF%B8%8F%20Tune%20Received&priority=default&tags=zap,yellow_circle`, {
+                method: 'POST', body: 'Tuneを受信しました。'
             })
             .then(response => {
                 if (response.ok) {
@@ -604,47 +423,26 @@
                     localStorage.setItem('lastTuneTime', Date.now().toString());
                     disableTuneBtn(TUNE_COOLDOWN_MS);
                 } else {
-                    console.error('Tune Error:', response.status);
                     label.textContent = 'エラー';
-                    setTimeout(() => {
-                        btn.classList.remove('disabled');
-                        label.textContent = 'Tune';
-                    }, 3000);
+                    setTimeout(() => { btn.classList.remove('disabled'); label.textContent = 'Tune'; }, 3000);
                 }
             })
             .catch(err => {
-                console.error('Tune Network Error:', err);
                 label.textContent = '通信エラー';
-                setTimeout(() => {
-                    btn.classList.remove('disabled');
-                    label.textContent = 'Tune';
-                }, 3000);
+                setTimeout(() => { btn.classList.remove('disabled'); label.textContent = 'Tune'; }, 3000);
             });
         }
 
-        // =========================================
-        // ECG Animation Monitor (Mobile Scroll Fix Applied)
-        // =========================================
         class ECGMonitor {
             constructor(canvasId) {
                 this.canvas = document.getElementById(canvasId);
                 this.ctx = this.canvas.getContext('2d');
                 this.x = 0; this.y = window.innerHeight / 2;
                 this.targetBPM = 60; this.lastBeatTime = 0; this.isAlive = true;
-                
-                // 初回のサイズ設定
                 this.resize();
-                
-                // [Fix] 横幅を保存しておく（スマホの縦スクロール対策）
                 this.lastWidth = window.innerWidth;
-
-                // イベントリスナー
                 window.addEventListener('resize', () => {
-                    // 横幅が変わった時だけリサイズ処理を行う
-                    if (window.innerWidth !== this.lastWidth) {
-                        this.lastWidth = window.innerWidth;
-                        this.resize();
-                    }
+                    if (window.innerWidth !== this.lastWidth) { this.lastWidth = window.innerWidth; this.resize(); }
                 });
             }
             resize() {
@@ -652,10 +450,7 @@
                 this.height = this.canvas.height = window.innerHeight;
                 this.x = 0; this.y = this.height / 2;
             }
-            setStatus(bpm, isAlive) {
-                this.targetBPM = bpm > 0 ? bpm : 60;
-                this.isAlive = isAlive;
-            }
+            setStatus(bpm, isAlive) { this.targetBPM = bpm > 0 ? bpm : 60; this.isAlive = isAlive; }
             draw() {
                 const currentBPM = this.isAlive ? this.targetBPM : 0;
                 const beatInterval = currentBPM > 0 ? 60000 / currentBPM : Infinity;
@@ -672,11 +467,9 @@
                 }
                 this.y = this.y * 0.9 + newY * 0.1;
                 this.ctx.lineTo(this.x, this.y);
-                
                 const isDark = document.body.classList.contains('dark-mode');
                 const style = getComputedStyle(document.body);
                 this.ctx.strokeStyle = style.getPropertyValue(isDark ? '--color-ecg-lost' : '--color-ecg-alive').trim();
-                
                 this.ctx.lineWidth = 2; this.ctx.stroke();
                 this.x++;
                 if (this.x > this.width) { this.x = 0; this.ctx.clearRect(0, 0, this.width, this.height); }
@@ -685,15 +478,15 @@
             start() { this.draw(); }
         }
 
-        // =========================================
-        // Main Logic: Data Fetch & UI Update
-        // =========================================
         async function updateStatus() {
             const els = {
                 body: document.body, message: document.getElementById('liveness-message'), subtext: document.getElementById('liveness-subtext'),
                 updated: document.getElementById('last_updated'), 
                 heart: document.getElementById('heart_rate'), heartSub: document.getElementById('heart_sub'),
+                restingHr: document.getElementById('resting_hr'),
                 steps: document.getElementById('steps'), calories: document.getElementById('calories'), 
+                speed: document.getElementById('walking_speed'), asymmetry: document.getElementById('walking_asymmetry'),
+                stand: document.getElementById('stand_hours'), flights: document.getElementById('flights'),
                 condition: document.getElementById('condition'),
                 soundVal: document.getElementById('sound_value'), soundLabel: document.getElementById('sound_label'),
                 location: document.getElementById('location'), device: document.getElementById('device_status')
@@ -707,7 +500,6 @@
                 const lastUpdated = new Date(content.last_updated);
                 const diffHours = (new Date() - lastUpdated) / (1000 * 60 * 60);
                 
-                // --- Liveness Check ---
                 const isAlive = diffHours <= CONFIG.thresholdHours;
                 if (isAlive) {
                     els.body.className = 'light-mode'; els.message.textContent = '村瀨亮介は生きています。'; els.subtext.textContent = '';
@@ -716,44 +508,60 @@
                     els.subtext.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank" rel="noopener noreferrer">X</a> または <a href="${CONFIG.links.dosei}" target="_blank" rel="noopener noreferrer">村瀨動静</a> へ`;
                 }
 
-                // --- 1. Heart Rate ---
+                // Vitals
                 const currentHeartRate = safeParseInt(content.health.heart_rate); 
                 ecg.setStatus(currentHeartRate, isAlive);
                 els.heart.textContent = currentHeartRate || 'N/A';
                 els.heartSub.textContent = getRelativeTime(lastUpdated);
+                
+                els.restingHr.textContent = safeParseInt(content.health.resting_heart_rate) || '--';
 
-                // --- 2. Activity ---
-                const steps = safeParseInt(content.health.steps);
-                els.steps.textContent = steps ? steps.toLocaleString() : 'N/A';
-                const cal = safeParseInt(content.health.active_calories);
-                els.calories.textContent = cal ? Math.round(cal).toLocaleString() : 'N/A';
+                // Activity
+                els.steps.textContent = safeParseInt(content.health.steps).toLocaleString();
+                els.calories.textContent = Math.round(safeParseInt(content.health.active_calories)).toLocaleString();
+                
+                const speed = safeParseFloat(content.health.walking_speed);
+                els.speed.textContent = speed ? speed.toFixed(1) : '--';
+                
+                const asymmetry = safeParseFloat(content.health.walking_asymmetry);
+                // HealthKit usually provides asymmetry as a fraction (e.g. 0.05 for 5%)
+                // We display as percentage.
+                if (content.health.walking_asymmetry !== undefined && content.health.walking_asymmetry !== "") {
+                     els.asymmetry.textContent = (asymmetry * 100).toFixed(0); 
+                } else {
+                     els.asymmetry.textContent = '--';
+                }
 
-                // --- 3. Condition ---
+                // Vertical
+                const stand = safeParseInt(content.health.stand_hours);
+                els.stand.textContent = stand || '0';
+                
+                const flights = safeParseInt(content.health.flights_climbed);
+                els.flights.textContent = flights || '0';
+
+                // Condition
                 const hrv = safeParseFloat(content.health.condition_hrv);
                 if (hrv > 50) { els.condition.textContent = '良好✅'; els.condition.style.color = 'var(--color-good)'; }
                 else if (hrv > 30) { els.condition.textContent = '普通😐'; els.condition.style.color = 'var(--color-avg)'; }
                 else if (hrv > 0) { els.condition.textContent = '要注意⚠️'; els.condition.style.color = 'var(--color-bad)'; }
                 else { els.condition.textContent = 'N/A'; els.condition.style.color = 'inherit'; }
 
-                // --- 4. Environment (Sound) ---
+                // Environment
                 const dbStr = content.environment && content.environment.sound_level_db;
                 const db = safeParseFloat(dbStr);
-
                 if (db > 0) {
                     els.soundVal.textContent = `${Math.round(db)}dB`;
                     let labelText = '', labelColor = 'inherit';
                     if (db < 40) { labelText = '(静寂)'; labelColor = 'var(--color-good)'; }
                     else if (db < 70) { labelText = '(普通)'; labelColor = 'var(--color-avg)'; }
                     else { labelText = '(騒音)'; labelColor = 'var(--color-bad)'; }
-                    
                     els.soundLabel.textContent = labelText;
                     els.soundLabel.style.color = labelColor;
                 } else {
-                    els.soundVal.textContent = 'N/A';
-                    els.soundLabel.textContent = '';
+                    els.soundVal.textContent = 'N/A'; els.soundLabel.textContent = '';
                 }
 
-                // --- 5. Context ---
+                // Context
                 els.updated.textContent = lastUpdated.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 els.location.textContent = content.location.city || 'N/A';
                 els.device.textContent = `${content.device.battery}% ${content.device.is_charging === 'Yes' || content.device.is_charging === true ? '⚡️' : ''}`;
@@ -764,7 +572,6 @@
             }
         }
 
-        // --- Initialization ---
         document.addEventListener('DOMContentLoaded', checkCooldown);
         const ecg = new ECGMonitor('ecg-canvas');
         ecg.start();
