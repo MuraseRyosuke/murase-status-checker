@@ -41,10 +41,9 @@
             --color-avg: #d97706;
             --color-bad: #dc2626;
 
-            /* Tune Button Theme (Default: Purple) */
+            /* Tune Button Theme (Purple) */
             --color-tune-bg: rgba(155, 89, 182, 0.15); 
             --color-tune-border: rgba(155, 89, 182, 0.5); 
-            --color-tune-text: #6c3483;
         }
 
         /* =========================================
@@ -56,142 +55,54 @@
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 2rem;
-            transition: background 0.5s ease, color 0.5s ease;
+            transition: background-color 0.5s ease, color 0.5s ease;
             -webkit-font-smoothing: antialiased;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow-x: hidden; 
-            position: relative; 
         }
 
         a { text-decoration: none; }
         a:hover { text-decoration: underline; }
 
-        /* --- Light Mode Theme (Default Alive) --- */
+        /* --- Light Mode Theme --- */
         body.light-mode { 
             background-color: #f5f5f7; 
             color: #1d1d1f; 
+            
+            /* Card Style */
             --card-bg: rgba(255, 255, 255, 0.65);
             --card-border: rgba(255, 255, 255, 0.4);
+            
+            /* Text Colors (High Contrast) */
             --text-sub: #555559; 
             --link-color: #0066cc;
+
+            /* Tune UI */
+            --color-tune-text: #6c3483; 
             --color-bubble-bg: #ffffff;
             --color-bubble-text: #6c3483; 
         }
         
-        /* --- Dark Mode Theme (Status Unknown) --- */
-        /* Takes priority over holiday themes via JS logic */
+        /* --- Dark Mode Theme --- */
         body.dark-mode { 
-            background-color: #000000 !important; /* Force Black */
-            background-image: none !important;    /* Remove any holiday gradients */
-            color: #f5f5f7 !important; 
+            background-color: #000000; 
+            color: #f5f5f7; 
+            
+            /* Card Style */
             --card-bg: rgba(28, 28, 30, 0.65);
             --card-border: rgba(255, 255, 255, 0.1);
+            
+            /* Text Colors */
             --text-sub: #a1a1a6; 
             --link-color: #0a84ff;
+
+            /* Tune UI */
             --color-tune-text: #a569bd; 
             --color-bubble-bg: #333333;
             --color-bubble-text: #a569bd; 
-        }
-
-        /* =========================================
-           Holiday Themes (Only active when Alive/Light Mode)
-           ========================================= */
-        
-        /* --- 12/31: Silver Winter (Bright & Snowy) --- */
-        body.theme-nye {
-            /* Cool Silver/White Gradient */
-            background: linear-gradient(to bottom, #eef2f3, #d9e4f5) !important;
-            color: #2c3e50 !important;
-        }
-        body.theme-nye .card {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(160, 174, 192, 0.4);
-        }
-        
-        /* Snow Particles (Darker color for visibility on light bg) */
-        .snowflake {
-            position: fixed;
-            top: -10px;
-            color: #a0aec0; /* Soft Blue-Gray */
-            font-size: 1em;
-            font-family: Arial, sans-serif;
-            user-select: none;
-            z-index: -2; 
-            animation-name: snowfall;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
-        }
-        @keyframes snowfall {
-            0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
-            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-        }
-
-        /* --- 1/1 - 1/3: Sunrise New Year (Bright & Festive) --- */
-        body.theme-newyear {
-            /* White to Pale Red/Orange Gradient (Morning Glow) */
-            background: linear-gradient(180deg, #ffffff 0%, #fff1eb 60%, #ace0f9 100%) !important;
-            /* Or slightly warmer */
-            background: linear-gradient(180deg, #fffcfc 0%, #fff5f5 50%, #f6d365 100%) !important;
-            background-attachment: fixed !important;
-            color: #4a4a4a !important;
-        }
-        body.theme-newyear .card {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 99, 71, 0.3); /* Subtle Red Border */
-            box-shadow: 0 8px 32px 0 rgba(255, 165, 0, 0.15);
-        }
-        
-        /* Sunrise Sun Element */
-        .sunrise-sun {
-            position: fixed;
-            bottom: -150px; 
-            left: 50%;
-            transform: translateX(-50%);
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, #ffdd00 20%, #ff4500 80%);
-            border-radius: 50%;
-            opacity: 0.6;
-            filter: blur(20px);
-            z-index: -3;
-            animation: sunRise 4s ease-out forwards;
-        }
-        @keyframes sunRise {
-            0% { bottom: -150px; opacity: 0; }
-            100% { bottom: -50px; opacity: 0.8; } /* Peeking from bottom */
-        }
-
-        /* Holiday Message Banner */
-        #holiday-message {
-            font-size: 0.9rem;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 20px;
-            margin-bottom: 8px;
-            display: inline-block;
-            display: none;
-        }
-        body.theme-nye #holiday-message {
-            display: inline-block;
-            background: rgba(44, 62, 80, 0.1);
-            color: #2c3e50;
-            border: 1px solid rgba(44, 62, 80, 0.2);
-        }
-        body.theme-newyear #holiday-message {
-            display: inline-block;
-            background: rgba(255, 69, 0, 0.1);
-            color: #d90429;
-            border: 1px solid rgba(255, 69, 0, 0.3);
-        }
-
-        /* Tune Button Holiday Styles */
-        body.theme-newyear .card-tune {
-            --color-tune-bg: rgba(255, 215, 0, 0.15); /* Gold tint */
-            --color-tune-border: rgba(255, 69, 0, 0.4);
-            --color-tune-text: #d90429;
         }
 
         /* =========================================
@@ -246,8 +157,6 @@
             font-size: 1rem;
             text-transform: none; 
             letter-spacing: 0.05em;
-            line-height: 1.1; 
-            text-align: center;
         }
 
         /* Tune Tooltip (PC) */
@@ -475,18 +384,6 @@
             pointer-events: none;
         }
 
-        /* Holiday Effect Containers (Lower Z-Index) */
-        #holiday-effects {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -2; 
-            overflow: hidden;
-        }
-
         /* =========================================
            Mobile Responsiveness
            ========================================= */
@@ -521,12 +418,10 @@
 <body class="light-mode">
 
     <canvas id="ecg-canvas"></canvas>
-    <div id="holiday-effects"></div>
 
     <main class="dashboard-grid">
         
         <div class="card card-status">
-            <div id="holiday-message"></div>
             <div id="liveness-message">ステータス確認中...</div>
             <div id="liveness-subtext"></div>
         </div>
@@ -589,7 +484,7 @@
         </div>
 
         <div class="card card-tune card-tune-container" onclick="sendTune()" data-tooltip="更新の合図を送る">
-            <div class="tune-icon" id="tune-icon">👋</div>
+            <div class="tune-icon">👋</div>
             <div class="tune-label" id="tune-text">Tune</div>
         </div>
 
@@ -612,9 +507,6 @@
             thresholdHours: 13,
             links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' }
         };
-
-        // Current Theme State
-        let currentHolidayMode = null; // 'nye', 'newyear', or null
 
         // =========================================
         // Helpers
@@ -642,87 +534,7 @@
         }
 
         // =========================================
-        // Holiday Theme & Effects Logic
-        // *Safety First*: Only applies if User is Alive
-        // =========================================
-        function checkHolidayTheme(isAlive) {
-            const effectsContainer = document.getElementById('holiday-effects');
-            const holidayMsgEl = document.getElementById('holiday-message');
-            const tuneIconEl = document.getElementById('tune-icon');
-            const tuneTextEl = document.getElementById('tune-text');
-
-            // 1. Reset everything first
-            document.body.classList.remove('theme-nye', 'theme-newyear');
-            effectsContainer.innerHTML = ''; 
-            currentHolidayMode = null;
-            holidayMsgEl.textContent = "";
-            holidayMsgEl.style.display = 'none';
-            
-            // If NOT alive, force standard Dark Mode and exit. 
-            // This ensures "Unknown" status is never confusing.
-            if (!isAlive) {
-                // Restore default Tune icon just in case
-                tuneIconEl.textContent = "👋";
-                tuneTextEl.textContent = "Tune";
-                return;
-            }
-
-            // 2. Check Date for Holiday Themes (Only if Alive)
-            const now = new Date();
-            const month = now.getMonth() + 1;
-            const date = now.getDate();
-
-            // --- 12/31: Silver Winter ---
-            if (month === 12 && date === 31) {
-                currentHolidayMode = 'nye';
-                document.body.classList.add('theme-nye');
-                holidayMsgEl.textContent = "良いお年を！🎍";
-                holidayMsgEl.style.display = 'inline-block';
-                createSnow(effectsContainer); 
-            }
-            // --- 1/1 - 1/3: Sunrise New Year ---
-            else if (month === 1 && date <= 3) {
-                currentHolidayMode = 'newyear';
-                document.body.classList.add('theme-newyear');
-                holidayMsgEl.textContent = "謹賀新年🌅";
-                holidayMsgEl.style.display = 'inline-block';
-                tuneIconEl.textContent = "⛩️"; 
-                tuneTextEl.innerHTML = "おみくじ<div style='font-size:0.65em; font-weight:400; opacity:0.9; margin-top:-2px;'>& Tune</div>"; 
-                document.querySelector('.card-tune').setAttribute('data-tooltip', '運試しをして更新の合図を送る');
-                createSunrise(effectsContainer);
-            }
-            // --- Normal Day ---
-            else {
-                tuneIconEl.textContent = "👋";
-                tuneTextEl.textContent = "Tune";
-            }
-        }
-
-        // --- Effect: Snow (CSS+JS) ---
-        function createSnow(container) {
-            const snowCount = 30; 
-            for (let i = 0; i < snowCount; i++) {
-                const flake = document.createElement('div');
-                flake.className = 'snowflake';
-                flake.textContent = '❄';
-                flake.style.left = Math.random() * 100 + 'vw';
-                flake.style.animationDuration = Math.random() * 3 + 5 + 's';
-                flake.style.animationDelay = Math.random() * 5 + 's';
-                flake.style.fontSize = Math.random() * 10 + 10 + 'px';
-                flake.style.opacity = Math.random();
-                container.appendChild(flake);
-            }
-        }
-
-        // --- Effect: Sunrise (CSS+JS) ---
-        function createSunrise(container) {
-            const sun = document.createElement('div');
-            sun.className = 'sunrise-sun';
-            container.appendChild(sun);
-        }
-
-        // =========================================
-        // Tune Feature Logic (w/ Omikuji)
+        // Tune Feature Logic
         // =========================================
         function checkCooldown() {
             const lastTune = localStorage.getItem('lastTuneTime');
@@ -738,17 +550,11 @@
             const btn = document.querySelector('.card-tune');
             const label = document.getElementById('tune-text');
             btn.classList.add('disabled');
-            
-            const originalLabel = currentHolidayMode === 'newyear' ? 'また引いてね' : 'Stay Tuned!';
-            label.textContent = originalLabel; 
+            label.textContent = 'Stay Tuned!'; 
             
             setTimeout(() => {
                 btn.classList.remove('disabled');
-                if (currentHolidayMode === 'newyear') {
-                    label.innerHTML = "おみくじ<div style='font-size:0.65em; font-weight:400; opacity:0.9; margin-top:-2px;'>& Tune</div>"; 
-                } else {
-                    label.textContent = 'Tune';
-                }
+                label.textContent = 'Tune';
                 localStorage.removeItem('lastTuneTime');
             }, remainingTime);
         }
@@ -757,35 +563,19 @@
             const profileCard = document.getElementById('profile-card');
             const isMobile = window.getComputedStyle(profileCard).display === 'none';
             
-            let message = '';
-
-            if (currentHolidayMode === 'newyear') {
-                const omikuji = [
-                    '大吉🌟最高の1年！', 
-                    '大吉🌟絶好調！',
-                    '中吉🌸良いことあるよ', 
-                    '小吉✨小さな幸せ', 
-                    '吉🍊普通が一番', 
-                    '末吉🍡これから上昇',
-                    '凶👻逆にレアかも？'
-                ];
-                const randIndex = Math.floor(Math.random() * omikuji.length);
-                message = omikuji[randIndex];
-            } else {
-                const messages = ['👋Tune!', '📡送信しました！', '👍Thanks!', '💫届きました！'];
-                message = messages[Math.floor(Math.random() * messages.length)];
-            }
+            const messages = ['👋Tune!', '📡送信しました！', '👍Thanks!', '💫届きました！'];
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
 
             if (isMobile) {
                 const toast = document.createElement('div');
                 toast.className = 'tune-toast';
-                toast.innerHTML = `<span>${message}</span>`;
+                toast.innerHTML = `<span>${randomMsg}</span>`;
                 document.body.appendChild(toast);
                 setTimeout(() => toast.remove(), 3000);
             } else {
                 const bubble = document.createElement('div');
                 bubble.className = 'tune-bubble';
-                bubble.textContent = message;
+                bubble.textContent = randomMsg;
                 profileCard.appendChild(bubble);
                 setTimeout(() => bubble.remove(), 2500);
             }
@@ -799,22 +589,18 @@
 
             showTuneReaction();
 
-            label.textContent = currentHolidayMode === 'newyear' ? '抽選中...' : 'Tuning...';
+            label.textContent = 'Tuning...';
             btn.classList.add('disabled'); 
 
-            let notifTitle = '⚡️ Tune Received';
-            if (currentHolidayMode === 'newyear') notifTitle = '⛩️ New Year Omikuji Received';
-            else if (currentHolidayMode === 'nye') notifTitle = '🔔 Year-End Tune Received';
-
-            const url = `https://ntfy.sh/${NTFY_TOPIC}?title=${encodeURIComponent(notifTitle)}&priority=default&tags=zap,yellow_circle`;
+            const url = `https://ntfy.sh/${NTFY_TOPIC}?title=%E2%9A%A1%EF%B8%8F%20Tune%20Received&priority=default&tags=zap,yellow_circle`;
 
             fetch(url, {
                 method: 'POST',
-                body: 'Tune (or Omikuji) received.'
+                body: 'Tuneを受信しました。'
             })
             .then(response => {
                 if (response.ok) {
-                    label.textContent = 'Thanks!';
+                    label.textContent = 'Stay Tuned!';
                     localStorage.setItem('lastTuneTime', Date.now().toString());
                     disableTuneBtn(TUNE_COOLDOWN_MS);
                 } else {
@@ -822,11 +608,7 @@
                     label.textContent = 'エラー';
                     setTimeout(() => {
                         btn.classList.remove('disabled');
-                        if (currentHolidayMode === 'newyear') {
-                            label.innerHTML = "おみくじ<div style='font-size:0.65em; font-weight:400; opacity:0.9; margin-top:-2px;'>& Tune</div>"; 
-                        } else {
-                            label.textContent = 'Tune';
-                        }
+                        label.textContent = 'Tune';
                     }, 3000);
                 }
             })
@@ -835,11 +617,7 @@
                 label.textContent = '通信エラー';
                 setTimeout(() => {
                     btn.classList.remove('disabled');
-                    if (currentHolidayMode === 'newyear') {
-                        label.innerHTML = "おみくじ<div style='font-size:0.65em; font-weight:400; opacity:0.9; margin-top:-2px;'>& Tune</div>"; 
-                    } else {
-                        label.textContent = 'Tune';
-                    }
+                    label.textContent = 'Tune';
                 }, 3000);
             });
         }
@@ -854,10 +632,15 @@
                 this.x = 0; this.y = window.innerHeight / 2;
                 this.targetBPM = 60; this.lastBeatTime = 0; this.isAlive = true;
                 
+                // 初回のサイズ設定
                 this.resize();
+                
+                // [Fix] 横幅を保存しておく（スマホの縦スクロール対策）
                 this.lastWidth = window.innerWidth;
 
+                // イベントリスナー
                 window.addEventListener('resize', () => {
+                    // 横幅が変わった時だけリサイズ処理を行う
                     if (window.innerWidth !== this.lastWidth) {
                         this.lastWidth = window.innerWidth;
                         this.resize();
@@ -926,22 +709,12 @@
                 
                 // --- Liveness Check ---
                 const isAlive = diffHours <= CONFIG.thresholdHours;
-                
-                // Apply Standard Themes
                 if (isAlive) {
-                    els.body.classList.add('light-mode');
-                    els.body.classList.remove('dark-mode');
-                    els.message.textContent = '村瀨亮介は生きています。'; 
-                    els.subtext.textContent = '';
+                    els.body.className = 'light-mode'; els.message.textContent = '村瀨亮介は生きています。'; els.subtext.textContent = '';
                 } else {
-                    els.body.classList.add('dark-mode');
-                    els.body.classList.remove('light-mode');
-                    els.message.textContent = '村瀨亮介からの応答がありません。';
+                    els.body.className = 'dark-mode'; els.message.textContent = '村瀨亮介からの応答がありません。';
                     els.subtext.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank" rel="noopener noreferrer">X</a> または <a href="${CONFIG.links.dosei}" target="_blank" rel="noopener noreferrer">村瀨動静</a> へ`;
                 }
-
-                // Check Holiday Theme (Passed isAlive to prevent holiday mode when dead)
-                checkHolidayTheme(isAlive);
 
                 // --- 1. Heart Rate ---
                 const currentHeartRate = safeParseInt(content.health.heart_rate); 
@@ -992,11 +765,7 @@
         }
 
         // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            checkCooldown();
-            // Initial checks handled by updateStatus
-        });
-        
+        document.addEventListener('DOMContentLoaded', checkCooldown);
         const ecg = new ECGMonitor('ecg-canvas');
         ecg.start();
         updateStatus();
