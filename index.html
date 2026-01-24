@@ -385,10 +385,10 @@
 
         <div class="mobile-grid-2" style="display: contents;">
             <div class="card card-small">
-                <div class="label">🕴️立ち上がり</div>
+                <div class="label">🕴️スタンド時間</div>
                 <div>
                     <span id="stand_hours" class="value">---</span>
-                    <span class="unit">回</span>
+                    <span class="unit">分</span>
                 </div>
             </div>
 
@@ -709,7 +709,7 @@
                      updateLevel(null); 
                 }
 
-                // [4] Vertical
+                // [4] Vertical (Revised Unit: min)
                 els.stand.textContent = safeParseInt(d.health.stand_hours) || '0';
                 els.flights.textContent = safeParseInt(d.health.flights_climbed) || '0';
 
