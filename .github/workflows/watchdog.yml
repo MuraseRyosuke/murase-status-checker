@@ -1,0 +1,66 @@
+name: Watchdog Monitor
+
+on:
+  schedule:
+    # 1時間に1回チェック
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Vital Status & Notify
+        env:
+          # Settings
+          GIST_ID: "1f81b107b898201a865a613c319d579b"
+          FILE_NAME: "murase_status.json"
+          THRESHOLD_HOURS: 72 # 72時間
+          # OneSignal Secrets (GitHub Secretsに設定してください)
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
+          ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+        run: |
+          # 1. Gistからデータを取得
+          RESPONSE=$(curl -s https://api.github.com/gists/$GIST_ID)
+          CONTENT=$(echo $RESPONSE | jq -r ".files[\"$FILE_NAME\"].content")
+          
+          # 2. 最終更新と場所を取得
+          LAST_UPDATED_STR=$(echo $CONTENT | jq -r ".last_updated")
+          CITY=$(echo $CONTENT | jq -r ".location.city // '不明な場所'")
+          
+          # 3. 経過時間を計算
+          # 日付形式への対応 (YYYY/MM/DD HH:MM:SS)
+          LAST_UPDATED_TS=$(date -d "$LAST_UPDATED_STR" +%s)
+          NOW_TS=$(date +%s)
+          DIFF_SEC=$((NOW_TS - LAST_UPDATED_TS))
+          DIFF_HOURS=$((DIFF_SEC / 3600))
+          
+          echo "Last Updated: $LAST_UPDATED_STR ($CITY)"
+          echo "Elapsed: $DIFF_HOURS hours (Threshold: $THRESHOLD_HOURS)"
+          
+          # 4. 判定 & 通知実行
+          if [ "$DIFF_HOURS" -ge "$THRESHOLD_HOURS" ]; then
+            echo "⚠️ Status: UNKNOWN (Over 72h)"
+            
+            # 通知メッセージの作成
+            TITLE="最後の更新から72時間が経ちました"
+            MESSAGE="最後に更新されたのは $CITY です。"
+            URL="https://status.muraseryosuke.info/"
+            
+            # OneSignal APIへ送信
+            curl --include \
+                 --request POST \
+                 --header "Content-Type: application/json; charset=utf-8" \
+                 --header "Authorization: Basic $ONESIGNAL_API_KEY" \
+                 --data-binary "{
+                   \"app_id\": \"$ONESIGNAL_APP_ID\",
+                   \"headings\": {\"en\": \"$TITLE\", \"ja\": \"$TITLE\"},
+                   \"contents\": {\"en\": \"$MESSAGE\", \"ja\": \"$MESSAGE\"},
+                   \"url\": \"$URL\",
+                   \"included_segments\": [\"All\"]
+                 }" \
+                 https://onesignal.com/api/v1/notifications
+                 
+          else
+            echo "✅ Status: ALIVE"
+          fi
