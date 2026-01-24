@@ -27,9 +27,9 @@
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(function(OneSignal) {
         OneSignal.init({
-          appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b", // ★ここを書き換えてください！
+          appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b",
           safari_web_id: "",
-          notifyButton: { enable: false }, // デフォルトのベルアイコンは無効化
+          notifyButton: { enable: false },
         });
       });
     </script>
@@ -200,6 +200,16 @@
         /* Interactive Buttons Container */
         .card-tune-container { grid-column: span 2; }
         .card-watchdog-container { grid-column: span 2; }
+        
+        /* AdBlock Warning Style */
+        #adblock-warning {
+            grid-column: span 2;
+            font-size: 0.75rem; 
+            color: var(--color-bad); 
+            text-align: center; 
+            margin-top: -10px; margin-bottom: 10px; 
+            font-weight: 600;
+        }
 
         #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
 
@@ -230,7 +240,7 @@
         </div>
 
         <div class="card card-profile" id="profile-card">
-            <img src="https://status.muraseryosuke.info/ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
+            <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
         </div>
 
         <div class="card card-heart">
@@ -307,6 +317,9 @@
                 <div class="tune-icon">🟨</div>
                 <div class="tune-label" id="watchdog-text">見守りを開始</div>
             </div>
+            <div id="adblock-warning" style="display: none;">
+                ⚠️ ボタンが動かない場合は<br>広告ブロッカーを「一時停止」してください
+            </div>
         </div>
 
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
@@ -336,6 +349,13 @@
 
         // --- Watchdog Logic (OneSignal) ---
         function toggleWatchdog() {
+            // OneSignalがブロックされている場合のガード処理
+            if (typeof OneSignal === 'undefined' || !OneSignal.User) {
+                const warningEl = document.getElementById('adblock-warning');
+                if(warningEl) warningEl.style.display = 'block';
+                return;
+            }
+
             OneSignalDeferred.push(async function(OneSignal) {
                 if (OneSignal.User.PushSubscription.optedIn) {
                     await OneSignal.User.PushSubscription.optOut();
@@ -346,6 +366,7 @@
                 }
             });
         }
+
         function updateWatchdogUI(subscribed) {
             const btn = document.getElementById('watchdog-btn');
             const label = document.getElementById('watchdog-text');
@@ -355,13 +376,29 @@
                 btn.classList.remove('subscribed'); label.textContent = '見守りを開始';
             }
         }
+
         window.addEventListener('load', () => {
+            // OneSignalの読み込み
             OneSignalDeferred.push(function(OneSignal) {
                 OneSignal.User.PushSubscription.addEventListener("change", function(event) {
                     updateWatchdogUI(event.current.optedIn);
                 });
                 updateWatchdogUI(OneSignal.User.PushSubscription.optedIn);
             });
+
+            // AdBlocker検知ロジック (3秒後にチェック)
+            setTimeout(() => {
+                // OneSignalの本体(window.OneSignal)がロードされていない、またはUserプロパティがない場合
+                const isBlocked = typeof OneSignal === 'undefined' || !window.OneSignal || !window.OneSignal.User;
+                
+                if (isBlocked) {
+                    const warningEl = document.getElementById('adblock-warning');
+                    const btn = document.getElementById('watchdog-btn');
+                    
+                    if (warningEl) warningEl.style.display = 'block';
+                    if (btn) btn.style.opacity = '0.6';
+                }
+            }, 3000);
         });
 
         // --- Tune Logic ---
@@ -475,7 +512,7 @@
                 
                 const asym = safeParseFloat(d.health.walking_asymmetry);
                 if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") {
-                     els.asym.textContent = (asym * 100).toFixed(0); updateLevel(asym);
+                      els.asym.textContent = (asym * 100).toFixed(0); updateLevel(asym);
                 } else { els.asym.textContent = '--'; updateLevel(null); }
 
                 els.stand.textContent = safeParseInt(d.health.stand_hours) || '0';
