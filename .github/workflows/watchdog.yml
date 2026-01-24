@@ -2,8 +2,9 @@ name: Watchdog Monitor
 
 on:
   schedule:
-    # 1時間に1回チェック
+    # 1時間に1回、毎時0分に実行
     - cron: '0 * * * *'
+  # 手動実行ボタンも有効化（テスト用）
   workflow_dispatch:
 
 jobs:
@@ -12,42 +13,47 @@ jobs:
     steps:
       - name: Check Vital Status & Notify
         env:
-          # Settings
+          # --- 設定 ---
+          # あなたのGist ID
           GIST_ID: "1f81b107b898201a865a613c319d579b"
+          # ファイル名
           FILE_NAME: "murase_status.json"
-          THRESHOLD_HOURS: 72 # 72時間
-          # OneSignal Secrets (GitHub Secretsに設定してください)
+          # 警告を出す閾値（時間）
+          THRESHOLD_HOURS: 72
+          # Secretsから読み込む鍵（変更不要）
           ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
           ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
         run: |
-          # 1. Gistからデータを取得
+          # 1. Gistから最新ステータスを取得
           RESPONSE=$(curl -s https://api.github.com/gists/$GIST_ID)
           CONTENT=$(echo $RESPONSE | jq -r ".files[\"$FILE_NAME\"].content")
           
-          # 2. 最終更新と場所を取得
+          # 2. 最終更新日時と場所を抽出
           LAST_UPDATED_STR=$(echo $CONTENT | jq -r ".last_updated")
           CITY=$(echo $CONTENT | jq -r ".location.city // '不明な場所'")
           
+          echo "Last Updated: $LAST_UPDATED_STR"
+          
           # 3. 経過時間を計算
-          # 日付形式への対応 (YYYY/MM/DD HH:MM:SS)
+          # 日付文字列をUNIX時間に変換して差分を取る
           LAST_UPDATED_TS=$(date -d "$LAST_UPDATED_STR" +%s)
           NOW_TS=$(date +%s)
+          
           DIFF_SEC=$((NOW_TS - LAST_UPDATED_TS))
           DIFF_HOURS=$((DIFF_SEC / 3600))
           
-          echo "Last Updated: $LAST_UPDATED_STR ($CITY)"
-          echo "Elapsed: $DIFF_HOURS hours (Threshold: $THRESHOLD_HOURS)"
+          echo "Elapsed Hours: $DIFF_HOURS (Threshold: $THRESHOLD_HOURS)"
           
           # 4. 判定 & 通知実行
           if [ "$DIFF_HOURS" -ge "$THRESHOLD_HOURS" ]; then
-            echo "⚠️ Status: UNKNOWN (Over 72h)"
+            echo "⚠️ Status: UNKNOWN (Over $THRESHOLD_HOURS h). Sending Notification..."
             
-            # 通知メッセージの作成
+            # 通知内容
             TITLE="最後の更新から72時間が経ちました"
-            MESSAGE="最後に更新されたのは $CITY です。"
+            MESSAGE="最後に更新されたのは ${CITY} です。"
             URL="https://status.muraseryosuke.info/"
             
-            # OneSignal APIへ送信
+            # OneSignal API へ送信 (curl)
             curl --include \
                  --request POST \
                  --header "Content-Type: application/json; charset=utf-8" \
@@ -62,5 +68,5 @@ jobs:
                  https://onesignal.com/api/v1/notifications
                  
           else
-            echo "✅ Status: ALIVE"
+            echo "✅ Status: ALIVE (Within limits)"
           fi
