@@ -18,173 +18,131 @@
     <meta property="og:description" content="村瀨亮介は今、生きているか？心拍数、歩数、位置情報をリアルタイムで公開中。">
     <meta property="og:site_name" content="Murase Status Checker">
     <meta property="og:locale" content="ja_JP">
-
     <meta name="twitter:card" content="summary">
     <meta name="twitter:site" content="@vl_lvoO">
     <meta name="twitter:creator" content="@vl_lvoO">
 
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.init({
+          appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b", // ★ここを書き換えてください！
+          safari_web_id: "",
+          notifyButton: { enable: false }, // デフォルトのベルアイコンは無効化
+        });
+      });
+    </script>
+
     <style>
-        /* ==========================================================================
-           1. Design Tokens (Variables)
-           ========================================================================== */
+        /* --- Variables --- */
         :root {
-            /* Visual Effects */
             --glass-blur: 20px;
             --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
             --radius-card: 24px;
-
-            /* ECG Animation Colors */
             --color-ecg-alive: rgba(46, 204, 113, 0.6);
             --color-ecg-lost: rgba(48, 209, 201, 0.6);
-            
-            /* Condition Status Colors */
-            --color-good: #2e8b57; /* SeaGreen - Excellent */
-            --color-ok: #20b2aa;   /* LightSeaGreen - Stable */
-            --color-avg: #d97706;  /* Orange - Average/Caution */
-            --color-bad: #dc2626;  /* Red - Warning */
-            --color-gold: #d4af37; /* Gold - Vitality Goal Achieved */
-
-            /* UI Elements */
+            --color-good: #2e8b57;
+            --color-ok: #20b2aa;
+            --color-avg: #d97706;
+            --color-bad: #dc2626;
+            --color-gold: #d4af37;
             --color-tune-bg: rgba(155, 89, 182, 0.15); 
             --color-tune-border: rgba(155, 89, 182, 0.5); 
         }
 
-        /* ==========================================================================
-           2. Base Styles & Reset
-           ========================================================================== */
+        /* --- Base --- */
         * { box-sizing: border-box; }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 2rem;
+            margin: 0; padding: 2rem;
             transition: background-color 0.5s ease, color 0.5s ease;
             -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow-x: hidden; 
+            min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow-x: hidden; 
         }
+        a { text-decoration: none; } a:hover { text-decoration: underline; }
 
-        a { text-decoration: none; }
-        a:hover { text-decoration: underline; }
-
-        /* ==========================================================================
-           3. Themes (Light / Dark)
-           ========================================================================== */
-        /* Light Mode (Alive / Default) */
+        /* Themes */
         body.light-mode { 
-            background-color: #f5f5f7; 
-            color: #1d1d1f; 
-            --card-bg: rgba(255, 255, 255, 0.65);
-            --card-border: rgba(255, 255, 255, 0.4);
-            --text-sub: #555559; 
-            --link-color: #0066cc;
-            --color-tune-text: #6c3483; 
-            --color-bubble-bg: #ffffff;
-            --color-bubble-text: #6c3483; 
+            background-color: #f5f5f7; color: #1d1d1f; 
+            --card-bg: rgba(255, 255, 255, 0.65); --card-border: rgba(255, 255, 255, 0.4);
+            --text-sub: #555559; --link-color: #0066cc;
+            --color-tune-text: #6c3483; --color-bubble-bg: #ffffff; --color-bubble-text: #6c3483; 
         }
-        
-        /* Dark Mode (Status Unknown / Offline) */
         body.dark-mode { 
-            background-color: #000000; 
-            color: #f5f5f7; 
-            --card-bg: rgba(28, 28, 30, 0.65);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --text-sub: #a1a1a6; 
-            --link-color: #0a84ff;
-            --color-tune-text: #a569bd; 
-            --color-bubble-bg: #333333;
-            --color-bubble-text: #a569bd; 
+            background-color: #000000; color: #f5f5f7; 
+            --card-bg: rgba(28, 28, 30, 0.65); --card-border: rgba(255, 255, 255, 0.1);
+            --text-sub: #a1a1a6; --link-color: #0a84ff;
+            --color-tune-text: #a569bd; --color-bubble-bg: #333333; --color-bubble-text: #a569bd; 
         }
 
-        /* ==========================================================================
-           4. Component: Cards
-           ========================================================================== */
+        /* --- Components --- */
         .card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            backdrop-filter: blur(var(--glass-blur));
-            -webkit-backdrop-filter: blur(var(--glass-blur));
-            border-radius: var(--radius-card);
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-shadow: var(--shadow-card);
-            transition: transform 0.2s ease, background-color 0.5s ease;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-radius: var(--radius-card); padding: 1.5rem;
+            display: flex; flex-direction: column; justify-content: space-between;
+            box-shadow: var(--shadow-card); transition: transform 0.2s ease, background-color 0.5s ease;
         }
-
-        /* Interactive Card (e.g., Speed Toggle) */
-        .card-interactive {
-            cursor: pointer;
-            position: relative;
-            user-select: none;
-        }
+        .card-interactive { cursor: pointer; position: relative; user-select: none; }
         .card-interactive:active { transform: scale(0.98); opacity: 0.9; }
-
-        /* Flash Animation for Value Updates */
-        @keyframes flashAnim {
-            0% { opacity: 0.2; transform: scale(0.98); }
-            100% { opacity: 1; transform: scale(1); }
-        }
         .anim-flash { animation: flashAnim 0.3s ease-out; }
+        @keyframes flashAnim { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1); } }
 
-        /* ==========================================================================
-           5. Component: Digital Spirit Level (Asymmetry Visualizer)
-           ========================================================================== */
+        /* Spirit Level */
         .spirit-level-container {
-            width: 100%;
-            height: 10px;
-            background: rgba(0, 0, 0, 0.08);
-            border-radius: 99px;
-            margin-top: 10px;
-            position: relative;
-            overflow: hidden;
+            width: 100%; height: 10px; background: rgba(0, 0, 0, 0.08);
+            border-radius: 99px; margin-top: 10px; position: relative; overflow: hidden;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
         }
         .spirit-bubble {
-            width: 24px;
-            height: 100%;
-            background: var(--color-good);
-            border-radius: 99px;
-            position: absolute;
-            left: 50%; top: 0;
-            transform: translateX(-50%);
-            transition: background-color 0.5s, opacity 0.3s;
+            width: 24px; height: 100%; background: var(--color-good);
+            border-radius: 99px; position: absolute; left: 50%; top: 0;
+            transform: translateX(-50%); transition: background-color 0.5s, opacity 0.3s;
             box-shadow: 0 0 6px rgba(255,255,255,0.8) inset;
         }
-        /* Wobble Animation based on CSS Variable amplitude */
         .wobble { animation: wobbleAnim 2.5s ease-in-out infinite; }
-        @keyframes wobbleAnim {
-            0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); }
-            50% { transform: translateX(calc(-50% + var(--wobble-amp))); }
-        }
+        @keyframes wobbleAnim { 0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); } 50% { transform: translateX(calc(-50% + var(--wobble-amp))); } }
 
-        /* ==========================================================================
-           6. Component: Tune Button & Reactions
-           ========================================================================== */
+        /* Tune Button */
         .card-tune {
-            background: var(--color-tune-bg) !important;
-            border: 1px solid var(--color-tune-border) !important;
-            color: var(--color-tune-text) !important;
-            cursor: pointer;
-            align-items: center;
-            justify-content: center;
-            position: relative; 
-            z-index: 10;
+            background: var(--color-tune-bg) !important; border: 1px solid var(--color-tune-border) !important;
+            color: var(--color-tune-text) !important; cursor: pointer;
+            align-items: center; justify-content: center; position: relative; z-index: 10;
         }
         .card-tune:active { transform: scale(0.96); opacity: 0.8; }
         .card-tune.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
         
+        /* Watchdog Button (Yellow Handkerchief) */
+        .card-watchdog {
+            background: rgba(255, 215, 0, 0.15) !important; border: 1px solid rgba(255, 215, 0, 0.5) !important;
+            color: #d4af37 !important; cursor: pointer;
+            align-items: center; justify-content: center; transition: all 0.3s ease; z-index: 20;
+        }
+        .card-watchdog:hover { background: rgba(255, 215, 0, 0.25) !important; }
+        .card-watchdog.subscribed { 
+            background: rgba(255, 215, 0, 0.8) !important; color: #fff !important; border-color: transparent !important;
+        }
+
         .tune-icon { font-size: 1.5rem; margin-bottom: 0.2em; }
         .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
 
-        /* Tooltip (Desktop) */
-        .card-tune::after {
-            content: attr(data-tooltip);
-            position: absolute; bottom: 100%; left: 50%;
+        /* Dark Mode: Watchdog Alert Style */
+        body.dark-mode .card-watchdog-container {
+            order: -1; /* Move to TOP */
+            grid-column: span 4;
+            background: #d4af37 !important; color: #000 !important; border: none !important;
+            animation: pulseAlert 2s infinite; font-weight: bold; margin-bottom: 1rem;
+        }
+        @keyframes pulseAlert {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
+
+        /* Tooltips & Reactions */
+        .card-tune::after, .card-watchdog::after {
+            content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%;
             transform: translateX(-50%) translateY(10px);
             background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); color: #fff;
             padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 500;
@@ -192,105 +150,59 @@
             transition: opacity 0.2s, transform 0.2s; z-index: 30; margin-bottom: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        .card-tune:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .card-tune:hover::after, .card-watchdog:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+        @media (max-width: 768px) { .card-tune::after, .card-watchdog::after { display: none; } }
 
-        /* Reaction Animations */
         .tune-bubble {
             position: absolute; top: 10%; right: -10%;
             background: var(--color-bubble-bg); color: var(--color-bubble-text);
             padding: 8px 16px; border-radius: 12px; border-bottom-left-radius: 2px;
-            font-weight: 700; font-size: 0.95rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; z-index: 100;
-            white-space: nowrap; pointer-events: none;
+            font-weight: 700; font-size: 0.95rem; pointer-events: none; z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; 
             animation: bubblePop 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
         }
-        @keyframes bubblePop {
-            0% { opacity: 0; transform: scale(0.8) translate(-10px, 10px); }
-            15% { opacity: 1; transform: scale(1) translate(0, 0); }
-            100% { opacity: 0; transform: scale(0.9) translate(0, -10px); }
-        }
-
+        @keyframes bubblePop { 0% { opacity: 0; transform: scale(0.8) translate(-10px, 10px); } 15% { opacity: 1; transform: scale(1) translate(0, 0); } 100% { opacity: 0; transform: scale(0.9) translate(0, -10px); } }
+        
         .tune-toast {
-            position: fixed; bottom: 30px; left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: rgba(20, 20, 20, 0.9); color: #fff;
+            position: fixed; bottom: 30px; left: 50%; background: rgba(20, 20, 20, 0.9); color: #fff;
             padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; z-index: 9999;
-            white-space: nowrap; display: flex; align-items: center; gap: 8px;
-            backdrop-filter: blur(8px); pointer-events: none;
-            animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            white-space: nowrap; pointer-events: none; animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards;
         }
-        @keyframes toastSlideUp {
-            0% { opacity: 0; transform: translateX(-50%) translateY(30px); }
-            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-        }
+        @keyframes toastSlideUp { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 
-        /* ==========================================================================
-           7. Typography & Layout Utilities
-           ========================================================================== */
-        .label {
-            font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; color: var(--text-sub);
-            margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4em; width: 100%;
-        }
+        /* --- Typography & Grid --- */
+        .label { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; color: var(--text-sub); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4em; width: 100%; }
         .value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
         .unit { font-size: 0.9rem; font-weight: 500; color: var(--text-sub); margin-left: 0.2em; }
         .sub-value { font-size: 0.85rem; color: var(--text-sub); margin-top: 0.2em; }
-        a { color: var(--link-color); }
-
-        /* ==========================================================================
-           8. Grid Layout
-           ========================================================================== */
-        .dashboard-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            grid-auto-rows: minmax(110px, auto); gap: 1.25rem;
-            width: 100%; max-width: 900px;
-        }
-
-        /* Main Status Card */
-        .card-status {
-            grid-column: span 4; 
-            display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; text-align: center; 
-            padding: 2rem 1rem; min-height: 160px; 
-        }
-        #liveness-message {
-            font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word;
-        }
-        #liveness-subtext {
-            font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.8rem; 
-        }
+        
+        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(110px, auto); gap: 1.25rem; width: 100%; max-width: 900px; }
+        
+        /* Layout Blocks */
+        .card-status { grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem; min-height: 160px; }
+        #liveness-message { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; }
+        #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.8rem; }
         #liveness-subtext:empty { display: none; margin-top: 0; }
         
-        /* Profile Image */
-        .card-profile {
-            grid-column: span 1; padding: 0; background: transparent !important; border: none !important;
-            box-shadow: none !important; display: flex; align-items: center; justify-content: center;
-        }
-        .profile-img {
-            width: 100%; height: 100%; aspect-ratio: 1/1; border-radius: 24px;
-            object-fit: cover; box-shadow: var(--shadow-card); transition: filter 0.5s;
-        }
+        .card-profile { grid-column: span 1; padding: 0; background: transparent !important; border: none !important; box-shadow: none !important; display: flex; align-items: center; justify-content: center; }
+        .profile-img { width: 100%; height: 100%; aspect-ratio: 1/1; border-radius: 24px; object-fit: cover; box-shadow: var(--shadow-card); transition: filter 0.5s; }
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
 
-        /* Vitals Card */
         .card-heart { grid-column: span 3; position: relative; align-items: center; }
         .heart-value-container { text-align: center; width: 100%; }
         .card-heart .value { font-size: 4rem; letter-spacing: -0.05em; }
 
-        /* Common Sizing */
         .card-small { grid-column: span 1; }
         .card-device-location { grid-column: span 1; }
-        .card-tune-container { grid-column: span 2; }
         .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
+        
+        /* Interactive Buttons Container */
+        .card-tune-container { grid-column: span 2; }
+        .card-watchdog-container { grid-column: span 2; }
 
-        /* Background Canvas */
         #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
 
-        /* ==========================================================================
-           9. Mobile Responsiveness
-           ========================================================================== */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; }
             .dashboard-grid { display: flex; flex-direction: column; gap: 1rem; }
@@ -299,105 +211,67 @@
             .card-heart { min-height: 150px; justify-content: center; }
             .card-heart .value { font-size: 4rem; }
             .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-            .value { font-size: 1.6rem; }
-            .card-tune-container { height: 80px; }
-            .card-tune::after { display: none; }
             
-            /* Reorder for Dark Mode (Prioritize Status) */
             body.dark-mode .card-status { order: 1; }
             body.dark-mode .card-heart  { order: 2; }
-            body.dark-mode .card-tune-container { 
-                order: 3; margin-top: 0.5rem; margin-bottom: 1rem;
-                background-color: rgba(155, 89, 182, 0.25) !important; 
-                border-color: rgba(155, 89, 182, 0.8) !important;
-            }
+            body.dark-mode .card-tune-container { order: 3; background-color: rgba(155, 89, 182, 0.25) !important; border-color: rgba(155, 89, 182, 0.8) !important; margin-bottom: 0.5rem; }
             body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; }
             body.dark-mode .footer-info { order: 5; }
         }
     </style>
 </head>
 <body class="light-mode">
-
     <canvas id="ecg-canvas"></canvas>
 
     <main class="dashboard-grid">
-        
         <div class="card card-status">
             <div id="liveness-message">ステータス確認中...</div>
             <div id="liveness-subtext"></div>
         </div>
 
         <div class="card card-profile" id="profile-card">
-            <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
+            <img src="https://status.muraseryosuke.info/ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
         </div>
 
         <div class="card card-heart">
             <div class="label">❤️心拍数</div>
-            <div class="heart-value-container">
-                <span id="heart_rate" class="value">---</span>
-                <span class="unit">BPM</span>
-            </div>
+            <div class="heart-value-container"><span id="heart_rate" class="value">---</span><span class="unit">BPM</span></div>
             <div class="sub-value" style="text-align: center; width: 100%;">
-                <span id="heart_sub">---</span>
-                <span style="margin: 0 4px; opacity: 0.3;">|</span>
-                <span>安静時: <span id="resting_hr">---</span> BPM</span>
+                <span id="heart_sub">---</span><span style="margin: 0 4px; opacity: 0.3;">|</span><span>安静時: <span id="resting_hr">---</span> BPM</span>
             </div>
         </div>
 
         <div class="mobile-grid-2" style="display: contents;">
             <div class="card card-small">
                 <div class="label">👟歩数</div>
-                <div>
-                    <span id="steps" class="value">---</span>
-                    <span class="unit">歩</span>
-                </div>
+                <div><span id="steps" class="value">---</span><span class="unit">歩</span></div>
             </div>
-
             <div class="card card-small">
                 <div class="label">🔥カロリー</div>
-                <div>
-                    <span id="calories" class="value">---</span>
-                    <span class="unit">kcal</span>
-                </div>
+                <div><span id="calories" class="value">---</span><span class="unit">kcal</span></div>
             </div>
         </div>
 
         <div class="mobile-grid-2" style="display: contents;">
             <div class="card card-small card-interactive" onclick="toggleSpeedUnit()">
                 <div class="label">🚶歩行速度</div>
-                <div>
-                    <span id="walking_speed" class="value">---</span>
-                    <span id="speed_unit" class="unit">km/h</span>
-                </div>
+                <div><span id="walking_speed" class="value">---</span><span id="speed_unit" class="unit">km/h</span></div>
             </div>
-
             <div class="card card-small">
                 <div class="label">⚖️バランス(非対称)</div>
-                <div>
-                    <span id="walking_asymmetry" class="value">---</span>
-                    <span class="unit">%</span>
-                </div>
-                <div class="spirit-level-container">
-                    <div id="spirit-bubble" class="spirit-bubble"></div>
-                </div>
+                <div><span id="walking_asymmetry" class="value">---</span><span class="unit">%</span></div>
+                <div class="spirit-level-container"><div id="spirit-bubble" class="spirit-bubble"></div></div>
             </div>
         </div>
 
         <div class="mobile-grid-2" style="display: contents;">
             <div class="card card-small">
                 <div class="label">🕴️スタンド時間</div>
-                <div>
-                    <span id="stand_hours" class="value">---</span>
-                    <span class="unit">分</span>
-                </div>
+                <div><span id="stand_hours" class="value">---</span><span class="unit">分</span></div>
             </div>
-
             <div class="card card-small">
                 <div class="label">🪜階数</div>
-                <div>
-                    <span id="flights" class="value">---</span>
-                    <span class="unit">階</span>
-                </div>
+                <div><span id="flights" class="value">---</span><span class="unit">階</span></div>
             </div>
         </div>
 
@@ -406,14 +280,9 @@
                 <div class="label">🩺体調 (HRV)</div>
                 <div id="condition" class="value" style="font-size: 1.5rem;">---</div>
             </div>
-
             <div class="card card-small">
                 <div class="label">🔊騒音</div>
-                <div>
-                    <span id="sound_value" class="value">---</span>
-                    <span class="unit">dB</span>
-                    <span id="sound_label" class="unit" style="font-weight: 600;"></span>
-                </div>
+                <div><span id="sound_value" class="value">---</span><span class="unit">dB</span> <span id="sound_label" class="unit" style="font-weight: 600;"></span></div>
             </div>
         </div>
 
@@ -422,328 +291,217 @@
                 <div class="label">📍現在地</div>
                 <div id="location" class="value" style="font-size: 1.4rem;">---</div>
             </div>
-
             <div class="card card-device-location">
                 <div class="label">🔋バッテリー</div>
-                <div>
-                    <span id="battery_val" class="value">---</span>
-                    <span class="unit">%</span>
-                    <span id="battery_icon" class="value" style="font-size: 1.4rem;"></span>
-                </div>
+                <div><span id="battery_val" class="value">---</span><span class="unit">%</span><span id="battery_icon" class="value" style="font-size: 1.4rem;"></span></div>
             </div>
         </div>
 
-        <div class="card card-tune card-tune-container" onclick="sendTune()" data-tooltip="更新の合図を送る">
-            <div class="tune-icon">👋</div>
-            <div class="tune-label" id="tune-text">Tune</div>
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-tune card-tune-container" onclick="sendTune()" data-tooltip="更新の合図を送る">
+                <div class="tune-icon">👋</div>
+                <div class="tune-label" id="tune-text">Tune</div>
+            </div>
+            
+            <div class="card card-watchdog card-watchdog-container" id="watchdog-btn" onclick="toggleWatchdog()" data-tooltip="通知を受け取る">
+                <div class="tune-icon">🟨</div>
+                <div class="tune-label" id="watchdog-text">見守りを開始</div>
+            </div>
         </div>
 
-        <div class="footer-info">
-            最終更新: <span id="last_updated">---</span>
-        </div>
-
+        <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
 
     <script>
-        // ==========================================================================
-        //  APP CONFIGURATION
-        // ==========================================================================
         const NTFY_TOPIC = 'murase_status_tune'; 
-        const TUNE_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
+        const TUNE_COOLDOWN_MS = 30 * 60 * 1000; 
         const CONFIG = {
             gistId: '1f81b107b898201a865a613c319d579b',
             gistFileName: 'murase_status.json',
-            thresholdHours: 13, // Time before entering 'Dark Mode'
+            thresholdHours: 13,
             links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' }
         };
 
-        // State for Speed Toggle
         let globalSpeedKmh = 0;
-        let speedUnitIdx = 0; // 0:km/h, 1:m/min, 2:m/s
+        let speedUnitIdx = 0;
 
-        // ==========================================================================
-        //  UTILITY FUNCTIONS
-        // ==========================================================================
+        // --- Helpers ---
         function safeParseInt(val) { if (!val || val === "") return 0; return parseInt(val, 10); }
         function safeParseFloat(val) { if (!val || val === "") return 0; return parseFloat(val); }
-
         function getRelativeTime(date) {
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMins / 60);
-            
-            if (diffMins < 1) return 'たった今';
-            if (diffMins < 60) return `${diffMins}分前`;
-            if (diffHours < 24) return `${diffHours}時間前`;
-            return `${Math.floor(diffHours / 24)}日前`;
+            const now = new Date(), diffMins = Math.floor((now-date)/60000);
+            if(diffMins<1) return 'たった今'; if(diffMins<60) return `${diffMins}分前`;
+            const diffHours=Math.floor(diffMins/60); return diffHours<24?`${diffHours}時間前`:`${Math.floor(diffHours/24)}日前`;
         }
 
-        // ==========================================================================
-        //  FEATURE: TUNE INTERACTION
-        // ==========================================================================
-        function checkCooldown() {
-            const lastTune = localStorage.getItem('lastTuneTime');
-            if (lastTune && Date.now() - parseInt(lastTune, 10) < TUNE_COOLDOWN_MS) {
-                disableTuneBtn(TUNE_COOLDOWN_MS - (Date.now() - parseInt(lastTune, 10)));
+        // --- Watchdog Logic (OneSignal) ---
+        function toggleWatchdog() {
+            OneSignalDeferred.push(async function(OneSignal) {
+                if (OneSignal.User.PushSubscription.optedIn) {
+                    await OneSignal.User.PushSubscription.optOut();
+                    updateWatchdogUI(false);
+                } else {
+                    await OneSignal.User.PushSubscription.optIn();
+                    updateWatchdogUI(true);
+                }
+            });
+        }
+        function updateWatchdogUI(subscribed) {
+            const btn = document.getElementById('watchdog-btn');
+            const label = document.getElementById('watchdog-text');
+            if (subscribed) {
+                btn.classList.add('subscribed'); label.textContent = '見守り中 (通知ON)';
+            } else {
+                btn.classList.remove('subscribed'); label.textContent = '見守りを開始';
             }
         }
+        window.addEventListener('load', () => {
+            OneSignalDeferred.push(function(OneSignal) {
+                OneSignal.User.PushSubscription.addEventListener("change", function(event) {
+                    updateWatchdogUI(event.current.optedIn);
+                });
+                updateWatchdogUI(OneSignal.User.PushSubscription.optedIn);
+            });
+        });
 
-        function disableTuneBtn(remainingTime) {
+        // --- Tune Logic ---
+        function checkCooldown() {
+            const last = localStorage.getItem('lastTuneTime');
+            if (last && Date.now() - parseInt(last,10) < TUNE_COOLDOWN_MS) disableTuneBtn(TUNE_COOLDOWN_MS - (Date.now()-parseInt(last,10)));
+        }
+        function disableTuneBtn(t) {
             const btn = document.querySelector('.card-tune');
             document.getElementById('tune-text').textContent = 'Stay Tuned!'; 
             btn.classList.add('disabled'); 
-            setTimeout(() => {
-                btn.classList.remove('disabled'); 
-                document.getElementById('tune-text').textContent = 'Tune';
-                localStorage.removeItem('lastTuneTime');
-            }, remainingTime);
+            setTimeout(() => { btn.classList.remove('disabled'); document.getElementById('tune-text').textContent = 'Tune'; localStorage.removeItem('lastTuneTime'); }, t);
         }
-
         function showTuneReaction() {
-            const isMobile = window.innerWidth <= 768;
-            const msgs = ['👋Tune!', '📡送信しました！', '👍Thanks!', '💫届きました！'];
-            const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
-
-            if (isMobile) {
-                const toast = document.createElement('div');
-                toast.className = 'tune-toast';
-                toast.innerHTML = `<span>${randomMsg}</span>`;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 3000);
+            const msgs = ['👋Tune!', '📡送信！', '👍Thanks!', '💫届きました！'];
+            const msg = msgs[Math.floor(Math.random()*msgs.length)];
+            if (window.innerWidth <= 768) {
+                const t = document.createElement('div'); t.className = 'tune-toast'; t.innerHTML = `<span>${msg}</span>`; document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
             } else {
-                const bubble = document.createElement('div');
-                bubble.className = 'tune-bubble';
-                bubble.textContent = randomMsg;
-                document.getElementById('profile-card').appendChild(bubble);
-                setTimeout(() => bubble.remove(), 2500);
+                const b = document.createElement('div'); b.className = 'tune-bubble'; b.textContent = msg; document.getElementById('profile-card').appendChild(b); setTimeout(()=>b.remove(),2500);
             }
         }
-
         function sendTune() {
             const btn = document.querySelector('.card-tune');
             if (btn.classList.contains('disabled')) return;
-
             showTuneReaction();
-            document.getElementById('tune-text').textContent = 'Tuning...'; 
-            btn.classList.add('disabled'); 
-
-            fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=%E2%9A%A1%EF%B8%8F%20Tune%20Received&priority=default&tags=zap,yellow_circle`, {
-                method: 'POST', body: 'Tuneを受信しました。'
-            })
-            .then(response => {
-                if (response.ok) {
-                    document.getElementById('tune-text').textContent = 'Stay Tuned!';
-                    localStorage.setItem('lastTuneTime', Date.now().toString());
-                    disableTuneBtn(TUNE_COOLDOWN_MS);
-                } else {
-                    throw new Error();
-                }
-            })
-            .catch(() => {
-                document.getElementById('tune-text').textContent = '通信エラー';
-                setTimeout(() => { 
-                    btn.classList.remove('disabled'); 
-                    document.getElementById('tune-text').textContent = 'Tune'; 
-                }, 3000);
-            });
+            document.getElementById('tune-text').textContent = 'Tuning...'; btn.classList.add('disabled'); 
+            fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=Tune&priority=default&tags=zap`, { method:'POST', body:'Tune受信' })
+            .then(r => { if(r.ok){ document.getElementById('tune-text').textContent='Stay Tuned!'; localStorage.setItem('lastTuneTime', Date.now()); disableTuneBtn(TUNE_COOLDOWN_MS); } else throw new Error(); })
+            .catch(() => { document.getElementById('tune-text').textContent='通信エラー'; setTimeout(()=>{btn.classList.remove('disabled');document.getElementById('tune-text').textContent='Tune';},3000); });
         }
 
-        // ==========================================================================
-        //  FEATURE: SPEED UNIT TOGGLE
-        // ==========================================================================
+        // --- Other Features ---
         function toggleSpeedUnit() { 
-            speedUnitIdx = (speedUnitIdx + 1) % 3; 
-            renderSpeed(); 
-            // Trigger Flash Animation
-            const container = document.getElementById('walking_speed').parentElement;
-            container.classList.remove('anim-flash');
-            void container.offsetWidth; // Trigger reflow
-            container.classList.add('anim-flash');
+            speedUnitIdx = (speedUnitIdx + 1) % 3; renderSpeed(); 
+            const c = document.getElementById('walking_speed').parentElement; c.classList.remove('anim-flash'); void c.offsetWidth; c.classList.add('anim-flash');
         }
-
         function renderSpeed() {
-            const el = document.getElementById('walking_speed');
-            const unit = document.getElementById('speed_unit');
-            
+            const el = document.getElementById('walking_speed'), unit = document.getElementById('speed_unit');
             if (!globalSpeedKmh) { el.textContent = '--'; return; }
-
-            if (speedUnitIdx === 0) {
-                el.textContent = globalSpeedKmh.toFixed(1); 
-                unit.textContent = 'km/h'; 
-            } else if (speedUnitIdx === 1) {
-                el.textContent = (globalSpeedKmh * 16.6667).toFixed(0); 
-                unit.textContent = 'm/min'; 
-            } else {
-                el.textContent = (globalSpeedKmh / 3.6).toFixed(2); 
-                unit.textContent = 'm/s'; 
-            }
+            if (speedUnitIdx === 0) { el.textContent = globalSpeedKmh.toFixed(1); unit.textContent = 'km/h'; }
+            else if (speedUnitIdx === 1) { el.textContent = (globalSpeedKmh * 16.6667).toFixed(0); unit.textContent = 'm/min'; }
+            else { el.textContent = (globalSpeedKmh / 3.6).toFixed(2); unit.textContent = 'm/s'; }
         }
-
-        // ==========================================================================
-        //  FEATURE: DIGITAL SPIRIT LEVEL
-        // ==========================================================================
         function updateLevel(val) {
-            const bubble = document.getElementById('spirit-bubble');
-            
-            if (val === undefined || val === null || isNaN(val)) {
-                bubble.style.opacity = '0'; return;
-            }
-            bubble.style.opacity = '1';
-            
-            // Color Logic
-            if (val === 0) bubble.style.backgroundColor = 'var(--color-good)';
-            else if (val < 0.05) bubble.style.backgroundColor = 'var(--color-ok)';
-            else bubble.style.backgroundColor = 'var(--color-bad)';
-            
-            // Wobble Logic
-            if (val > 0) {
-                // Amplitude capped at 45% offset
-                bubble.style.setProperty('--wobble-amp', `${Math.min(val * 400, 45)}%`);
-                bubble.classList.add('wobble');
-            } else {
-                bubble.style.transform = 'translateX(-50%)'; 
-                bubble.classList.remove('wobble');
-            }
+            const b = document.getElementById('spirit-bubble');
+            if (val === null || isNaN(val)) { b.style.opacity='0'; return; }
+            b.style.opacity='1';
+            if(val===0) b.style.backgroundColor='var(--color-good)'; else if(val<0.05) b.style.backgroundColor='var(--color-ok)'; else b.style.backgroundColor='var(--color-bad)';
+            if(val>0) { b.style.setProperty('--wobble-amp', `${Math.min(val*400, 45)}%`); b.classList.add('wobble'); }
+            else { b.style.transform='translateX(-50%)'; b.classList.remove('wobble'); }
         }
 
-        // ==========================================================================
-        //  FEATURE: ECG ANIMATION
-        // ==========================================================================
         class ECGMonitor {
-            constructor(cid) {
-                this.c = document.getElementById(cid);
-                this.ctx = this.c.getContext('2d');
-                this.x = 0; this.y = window.innerHeight / 2;
-                this.bpm = 60; this.alive = true; this.last = 0;
-                this.resize();
-                window.addEventListener('resize', () => this.resize());
-            }
-            resize() { this.c.width = window.innerWidth; this.c.height = window.innerHeight; this.y = this.c.height / 2; }
-            setStatus(b, a) { this.bpm = b > 0 ? b : 60; this.alive = a; }
+            constructor(cid) { this.c=document.getElementById(cid); this.ctx=this.c.getContext('2d'); this.x=0; this.y=window.innerHeight/2; this.bpm=60; this.alive=true; this.last=0; this.resize(); window.addEventListener('resize',()=>this.resize()); }
+            resize() { this.c.width=window.innerWidth; this.c.height=window.innerHeight; this.y=this.c.height/2; }
+            setStatus(b,a) { this.bpm=b>0?b:60; this.alive=a; }
             draw() {
-                const now = Date.now(), interval = this.alive ? 60000 / this.bpm : Infinity;
-                this.ctx.clearRect(this.x, 0, 10, this.c.height);
-                this.ctx.beginPath(); this.ctx.moveTo(this.x - 2, this.y);
-                let ty = this.c.height / 2;
-                
-                if (this.alive) {
-                    const diff = now - this.last;
-                    if (diff > interval) { this.last = now; ty -= this.c.height * 0.25; }
-                    else if (diff < 50) ty += this.c.height * 0.05;
-                    else if (diff > interval - 200) ty += this.c.height * 0.1;
-                }
-                
-                this.y = this.y * 0.9 + ty * 0.1;
-                this.ctx.lineTo(this.x, this.y);
-                const dark = document.body.classList.contains('dark-mode');
-                const style = getComputedStyle(document.body);
-                this.ctx.strokeStyle = style.getPropertyValue(dark ? '--color-ecg-lost' : '--color-ecg-alive').trim();
-                this.ctx.lineWidth = 2; this.ctx.stroke();
-                
-                this.x++;
-                if (this.x > this.c.width) { this.x = 0; this.ctx.clearRect(0, 0, this.c.width, this.c.height); }
-                requestAnimationFrame(() => this.draw());
+                const now=Date.now(), int=this.alive?60000/this.bpm:Infinity;
+                this.ctx.clearRect(this.x,0,10,this.c.height); this.ctx.beginPath(); this.ctx.moveTo(this.x-2,this.y);
+                let ty=this.c.height/2;
+                if(this.alive) { const d=now-this.last; if(d>int){this.last=now;ty-=this.c.height*0.25;}else if(d<50)ty+=this.c.height*0.05;else if(d>int-200)ty+=this.c.height*0.1; }
+                this.y=this.y*0.9+ty*0.1; this.ctx.lineTo(this.x,this.y);
+                this.ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue(document.body.classList.contains('dark-mode')?'--color-ecg-lost':'--color-ecg-alive').trim();
+                this.ctx.lineWidth=2; this.ctx.stroke();
+                this.x++; if(this.x>this.c.width){this.x=0;this.ctx.clearRect(0,0,this.c.width,this.c.height);}
+                requestAnimationFrame(()=>this.draw());
             }
             start() { this.draw(); }
         }
 
-        // ==========================================================================
-        //  MAIN LOOP: UPDATE STATUS
-        // ==========================================================================
         async function updateStatus() {
             const els = {
                 body: document.body, msg: document.getElementById('liveness-message'), sub: document.getElementById('liveness-subtext'),
-                upd: document.getElementById('last_updated'), 
-                hr: document.getElementById('heart_rate'), hrSub: document.getElementById('heart_sub'), rHr: document.getElementById('resting_hr'),
-                steps: document.getElementById('steps'), cal: document.getElementById('calories'), 
+                upd: document.getElementById('last_updated'), hr: document.getElementById('heart_rate'), hrSub: document.getElementById('heart_sub'),
+                rHr: document.getElementById('resting_hr'), steps: document.getElementById('steps'), cal: document.getElementById('calories'), 
                 asym: document.getElementById('walking_asymmetry'), stand: document.getElementById('stand_hours'), 
                 flights: document.getElementById('flights'), cond: document.getElementById('condition'),
                 sndVal: document.getElementById('sound_value'), sndLbl: document.getElementById('sound_label'),
                 loc: document.getElementById('location'), batVal: document.getElementById('battery_val'), batIcon: document.getElementById('battery_icon')
             };
             try {
-                // Fetch Data
                 const res = await fetch(`https://api.github.com/gists/${CONFIG.gistId}?t=${Date.now()}`);
                 if (!res.ok) throw new Error();
                 const json = await res.json();
                 const d = JSON.parse(json.files[CONFIG.gistFileName].content);
                 
-                // Liveness Check
                 const last = new Date(d.last_updated);
-                const alive = (new Date() - last) / 36e5 <= CONFIG.thresholdHours;
+                const alive = (new Date()-last)/36e5 <= CONFIG.thresholdHours;
                 
-                if (alive) {
-                    els.body.className = 'light-mode'; 
-                    els.msg.textContent = '村瀨亮介は生きています。'; 
-                    els.sub.textContent = ''; 
-                } else { 
-                    els.body.className = 'dark-mode'; 
-                    els.msg.textContent = '村瀨亮介からの応答がありません。';
-                    els.sub.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank">X</a> または <a href="${CONFIG.links.dosei}" target="_blank">村瀨動静</a> へ`; 
+                if(alive){ els.body.className='light-mode'; els.msg.textContent='村瀨亮介は生きています。'; els.sub.textContent=''; }
+                else{ 
+                    els.body.className='dark-mode'; 
+                    els.msg.textContent='村瀨亮介からの応答がありません。'; 
+                    els.sub.innerHTML=`安否確認は <a href="${CONFIG.links.twitter}" target="_blank">X</a> または <a href="${CONFIG.links.dosei}" target="_blank">村瀨動静</a> へ`; 
                 }
 
-                // [1] Heart Rate
                 const hr = safeParseInt(d.health.heart_rate);
                 ecg.setStatus(hr, alive);
                 els.hr.textContent = hr || 'N/A';
                 els.hrSub.textContent = getRelativeTime(last);
                 els.rHr.textContent = safeParseInt(d.health.resting_heart_rate) || '--';
 
-                // [2] Activity (Vitality Logic: Gold for >8000 steps)
                 const steps = safeParseInt(d.health.steps);
                 els.steps.textContent = steps.toLocaleString();
                 els.steps.style.color = steps >= 8000 ? 'var(--color-gold)' : 'inherit';
                 els.cal.textContent = Math.round(safeParseInt(d.health.active_calories)).toLocaleString();
                 
-                // [3] Speed & Balance
                 globalSpeedKmh = safeParseFloat(d.health.walking_speed);
                 renderSpeed();
                 
                 const asym = safeParseFloat(d.health.walking_asymmetry);
                 if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") {
-                     els.asym.textContent = (asym * 100).toFixed(0); 
-                     updateLevel(asym);
-                } else { 
-                     els.asym.textContent = '--'; 
-                     updateLevel(null); 
-                }
+                     els.asym.textContent = (asym * 100).toFixed(0); updateLevel(asym);
+                } else { els.asym.textContent = '--'; updateLevel(null); }
 
-                // [4] Vertical (Revised Unit: min)
                 els.stand.textContent = safeParseInt(d.health.stand_hours) || '0';
                 els.flights.textContent = safeParseInt(d.health.flights_climbed) || '0';
 
-                // [5] Condition (HRV)
                 const hrv = safeParseFloat(d.health.condition_hrv);
-                if (hrv >= 40) { els.cond.textContent = '絶好調✨'; els.cond.style.color = 'var(--color-good)'; }
-                else if (hrv >= 20) { els.cond.textContent = '安定🌱'; els.cond.style.color = 'var(--color-ok)'; }
-                else if (hrv > 0) { els.cond.textContent = '疲労気味💤'; els.cond.style.color = 'var(--color-bad)'; }
-                else { els.cond.textContent = 'N/A'; els.cond.style.color = 'inherit'; }
+                if (hrv>=40) { els.cond.textContent='絶好調✨'; els.cond.style.color='var(--color-good)'; }
+                else if (hrv>=20) { els.cond.textContent='安定🌱'; els.cond.style.color='var(--color-ok)'; }
+                else if (hrv>0) { els.cond.textContent='疲労気味💤'; els.cond.style.color='var(--color-bad)'; }
+                else { els.cond.textContent='N/A'; els.cond.style.color='inherit'; }
 
-                // [6] Environment (Sound)
                 const db = safeParseFloat(d.environment && d.environment.sound_level_db);
                 if (db > 0) {
                     els.sndVal.textContent = Math.round(db);
-                    els.sndLbl.textContent = (db < 40 ? '(静寂)' : db < 70 ? '(普通)' : '(騒音)');
-                    els.sndLbl.style.color = db < 40 ? 'var(--color-good)' : db < 70 ? 'var(--color-avg)' : 'var(--color-bad)';
-                } else { 
-                    els.sndVal.textContent = 'N/A'; els.sndLbl.textContent = ''; 
-                }
+                    els.sndLbl.textContent = (db<40?'(静寂)':db<70?'(普通)':'(騒音)');
+                    els.sndLbl.style.color = db<40?'var(--color-good)':db<70?'var(--color-avg)':'var(--color-bad)';
+                } else { els.sndVal.textContent='N/A'; els.sndLbl.textContent=''; }
 
-                // [7] Device & Location
                 els.batVal.textContent = d.device.battery;
-                els.batIcon.textContent = (d.device.is_charging === 'Yes' || d.device.is_charging === true) ? '⚡️' : '';
+                els.batIcon.textContent = (d.device.is_charging==='Yes'||d.device.is_charging===true) ? '⚡️' : '';
                 els.upd.textContent = last.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 els.loc.textContent = d.location.city || 'N/A';
 
-            } catch (e) {
-                console.error(e); 
-                els.msg.textContent = '読み込み失敗';
-            }
+            } catch (e) { console.error(e); els.msg.textContent = '読み込み失敗'; }
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', checkCooldown);
         const ecg = new ECGMonitor('ecg-canvas');
         ecg.start();
         updateStatus();
