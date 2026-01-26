@@ -21,14 +21,14 @@
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.init({
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
           appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b",
-          safari_web_id: "", // 必要であれば入力
+          safari_web_id: "", 
           
-          // ★ここで純正ベルアイコンを有効化＆カスタマイズ
+          // 純正ベルアイコン設定 (AdGuard対策・UX最適化)
           notifyButton: {
-            enable: true, /* これをtrueにするだけでAdGuard対策は完了 */
+            enable: true,
             size: 'medium',
             theme: 'default',
             position: 'bottom-right',
@@ -44,7 +44,7 @@
               'dialog.main.button.subscribe': '見守りを開始',
               'dialog.main.button.unsubscribe': '通知を停止',
             },
-            colors: { // サイトのテーマカラー(Gold/Yellow)に合わせる
+            colors: {
               'circle.background': '#d4af37',
               'circle.foreground': 'white',
               'badge.background': '#d4af37',
@@ -142,7 +142,7 @@
         .card-tune:active { transform: scale(0.96); opacity: 0.8; }
         .card-tune.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
         
-        /* Tooltips & Reactions */
+        /* Tooltips */
         .card-tune::after {
             content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%;
             transform: translateX(-50%) translateY(10px);
@@ -199,8 +199,8 @@
         .card-device-location { grid-column: span 1; }
         .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
         
-        /* Tune Button Container (Watchdog button removed) */
-        .card-tune-container { grid-column: span 4; } /* Full width */
+        /* Tune Button Container */
+        .card-tune-container { grid-column: span 4; }
 
         #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
 
@@ -303,8 +303,7 @@
                 <div class="tune-icon">👋</div>
                 <div class="tune-label" id="tune-text">Tune</div>
             </div>
-            
-            </div>
+        </div>
 
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
