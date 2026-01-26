@@ -349,7 +349,7 @@
 
         // --- Watchdog Logic (OneSignal) ---
         function toggleWatchdog() {
-            // AdGuard等でブロックされている場合は警告を出して終了
+            // AdBlocker等でブロックされている場合は警告を出して終了
             if (typeof OneSignal === 'undefined' || !OneSignal.User) {
                 const warningEl = document.getElementById('adblock-warning');
                 if(warningEl) warningEl.style.display = 'block';
@@ -357,16 +357,38 @@
             }
 
             OneSignalDeferred.push(async function(OneSignal) {
-                if (OneSignal.User.PushSubscription.optedIn) {
-                    // 【追加】解除時の確認ダイアログ
-                    const confirmStop = confirm("通知を解除しますか？\n（村瀨の安否通知が届かなくなります）");
-                    if (!confirmStop) return; // キャンセルされたら何もしない
+                const btn = document.getElementById('watchdog-btn');
+                const isUIYellow = btn.classList.contains('subscribed'); // 今のボタンの見た目（ユーザーの意図）
+                const isReallySubscribed = OneSignal.User.PushSubscription.optedIn; // 裏側の本当の状態
 
-                    await OneSignal.User.PushSubscription.optOut();
-                    updateWatchdogUI(false);
-                } else {
-                    await OneSignal.User.PushSubscription.optIn();
-                    updateWatchdogUI(true);
+                // パターンA: ユーザーは「見守りを開始（灰色）」ボタンを押した
+                // 意図：登録したい！
+                if (!isUIYellow) {
+                    if (isReallySubscribed) {
+                        // 実はもう登録済みだった？ -> 黙ってボタンを黄色(正しい状態)に直す
+                        updateWatchdogUI(true);
+                    } else {
+                        // 未登録なら -> 普通に登録する
+                        await OneSignal.User.PushSubscription.optIn();
+                        updateWatchdogUI(true);
+                    }
+                    return; // ここで終了（絶対に解除確認は出さない）
+                }
+
+                // パターンB: ユーザーは「見守り中（黄色）」ボタンを押した
+                // 意図：解除したい！
+                if (isUIYellow) {
+                    if (!isReallySubscribed) {
+                        // 実はもう解除済みだった？ -> 黙ってボタンを灰色(正しい状態)に直す
+                        updateWatchdogUI(false);
+                    } else {
+                        // 本当に登録中なら -> ここで初めて確認を出す
+                        const confirmStop = confirm("通知を解除しますか？\n（村瀨の安否通知が届かなくなります）");
+                        if (confirmStop) {
+                            await OneSignal.User.PushSubscription.optOut();
+                            updateWatchdogUI(false);
+                        }
+                    }
                 }
             });
         }
@@ -377,17 +399,18 @@
             if (subscribed) {
                 btn.classList.add('subscribed'); 
                 label.textContent = '見守り中 (通知ON)';
-                // 【追加】登録中はツールチップを「通知を停止する」に変更
+                // 登録中はツールチップを「通知を停止する」に変更
                 btn.setAttribute('data-tooltip', '通知を停止する');
             } else {
                 btn.classList.remove('subscribed'); 
                 label.textContent = '見守りを開始';
-                // 【追加】未登録時はツールチップを「通知を受け取る」に変更
+                // 未登録時はツールチップを「通知を受け取る」に変更
                 btn.setAttribute('data-tooltip', '通知を受け取る');
             }
         }
 
         window.addEventListener('load', () => {
+            // OneSignalの読み込み
             OneSignalDeferred.push(function(OneSignal) {
                 OneSignal.User.PushSubscription.addEventListener("change", function(event) {
                     updateWatchdogUI(event.current.optedIn);
@@ -398,9 +421,11 @@
             // AdBlocker検知ロジック (3秒後にチェック)
             setTimeout(() => {
                 const isBlocked = typeof OneSignal === 'undefined' || !window.OneSignal || !window.OneSignal.User;
+                
                 if (isBlocked) {
                     const warningEl = document.getElementById('adblock-warning');
                     const btn = document.getElementById('watchdog-btn');
+                    
                     if (warningEl) warningEl.style.display = 'block';
                     if (btn) btn.style.opacity = '0.6';
                 }
