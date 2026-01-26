@@ -6,7 +6,6 @@
     
     <title>村瀨亮介のリアルタイム健康診断</title>
     <meta name="description" content="村瀨亮介(vl_lvoO)の現在の体調、位置情報、安否状況をApple Watchのデータを用いてリアルタイムに可視化・公開するステータスチェッカーサイトです。">
-    <meta name="keywords" content="村瀨亮介, Ryosuke Murase, vl_lvoO, ステータス, 安否確認, Apple Watch, ヘルスケア, HealthKit, リアルタイム, ダッシュボード">
     <meta name="author" content="Ryosuke Murase">
     <meta name="copyright" content="© 2026 Ryosuke Murase">
     <link rel="canonical" href="https://status.muraseryosuke.info/">
@@ -17,10 +16,7 @@
     <meta property="og:image" content="ogp.webp">
     <meta property="og:description" content="村瀨亮介は今、生きているか？心拍数、歩数、位置情報をリアルタイムで公開中。">
     <meta property="og:site_name" content="Murase Status Checker">
-    <meta property="og:locale" content="ja_JP">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:site" content="@vl_lvoO">
-    <meta name="twitter:creator" content="@vl_lvoO">
 
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
@@ -28,8 +24,39 @@
       OneSignalDeferred.push(function(OneSignal) {
         OneSignal.init({
           appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b",
-          safari_web_id: "",
-          notifyButton: { enable: false },
+          safari_web_id: "", // 必要であれば入力
+          
+          // ★ここで純正ベルアイコンを有効化＆カスタマイズ
+          notifyButton: {
+            enable: true, /* これをtrueにするだけでAdGuard対策は完了 */
+            size: 'medium',
+            theme: 'default',
+            position: 'bottom-right',
+            showCredit: false,
+            text: {
+              'tip.state.unsubscribed': '見守りを開始する',
+              'tip.state.subscribed': '見守り中 (通知ON)',
+              'tip.state.blocked': '通知がブロックされています',
+              'message.action.subscribed': '安否情報の通知を受け取ります',
+              'message.action.resubscribed': '安否情報の通知を受け取ります',
+              'message.action.unsubscribed': '通知を停止しました',
+              'dialog.main.title': '通知設定',
+              'dialog.main.button.subscribe': '見守りを開始',
+              'dialog.main.button.unsubscribe': '通知を停止',
+            },
+            colors: { // サイトのテーマカラー(Gold/Yellow)に合わせる
+              'circle.background': '#d4af37',
+              'circle.foreground': 'white',
+              'badge.background': '#d4af37',
+              'badge.foreground': 'white',
+              'badge.border': 'white',
+              'pulse.color': '#d4af37',
+              'dialog.button.background.hovering': '#b5952f',
+              'dialog.button.background.active': '#d4af37',
+              'dialog.button.background': '#d4af37',
+              'dialog.button.foreground': 'white'
+            }
+          }
         });
       });
     </script>
@@ -49,6 +76,9 @@
             --color-gold: #d4af37;
             --color-tune-bg: rgba(155, 89, 182, 0.15); 
             --color-tune-border: rgba(155, 89, 182, 0.5); 
+            --color-tune-text: #6c3483;
+            --color-bubble-bg: #ffffff;
+            --color-bubble-text: #6c3483;
         }
 
         /* --- Base --- */
@@ -67,7 +97,6 @@
             background-color: #f5f5f7; color: #1d1d1f; 
             --card-bg: rgba(255, 255, 255, 0.65); --card-border: rgba(255, 255, 255, 0.4);
             --text-sub: #555559; --link-color: #0066cc;
-            --color-tune-text: #6c3483; --color-bubble-bg: #ffffff; --color-bubble-text: #6c3483; 
         }
         body.dark-mode { 
             background-color: #000000; color: #f5f5f7; 
@@ -113,35 +142,8 @@
         .card-tune:active { transform: scale(0.96); opacity: 0.8; }
         .card-tune.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
         
-        /* Watchdog Button (Yellow Handkerchief) */
-        .card-watchdog {
-            background: rgba(255, 215, 0, 0.15) !important; border: 1px solid rgba(255, 215, 0, 0.5) !important;
-            color: #d4af37 !important; cursor: pointer;
-            align-items: center; justify-content: center; transition: all 0.3s ease; z-index: 20;
-        }
-        .card-watchdog:hover { background: rgba(255, 215, 0, 0.25) !important; }
-        .card-watchdog.subscribed { 
-            background: rgba(255, 215, 0, 0.8) !important; color: #fff !important; border-color: transparent !important;
-        }
-
-        .tune-icon { font-size: 1.5rem; margin-bottom: 0.2em; }
-        .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
-
-        /* Dark Mode: Watchdog Alert Style */
-        body.dark-mode .card-watchdog-container {
-            order: -1; /* Move to TOP */
-            grid-column: span 4;
-            background: #d4af37 !important; color: #000 !important; border: none !important;
-            animation: pulseAlert 2s infinite; font-weight: bold; margin-bottom: 1rem;
-        }
-        @keyframes pulseAlert {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
-            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
-        }
-
         /* Tooltips & Reactions */
-        .card-tune::after, .card-watchdog::after {
+        .card-tune::after {
             content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%;
             transform: translateX(-50%) translateY(10px);
             background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); color: #fff;
@@ -150,8 +152,8 @@
             transition: opacity 0.2s, transform 0.2s; z-index: 30; margin-bottom: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        .card-tune:hover::after, .card-watchdog:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
-        @media (max-width: 768px) { .card-tune::after, .card-watchdog::after { display: none; } }
+        .card-tune:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+        @media (max-width: 768px) { .card-tune::after { display: none; } }
 
         .tune-bubble {
             position: absolute; top: 10%; right: -10%;
@@ -197,19 +199,8 @@
         .card-device-location { grid-column: span 1; }
         .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
         
-        /* Interactive Buttons Container */
-        .card-tune-container { grid-column: span 2; }
-        .card-watchdog-container { grid-column: span 2; }
-        
-        /* AdBlock Warning Style */
-        #adblock-warning {
-            grid-column: span 2;
-            font-size: 0.75rem; 
-            color: var(--color-bad); 
-            text-align: center; 
-            margin-top: -10px; margin-bottom: 10px; 
-            font-weight: 600;
-        }
+        /* Tune Button Container (Watchdog button removed) */
+        .card-tune-container { grid-column: span 4; } /* Full width */
 
         #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
 
@@ -313,14 +304,7 @@
                 <div class="tune-label" id="tune-text">Tune</div>
             </div>
             
-            <div class="card card-watchdog card-watchdog-container" id="watchdog-btn" onclick="toggleWatchdog()" data-tooltip="通知を受け取る">
-                <div class="tune-icon">🟨</div>
-                <div class="tune-label" id="watchdog-text">見守りを開始</div>
             </div>
-            <div id="adblock-warning" style="display: none;">
-                ⚠️ ボタンが動かない場合は<br>広告ブロッカーを「一時停止」してください
-            </div>
-        </div>
 
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
@@ -346,91 +330,6 @@
             if(diffMins<1) return 'たった今'; if(diffMins<60) return `${diffMins}分前`;
             const diffHours=Math.floor(diffMins/60); return diffHours<24?`${diffHours}時間前`:`${Math.floor(diffHours/24)}日前`;
         }
-
-        // --- Watchdog Logic (OneSignal) ---
-        function toggleWatchdog() {
-            // AdBlocker等でブロックされている場合は警告を出して終了
-            if (typeof OneSignal === 'undefined' || !OneSignal.User) {
-                const warningEl = document.getElementById('adblock-warning');
-                if(warningEl) warningEl.style.display = 'block';
-                return;
-            }
-
-            OneSignalDeferred.push(async function(OneSignal) {
-                const btn = document.getElementById('watchdog-btn');
-                const isUIYellow = btn.classList.contains('subscribed'); // 今のボタンの見た目（ユーザーの意図）
-                const isReallySubscribed = OneSignal.User.PushSubscription.optedIn; // 裏側の本当の状態
-
-                // パターンA: ユーザーは「見守りを開始（灰色）」ボタンを押した
-                // 意図：登録したい！
-                if (!isUIYellow) {
-                    if (isReallySubscribed) {
-                        // 実はもう登録済みだった？ -> 黙ってボタンを黄色(正しい状態)に直す
-                        updateWatchdogUI(true);
-                    } else {
-                        // 未登録なら -> 普通に登録する
-                        await OneSignal.User.PushSubscription.optIn();
-                        updateWatchdogUI(true);
-                    }
-                    return; // ここで終了（絶対に解除確認は出さない）
-                }
-
-                // パターンB: ユーザーは「見守り中（黄色）」ボタンを押した
-                // 意図：解除したい！
-                if (isUIYellow) {
-                    if (!isReallySubscribed) {
-                        // 実はもう解除済みだった？ -> 黙ってボタンを灰色(正しい状態)に直す
-                        updateWatchdogUI(false);
-                    } else {
-                        // 本当に登録中なら -> ここで初めて確認を出す
-                        const confirmStop = confirm("通知を解除しますか？\n（村瀨の安否通知が届かなくなります）");
-                        if (confirmStop) {
-                            await OneSignal.User.PushSubscription.optOut();
-                            updateWatchdogUI(false);
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateWatchdogUI(subscribed) {
-            const btn = document.getElementById('watchdog-btn');
-            const label = document.getElementById('watchdog-text');
-            if (subscribed) {
-                btn.classList.add('subscribed'); 
-                label.textContent = '見守り中 (通知ON)';
-                // 登録中はツールチップを「通知を停止する」に変更
-                btn.setAttribute('data-tooltip', '通知を停止する');
-            } else {
-                btn.classList.remove('subscribed'); 
-                label.textContent = '見守りを開始';
-                // 未登録時はツールチップを「通知を受け取る」に変更
-                btn.setAttribute('data-tooltip', '通知を受け取る');
-            }
-        }
-
-        window.addEventListener('load', () => {
-            // OneSignalの読み込み
-            OneSignalDeferred.push(function(OneSignal) {
-                OneSignal.User.PushSubscription.addEventListener("change", function(event) {
-                    updateWatchdogUI(event.current.optedIn);
-                });
-                updateWatchdogUI(OneSignal.User.PushSubscription.optedIn);
-            });
-
-            // AdBlocker検知ロジック (3秒後にチェック)
-            setTimeout(() => {
-                const isBlocked = typeof OneSignal === 'undefined' || !window.OneSignal || !window.OneSignal.User;
-                
-                if (isBlocked) {
-                    const warningEl = document.getElementById('adblock-warning');
-                    const btn = document.getElementById('watchdog-btn');
-                    
-                    if (warningEl) warningEl.style.display = 'block';
-                    if (btn) btn.style.opacity = '0.6';
-                }
-            }, 3000);
-        });
 
         // --- Tune Logic ---
         function checkCooldown() {
