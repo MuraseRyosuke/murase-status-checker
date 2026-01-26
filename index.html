@@ -240,7 +240,7 @@
         </div>
 
         <div class="card card-profile" id="profile-card">
-            <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
+            <img src="https://status.muraseryosuke.info/ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
         </div>
 
         <div class="card card-heart">
@@ -349,7 +349,7 @@
 
         // --- Watchdog Logic (OneSignal) ---
         function toggleWatchdog() {
-            // OneSignalがブロックされている場合のガード処理
+            // AdGuard等でブロックされている場合は警告を出して終了
             if (typeof OneSignal === 'undefined' || !OneSignal.User) {
                 const warningEl = document.getElementById('adblock-warning');
                 if(warningEl) warningEl.style.display = 'block';
@@ -358,6 +358,10 @@
 
             OneSignalDeferred.push(async function(OneSignal) {
                 if (OneSignal.User.PushSubscription.optedIn) {
+                    // 【追加】解除時の確認ダイアログ
+                    const confirmStop = confirm("通知を解除しますか？\n（村瀨の安否通知が届かなくなります）");
+                    if (!confirmStop) return; // キャンセルされたら何もしない
+
                     await OneSignal.User.PushSubscription.optOut();
                     updateWatchdogUI(false);
                 } else {
@@ -371,14 +375,19 @@
             const btn = document.getElementById('watchdog-btn');
             const label = document.getElementById('watchdog-text');
             if (subscribed) {
-                btn.classList.add('subscribed'); label.textContent = '見守り中 (通知ON)';
+                btn.classList.add('subscribed'); 
+                label.textContent = '見守り中 (通知ON)';
+                // 【追加】登録中はツールチップを「通知を停止する」に変更
+                btn.setAttribute('data-tooltip', '通知を停止する');
             } else {
-                btn.classList.remove('subscribed'); label.textContent = '見守りを開始';
+                btn.classList.remove('subscribed'); 
+                label.textContent = '見守りを開始';
+                // 【追加】未登録時はツールチップを「通知を受け取る」に変更
+                btn.setAttribute('data-tooltip', '通知を受け取る');
             }
         }
 
         window.addEventListener('load', () => {
-            // OneSignalの読み込み
             OneSignalDeferred.push(function(OneSignal) {
                 OneSignal.User.PushSubscription.addEventListener("change", function(event) {
                     updateWatchdogUI(event.current.optedIn);
@@ -388,13 +397,10 @@
 
             // AdBlocker検知ロジック (3秒後にチェック)
             setTimeout(() => {
-                // OneSignalの本体(window.OneSignal)がロードされていない、またはUserプロパティがない場合
                 const isBlocked = typeof OneSignal === 'undefined' || !window.OneSignal || !window.OneSignal.User;
-                
                 if (isBlocked) {
                     const warningEl = document.getElementById('adblock-warning');
                     const btn = document.getElementById('watchdog-btn');
-                    
                     if (warningEl) warningEl.style.display = 'block';
                     if (btn) btn.style.opacity = '0.6';
                 }
