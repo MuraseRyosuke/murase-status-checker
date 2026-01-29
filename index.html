@@ -27,32 +27,12 @@
           safari_web_id: "", 
           
           // 純正ベルアイコン設定
+          // ※テキストや色はOneSignalダッシュボードの設定が優先されます
           notifyButton: {
             enable: true,
-            size: 'medium',
-            theme: 'default',
-            position: 'bottom-right',
-            showCredit: false,
-            displayPredicate: function() { return true; },
-            offset: { bottom: '20px', right: '20px' },
-            text: {
-              'tip.state.unsubscribed': '見守りを開始する',
-              'tip.state.subscribed': '見守り中 (通知ON)',
-              'tip.state.blocked': '通知がブロックされています',
-              'message.action.subscribed': '安否情報の通知を受け取ります',
-              'message.action.resubscribed': '安否情報の通知を受け取ります',
-              'message.action.unsubscribed': '通知を停止しました',
-              'dialog.main.title': '通知設定',
-              'dialog.main.button.subscribe': '見守りを開始',
-              'dialog.main.button.unsubscribe': '通知を停止',
-            },
-            colors: {
-              'circle.background': '#d4af37', 'circle.foreground': 'white',
-              'badge.background': '#d4af37', 'badge.foreground': 'white', 'badge.border': 'white',
-              'pulse.color': '#d4af37',
-              'dialog.button.background.hovering': '#b5952f',
-              'dialog.button.background.active': '#d4af37', 'dialog.button.background': '#d4af37',
-              'dialog.button.foreground': 'white'
+            // AdGuard対策：常に表示を強制する設定
+            displayPredicate: function() {
+                return true;
             }
           }
         });
@@ -272,22 +252,22 @@
     <div id="help-modal" class="modal-overlay" onclick="closeHelpModal(event)">
         <div class="modal-content">
             <div class="modal-close" onclick="closeHelpModal(event)">×</div>
-            <div class="modal-title">通知を受け取る方法</div>
+            <div class="modal-title">生存監視システムへの接続</div>
             
             <div class="step-block">
-                <div class="step-title"><span class="step-num">1</span> AdGuardを一時停止する</div>
-                <div>広告ブロッカーが動作していると、登録処理がブロックされる場合があります。一度「保護を一時停止」してください。</div>
-                <img src="guide_adguard.jpg" alt="AdGuard Pause" class="step-img">
+                <div class="step-title"><span class="step-num">1</span> 広告ブロックを一時停止</div>
+                <div>広告ブロッカー（AdGuardなど）が動作していると、登録処理が遮断される場合があります。「保護を一時停止」してください。</div>
+                <img src="guide_adguard.jpg" alt="AdGuard Pause" class="step-img" width="600" height="340">
             </div>
 
             <div class="step-block">
-                <div class="step-title"><span class="step-num">2</span> ページを更新して登録</div>
-                <div>ページを再読み込みし、右下のベルアイコン🔔をクリック。「見守りを開始」を選ぶと、ブラウザの許可画面が出ます。</div>
-                <img src="guide_allow.jpg" alt="Allow Notification" class="step-img">
+                <div class="step-title"><span class="step-num">2</span> ページを更新して監視開始</div>
+                <div>ページを再読み込みし、右下のベルアイコン🔔をクリック。「監視を始める」を選ぶと、ブラウザの許可画面が出ます。</div>
+                <img src="guide_allow.jpg" alt="Allow Notification" class="step-img" width="600" height="340">
             </div>
 
             <div class="modal-note">
-                ✅ 一度登録できれば、その後はAdGuardを有効に戻しても通知は届きます。<br>
+                ✅ 一度接続できれば、その後は広告ブロックを有効に戻しても監視通知は届きます。<br>
                 ※うまくいかない場合は、ブラウザの設定で通知がブロックされていないかご確認ください。
             </div>
         </div>
