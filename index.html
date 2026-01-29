@@ -27,7 +27,7 @@
           safari_web_id: "", 
           
           // 純正ベルアイコン設定
-          // テキストや色はOneSignalダッシュボードの設定が優先されます
+          // ※テキストや色はOneSignalダッシュボードの設定が優先されます
           notifyButton: {
             enable: true,
             // AdGuard対策：常に表示を強制する設定
@@ -221,9 +221,12 @@
             background: var(--color-gold); color: #fff; width: 24px; height: 24px; 
             border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; 
         }
+        /* 画像スタイル修正: サイズ可変に対応しつつ最大高さを制限 */
         .step-img {
-            width: 100%; border-radius: 12px; margin-top: 0.5rem; border: 1px solid var(--card-border);
-            aspect-ratio: 16/9; object-fit: cover; background: #eee;
+            max-width: 100%; height: auto;
+            max-height: 250px; /* 縦長画像が大きくなりすぎないように制限 */
+            border-radius: 12px; margin-top: 0.5rem; border: 1px solid var(--card-border);
+            display: block; margin-left: auto; margin-right: auto;
         }
         .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
 
@@ -258,13 +261,13 @@
             <div class="step-block">
                 <div class="step-title"><span class="step-num">1</span> 広告ブロックを一時停止</div>
                 <div>広告ブロッカー（AdGuardなど）が動作していると、接続が遮断される場合があります。「保護を一時停止」してください。</div>
-                <img src="guide_adguard.jpg" alt="AdGuard Pause" class="step-img" width="600" height="340">
+                <img src="guide_adguard.webp" alt="AdGuard Pause" class="step-img" width="332" height="636" loading="lazy">
             </div>
 
             <div class="step-block">
                 <div class="step-title"><span class="step-num">2</span> ページを更新して接続</div>
-                <div>ページを再読み込みし、右下のベルアイコン🔔をクリック。「接続する」を選ぶと、ブラウザの許可画面が出ます。</div>
-                <img src="guide_allow.jpg" alt="Allow Notification" class="step-img" width="600" height="340">
+                <div>ページを再読み込みし、右下のベルアイコン🔔（<b>👻Beaconを受信する</b>）をクリック。表示されるメニューで<b>「👀受信する」</b>を選ぶと、ブラウザの許可画面が出ます。</div>
+                <img src="guide_allow.webp" alt="Allow Notification" class="step-img" width="321" height="244" loading="lazy">
             </div>
 
             <div class="modal-note">
