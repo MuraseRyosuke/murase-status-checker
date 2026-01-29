@@ -27,7 +27,7 @@
           safari_web_id: "", 
           
           // 純正ベルアイコン設定
-          // ※テキストや色はOneSignalダッシュボードの設定が優先されます
+          // テキストや色はOneSignalダッシュボードの設定が優先されます
           notifyButton: {
             enable: true,
             // AdGuard対策：常に表示を強制する設定
@@ -163,6 +163,7 @@
         
         .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(110px, auto); gap: 1.25rem; width: 100%; max-width: 900px; }
         
+        /* Layout Blocks */
         .card-status { grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem; min-height: 160px; }
         #liveness-message { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; }
         #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.8rem; }
@@ -252,22 +253,22 @@
     <div id="help-modal" class="modal-overlay" onclick="closeHelpModal(event)">
         <div class="modal-content">
             <div class="modal-close" onclick="closeHelpModal(event)">×</div>
-            <div class="modal-title">生存監視システムへの接続</div>
+            <div class="modal-title">Beaconシステムへの接続</div>
             
             <div class="step-block">
                 <div class="step-title"><span class="step-num">1</span> 広告ブロックを一時停止</div>
-                <div>広告ブロッカー（AdGuardなど）が動作していると、登録処理が遮断される場合があります。「保護を一時停止」してください。</div>
+                <div>広告ブロッカー（AdGuardなど）が動作していると、接続が遮断される場合があります。「保護を一時停止」してください。</div>
                 <img src="guide_adguard.jpg" alt="AdGuard Pause" class="step-img" width="600" height="340">
             </div>
 
             <div class="step-block">
-                <div class="step-title"><span class="step-num">2</span> ページを更新して監視開始</div>
-                <div>ページを再読み込みし、右下のベルアイコン🔔をクリック。「監視を始める」を選ぶと、ブラウザの許可画面が出ます。</div>
+                <div class="step-title"><span class="step-num">2</span> ページを更新して接続</div>
+                <div>ページを再読み込みし、右下のベルアイコン🔔をクリック。「接続する」を選ぶと、ブラウザの許可画面が出ます。</div>
                 <img src="guide_allow.jpg" alt="Allow Notification" class="step-img" width="600" height="340">
             </div>
 
             <div class="modal-note">
-                ✅ 一度接続できれば、その後は広告ブロックを有効に戻しても監視通知は届きます。<br>
+                ✅ 一度接続できれば、その後は広告ブロックを有効に戻してもBeacon信号は届きます。<br>
                 ※うまくいかない場合は、ブラウザの設定で通知がブロックされていないかご確認ください。
             </div>
         </div>
@@ -354,7 +355,7 @@
             </div>
         </div>
         
-        <div class="help-trigger" onclick="openHelpModal()">⚠️ 通知が届かない場合はこちら</div>
+        <div class="help-trigger" onclick="openHelpModal()">⚠️ Beaconが届かない場合はこちら</div>
 
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
