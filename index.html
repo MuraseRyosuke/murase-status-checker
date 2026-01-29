@@ -26,13 +26,22 @@
           appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b",
           safari_web_id: "", 
           
-          // 純正ベルアイコン設定 (AdGuard対策・UX最適化)
+          // 純正ベルアイコン設定
           notifyButton: {
             enable: true,
             size: 'medium',
             theme: 'default',
             position: 'bottom-right',
             showCredit: false,
+            // ★重要：常にベルを表示させる設定
+            displayPredicate: function() {
+                return true;
+            },
+            offset: {
+                bottom: '20px',
+                right: '20px'
+            },
+            // テキスト設定
             text: {
               'tip.state.unsubscribed': '見守りを開始する',
               'tip.state.subscribed': '見守り中 (通知ON)',
@@ -44,6 +53,7 @@
               'dialog.main.button.subscribe': '見守りを開始',
               'dialog.main.button.unsubscribe': '通知を停止',
             },
+            // ※注意: ここの色は管理画面の設定が優先される場合があります
             colors: {
               'circle.background': '#d4af37',
               'circle.foreground': 'white',
@@ -173,6 +183,9 @@
         }
         @keyframes toastSlideUp { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 
+        .tune-icon { font-size: 1.5rem; margin-bottom: 0.2em; }
+        .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
+
         /* --- Typography & Grid --- */
         .label { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; color: var(--text-sub); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4em; width: 100%; }
         .value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
@@ -199,8 +212,8 @@
         .card-device-location { grid-column: span 1; }
         .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
         
-        /* Tune Button Container */
-        .card-tune-container { grid-column: span 4; }
+        /* Tune Button Container - Reverted to span 2 (Half width) */
+        .card-tune-container { grid-column: span 2; }
 
         #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
 
@@ -215,6 +228,7 @@
             
             body.dark-mode .card-status { order: 1; }
             body.dark-mode .card-heart  { order: 2; }
+            /* Tune button order */
             body.dark-mode .card-tune-container { order: 3; background-color: rgba(155, 89, 182, 0.25) !important; border-color: rgba(155, 89, 182, 0.8) !important; margin-bottom: 0.5rem; }
             body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; }
             body.dark-mode .footer-info { order: 5; }
