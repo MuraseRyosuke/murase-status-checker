@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>村瀨亮介のリアルタイム健康診断</title>
-    <meta name="description" content="村瀨亮介(vl_lvoO)の現在の体調、位置情報、安否状況をApple Watchのデータを用いてリアルタイムに可視化・公開するステータスチェッカーサイトです。">
+    <meta name="description" content="村瀨亮介の現在の体調、位置情報、安否状況をApple Watchのデータを用いてリアルタイムに可視化・公開するステータスチェッカーサイトです。">
     <meta name="author" content="Ryosuke Murase">
     <meta name="copyright" content="© 2026 Ryosuke Murase">
     <link rel="canonical" href="https://status.muraseryosuke.info/">
@@ -221,10 +221,12 @@
             background: var(--color-gold); color: #fff; width: 24px; height: 24px; 
             border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; 
         }
-        /* 画像スタイル修正: サイズ可変に対応しつつ最大高さを制限 */
+        /* 画像スタイル修正: アスペクト比を維持して枠内に収める */
         .step-img {
-            max-width: 100%; height: auto;
-            max-height: 250px; /* 縦長画像が大きくなりすぎないように制限 */
+            width: auto; /* 幅を自動調整 */
+            max-width: 100%; /* 親要素からはみ出さない */
+            height: auto; /* 高さを自動調整 */
+            max-height: 250px; /* 高さを制限。これに合わせて幅も縮小される */
             border-radius: 12px; margin-top: 0.5rem; border: 1px solid var(--card-border);
             display: block; margin-left: auto; margin-right: auto;
         }
@@ -256,7 +258,7 @@
     <div id="help-modal" class="modal-overlay" onclick="closeHelpModal(event)">
         <div class="modal-content">
             <div class="modal-close" onclick="closeHelpModal(event)">×</div>
-            <div class="modal-title">Beaconシステムへの接続</div>
+            <div class="modal-title">Beaconへの接続</div>
             
             <div class="step-block">
                 <div class="step-title"><span class="step-num">1</span> 広告ブロックを一時停止</div>
@@ -266,12 +268,12 @@
 
             <div class="step-block">
                 <div class="step-title"><span class="step-num">2</span> ページを更新して接続</div>
-                <div>ページを再読み込みし、右下のベルアイコン🔔（<b>👻Beaconを受信する</b>）をクリック。表示されるメニューで<b>「👀受信する」</b>を選ぶと、ブラウザの許可画面が出ます。</div>
+                <div>ページを再読み込みし、右下の🔔ベルアイコン（<b>👻Beaconを受信する</b>）をクリック。表示されるメニューで<b>「👀受信する」</b>を選ぶと、ブラウザの許可画面が出ます。</div>
                 <img src="guide_allow.webp" alt="Allow Notification" class="step-img" width="321" height="244" loading="lazy">
             </div>
 
             <div class="modal-note">
-                ✅ 一度接続できれば、その後は広告ブロックを有効に戻してもBeacon信号は届きます。<br>
+                ✅ 一度接続できれば、その後は広告ブロックを有効に戻してもBeaconは届きます。<br>
                 ※うまくいかない場合は、ブラウザの設定で通知がブロックされていないかご確認ください。
             </div>
         </div>
@@ -460,7 +462,7 @@
                 let ty=this.c.height/2;
                 if(this.alive) { const d=now-this.last; if(d>int){this.last=now;ty-=this.c.height*0.25;}else if(d<50)ty+=this.c.height*0.05;else if(d>int-200)ty+=this.c.height*0.1; }
                 this.y=this.y*0.9+ty*0.1; this.ctx.lineTo(this.x,this.y);
-                this.ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue(document.body.classList.contains('dark-mode')?'--color-ecg-lost':'--color-ecg-alive').trim();
+                this.ctx.strokeStyle=getComputedComputedStyle(document.body).getPropertyValue(document.body.classList.contains('dark-mode')?'--color-ecg-lost':'--color-ecg-alive').trim();
                 this.ctx.lineWidth=2; this.ctx.stroke();
                 this.x++; if(this.x>this.c.width){this.x=0;this.ctx.clearRect(0,0,this.c.width,this.c.height);}
                 requestAnimationFrame(()=>this.draw());
