@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Murase Status">
     
     <title>村瀨亮介のリアルタイム健康診断</title>
     <meta name="description" content="村瀨亮介(vl_lvoO)の現在の体調、位置情報、安否状況をApple Watchのデータを用いてリアルタイムに可視化・公開するステータスチェッカーサイトです。">
@@ -418,12 +421,26 @@
             const diffHours=Math.floor(diffMins/60); return diffHours<24?`${diffHours}時間前`:`${Math.floor(diffHours/24)}日前`;
         }
 
-        // --- Manual Beacon Connect Logic (Force Mode) ---
+        // --- Manual Beacon Connect Logic (Improved) ---
         function manualBeaconConnect() {
-            // グローバルスコープのOneSignal変数に直接プッシュ
+            // 1. OneSignalがロードされているか確認
+            if (typeof window.OneSignal === 'undefined') {
+                alert("Beaconシステムが読み込まれていません。\n広告ブロッカー(AdGuard等)を一時停止して、ページを更新してください。");
+                return;
+            }
+
+            // 2. iOSのPWA（ホーム画面追加）チェック
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+            if (isIOS && !isStandalone) {
+                alert("⚠️ iPhoneをお使いの方へ\n\n通知を受け取るには、このページを「ホーム画面に追加」する必要があります。\n\n1. 共有ボタン(↑)を押す\n2. 「ホーム画面に追加」を選択\n3. 追加されたアイコンから起動してください");
+                return;
+            }
+
+            // 3. 正常なら登録処理を実行
             window.OneSignalDeferred = window.OneSignalDeferred || [];
             window.OneSignalDeferred.push(function(OneSignal) {
-                // optIn はPromiseを返さない場合があるため、awaitせず呼び出す
                 OneSignal.User.PushSubscription.optIn();
             });
         }
