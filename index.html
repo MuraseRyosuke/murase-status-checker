@@ -27,10 +27,8 @@
           safari_web_id: "", 
           
           // 純正ベルアイコン設定
-          // ※テキストや色はOneSignalダッシュボードの設定が優先されます
           notifyButton: {
             enable: true,
-            // AdGuard対策：常に表示を強制する設定
             displayPredicate: function() {
                 return true;
             }
@@ -184,12 +182,35 @@
         .card-tune-container { grid-column: span 2; }
 
         /* --- Help Modal Styles --- */
-        .help-trigger {
+        .help-section {
             grid-column: span 4;
-            text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem;
+            display: flex; justify-content: center; align-items: center; gap: 1.5rem;
+            margin-top: 0.5rem; margin-bottom: 0.5rem;
+        }
+        .help-trigger {
             font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8;
         }
         .help-trigger:hover { opacity: 1; color: var(--link-color); }
+
+        /* --- Custom Mobile Bell (Fake OneSignal Button) --- */
+        .custom-mobile-bell {
+            display: none; /* PCでは非表示 */
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            background-color: #d4af37; /* Gold */
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 99999;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        .custom-mobile-bell:active { transform: scale(0.9); }
+        .custom-mobile-bell svg { width: 24px; height: 24px; fill: white; }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -221,23 +242,14 @@
             background: var(--color-gold); color: #fff; width: 24px; height: 24px; 
             border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; 
         }
-        /* 画像スタイル修正: アスペクト比を維持して枠内に収める */
         .step-img {
-            width: auto; /* 幅を自動調整 */
-            max-width: 100%; /* 親要素からはみ出さない */
-            height: auto; /* 高さを自動調整 */
-            max-height: 250px; /* 高さを制限。これに合わせて幅も縮小される */
+            width: auto; max-width: 100%; height: auto; max-height: 250px; 
             border-radius: 12px; margin-top: 0.5rem; border: 1px solid var(--card-border);
             display: block; margin-left: auto; margin-right: auto;
         }
         .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
 
         #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
-
-        /* --- OneSignal Bell Force for Mobile --- */
-        #onesignal-bell-container {
-            z-index: 10000 !important; /* カードより手前に表示 */
-        }
 
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; }
@@ -251,19 +263,17 @@
             body.dark-mode .card-status { order: 1; }
             body.dark-mode .card-heart  { order: 2; }
             body.dark-mode .card-tune-container { order: 3; background-color: rgba(155, 89, 182, 0.25) !important; border-color: rgba(155, 89, 182, 0.8) !important; margin-bottom: 0.5rem; }
-            body.dark-mode .help-trigger { order: 3; margin-top: 0; margin-bottom: 1rem; }
-            body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; }
-            body.dark-mode .footer-info { order: 5; }
-
-            /* モバイルでベルを強制表示 & 位置調整 */
-            #onesignal-bell-container {
-                display: block !important;
-                bottom: 100px !important; /* Tuneボタンやバーの上に表示 */
-                right: 20px !important;
-            }
-            #onesignal-bell-launcher {
-                display: block !important;
-            }
+            
+            body.dark-mode .help-section { order: 4; margin-top: 0; margin-bottom: 1rem; flex-direction: column; gap: 0.8rem; }
+            
+            /* スマホ用設定 */
+            .custom-mobile-bell { display: flex; bottom: 85px; } /* 偽ベルを表示、少し上に配置 */
+            
+            /* 本物のベルをスマホだけ隠す（重複防止） */
+            #onesignal-bell-container { display: none !important; } 
+            
+            body.dark-mode .card-small, body.dark-mode .card-device-location { order: 5; }
+            body.dark-mode .footer-info { order: 6; }
         }
     </style>
 </head>
@@ -292,6 +302,10 @@
                 ※うまくいかない場合は、ブラウザの設定で通知がブロックされていないかご確認ください。
             </div>
         </div>
+    </div>
+
+    <div class="custom-mobile-bell" onclick="manualBeaconConnect()">
+        <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"></path></svg>
     </div>
 
     <main class="dashboard-grid">
@@ -375,7 +389,9 @@
             </div>
         </div>
         
-        <div class="help-trigger" onclick="openHelpModal()">⚠️ Beaconが届かない場合はこちら</div>
+        <div class="help-section">
+            <div class="help-trigger" onclick="openHelpModal()">⚠️ Beaconが届かない場合はこちら</div>
+        </div>
 
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
@@ -400,6 +416,26 @@
             const now = new Date(), diffMins = Math.floor((now-date)/60000);
             if(diffMins<1) return 'たった今'; if(diffMins<60) return `${diffMins}分前`;
             const diffHours=Math.floor(diffMins/60); return diffHours<24?`${diffHours}時間前`:`${Math.floor(diffHours/24)}日前`;
+        }
+
+        // --- Manual Beacon Connect Logic (Improved) ---
+        async function manualBeaconConnect() {
+            try {
+                if (window.OneSignal && window.OneSignal.User) {
+                    await window.OneSignal.User.PushSubscription.optIn();
+                } 
+                else if (window.OneSignalDeferred) {
+                    window.OneSignalDeferred.push(async function(OneSignal) {
+                        await OneSignal.User.PushSubscription.optIn();
+                    });
+                } else {
+                    alert("接続システムを読み込めませんでした。\n広告ブロッカーを一時停止してリロードしてください。");
+                }
+            } catch (e) {
+                console.error("Manual connect failed:", e);
+                // 失敗時でも反応がないと困るのでアラートを出すか、サイレント失敗にするか
+                // ここではユーザー体験のため何も出さないか、必要ならalert(e)
+            }
         }
 
         // --- Help Modal Logic ---
