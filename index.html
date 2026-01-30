@@ -194,8 +194,9 @@
         }
         .help-trigger:hover { opacity: 1; color: var(--link-color); }
         
-        /* 手動接続ボタン */
+        /* 手動接続ボタン (PCでは非表示、スマホで表示) */
         .beacon-manual-btn {
+            display: none; /* デフォルト(PC)は非表示 */
             background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.5);
             color: #d4af37; padding: 6px 12px; border-radius: 99px;
             font-size: 0.85rem; font-weight: 700; cursor: pointer;
@@ -260,8 +261,9 @@
             body.dark-mode .card-heart  { order: 2; }
             body.dark-mode .card-tune-container { order: 3; background-color: rgba(155, 89, 182, 0.25) !important; border-color: rgba(155, 89, 182, 0.8) !important; margin-bottom: 0.5rem; }
             
-            /* ヘルプと手動ボタンを縦並びに */
+            /* ヘルプと手動ボタンを縦並びにして、ボタンを表示 */
             body.dark-mode .help-section { order: 4; margin-top: 0; margin-bottom: 1rem; flex-direction: column; gap: 0.8rem; }
+            .beacon-manual-btn { display: block; } /* スマホでのみ表示 */
             
             body.dark-mode .card-small, body.dark-mode .card-device-location { order: 5; }
             body.dark-mode .footer-info { order: 6; }
@@ -408,12 +410,18 @@
 
         // --- Manual Beacon Connect Logic ---
         function manualBeaconConnect() {
-            if (typeof OneSignalDeferred !== 'undefined') {
-                OneSignalDeferred.push(async function(OneSignal) {
-                    await OneSignal.User.PushSubscription.optIn();
+            // 優先: グローバルに読み込まれているOneSignalを使う
+            if (window.OneSignal && window.OneSignal.User) {
+                window.OneSignal.User.PushSubscription.optIn();
+            } 
+            // フォールバック: キューに入れて実行を待つ
+            else if (window.OneSignalDeferred) {
+                window.OneSignalDeferred.push(function(OneSignal) {
+                    OneSignal.User.PushSubscription.optIn();
                 });
             } else {
-                alert("読み込み中、または広告ブロックにより機能が制限されています。");
+                // OneSignal自体が読み込まれていない（広告ブロックなど）
+                alert("接続システムを読み込めませんでした。\n広告ブロッカーを一時停止してリロードしてください。");
             }
         }
 
