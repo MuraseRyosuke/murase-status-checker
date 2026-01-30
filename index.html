@@ -183,27 +183,13 @@
         
         .card-tune-container { grid-column: span 2; }
 
-        /* --- Help & Beacon Button Styles --- */
-        .help-section {
-            grid-column: span 4;
-            display: flex; justify-content: center; align-items: center; gap: 1.5rem;
-            margin-top: 0.5rem; margin-bottom: 0.5rem;
-        }
+        /* --- Help Modal Styles --- */
         .help-trigger {
+            grid-column: span 4;
+            text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem;
             font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8;
         }
         .help-trigger:hover { opacity: 1; color: var(--link-color); }
-        
-        /* 手動接続ボタン (PCでは非表示、スマホで表示) */
-        .beacon-manual-btn {
-            display: none; /* デフォルト(PC)は非表示 */
-            background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.5);
-            color: #d4af37; padding: 6px 12px; border-radius: 99px;
-            font-size: 0.85rem; font-weight: 700; cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .beacon-manual-btn:hover { background: rgba(255, 215, 0, 0.25); transform: scale(1.02); }
-        .beacon-manual-btn:active { transform: scale(0.98); }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -248,6 +234,11 @@
 
         #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
 
+        /* --- OneSignal Bell Force for Mobile --- */
+        #onesignal-bell-container {
+            z-index: 10000 !important; /* カードより手前に表示 */
+        }
+
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; }
             .dashboard-grid { display: flex; flex-direction: column; gap: 1rem; }
@@ -260,13 +251,19 @@
             body.dark-mode .card-status { order: 1; }
             body.dark-mode .card-heart  { order: 2; }
             body.dark-mode .card-tune-container { order: 3; background-color: rgba(155, 89, 182, 0.25) !important; border-color: rgba(155, 89, 182, 0.8) !important; margin-bottom: 0.5rem; }
-            
-            /* ヘルプと手動ボタンを縦並びにして、ボタンを表示 */
-            body.dark-mode .help-section { order: 4; margin-top: 0; margin-bottom: 1rem; flex-direction: column; gap: 0.8rem; }
-            .beacon-manual-btn { display: block; } /* スマホでのみ表示 */
-            
-            body.dark-mode .card-small, body.dark-mode .card-device-location { order: 5; }
-            body.dark-mode .footer-info { order: 6; }
+            body.dark-mode .help-trigger { order: 3; margin-top: 0; margin-bottom: 1rem; }
+            body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; }
+            body.dark-mode .footer-info { order: 5; }
+
+            /* モバイルでベルを強制表示 & 位置調整 */
+            #onesignal-bell-container {
+                display: block !important;
+                bottom: 100px !important; /* Tuneボタンやバーの上に表示 */
+                right: 20px !important;
+            }
+            #onesignal-bell-launcher {
+                display: block !important;
+            }
         }
     </style>
 </head>
@@ -378,10 +375,7 @@
             </div>
         </div>
         
-        <div class="help-section">
-            <div class="beacon-manual-btn" onclick="manualBeaconConnect()">🔔 Beaconに接続する</div>
-            <div class="help-trigger" onclick="openHelpModal()">⚠️ 届かない場合はこちら</div>
-        </div>
+        <div class="help-trigger" onclick="openHelpModal()">⚠️ Beaconが届かない場合はこちら</div>
 
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
@@ -406,23 +400,6 @@
             const now = new Date(), diffMins = Math.floor((now-date)/60000);
             if(diffMins<1) return 'たった今'; if(diffMins<60) return `${diffMins}分前`;
             const diffHours=Math.floor(diffMins/60); return diffHours<24?`${diffHours}時間前`:`${Math.floor(diffHours/24)}日前`;
-        }
-
-        // --- Manual Beacon Connect Logic ---
-        function manualBeaconConnect() {
-            // 優先: グローバルに読み込まれているOneSignalを使う
-            if (window.OneSignal && window.OneSignal.User) {
-                window.OneSignal.User.PushSubscription.optIn();
-            } 
-            // フォールバック: キューに入れて実行を待つ
-            else if (window.OneSignalDeferred) {
-                window.OneSignalDeferred.push(function(OneSignal) {
-                    OneSignal.User.PushSubscription.optIn();
-                });
-            } else {
-                // OneSignal自体が読み込まれていない（広告ブロックなど）
-                alert("接続システムを読み込めませんでした。\n広告ブロッカーを一時停止してリロードしてください。");
-            }
         }
 
         // --- Help Modal Logic ---
