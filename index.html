@@ -21,32 +21,34 @@
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       // --- Hidden Console Logs ---
-      // Pattern A: System Boot
+      
+      // 1. Claude Code Style "MURASE"
       console.log(
-        "%c" +
-        "███    ███ ██    ██ ██████   █████  ███████ ███████ \n" +
-        "████  ████ ██    ██ ██   ██ ██   ██ ██      ██      \n" +
-        "██ ████ ██ ██    ██ ██████  ███████ ███████ █████   \n" +
-        "██  ██  ██ ██    ██ ██   ██ ██   ██      ██ ██      \n" +
-        "██      ██  ██████  ██   ██ ██   ██ ███████ ███████ \n" +
-        "\n" +
-        "SYSTEM: MURASE_STATUS_CHECKER \n" +
-        "STATUS: MONITORING...         \n" +
-        "Target: Ryosuke Murase        ",
-        "color: #d4af37; background: #1c1c1e; font-weight: bold; padding: 10px; font-family: monospace;"
+`%c
+  * Welcome to the Murase Code research preview!
+
+  ███╗   ███╗██╗   ██╗██████╗  █████╗ ███████╗███████╗
+  ████╗ ████║██║   ██║██╔══██╗██╔══██╗██╔════╝██╔════╝
+  ██╔████╔██║██║   ██║██████╔╝███████║███████╗█████╗  
+  ██║╚██╔╝██║██║   ██║██╔══██╗██╔══██║╚════██║██╔══╝  
+  ██║ ╚═╝ ██║╚██████╔╝██║  ██║██║  ██║███████║███████╗
+  ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝
+
+  🚀 Login successful. Press Enter to continue`,
+        "color: #FF7F50; background: #1E1E1E; font-weight: bold; padding: 20px; font-family: monospace; line-height: 1.2; border: 1px solid #FF7F50; border-radius: 4px;"
       );
 
-      // Pattern B: Big Friend
+      // 2. Pattern B: Big Friend (Freemason Style)
       console.log(
-        "%c" +
-        "      /\\ \n" +
-        "     /  \\ \n" +
-        "    / 👁️ \\   BIG FRIEND\n" +
-        "   /      \\  IS WATCHING\n" +
-        "  /________\\ MURASE.\n" +
-        "\n" +
-        "  [ Beacon System Active ]",
-        "color: #00ff00; background: #000000; font-weight: bold; padding: 10px; font-family: monospace;"
+`%c
+      /\\ 
+     /  \\ 
+    / 👁️ \\   BIG FRIEND
+   /      \\  IS WATCHING
+  /________\\ MURASE.
+
+  [ Beacon System Active ]`,
+        "color: #00ff00; background: #000000; font-weight: bold; padding: 10px; font-family: monospace; line-height: 1.2;"
       );
 
       // --- OneSignal Init ---
@@ -56,10 +58,8 @@
           appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b",
           safari_web_id: "", 
           
-          // 純正ベルアイコン設定
           notifyButton: {
             enable: true,
-            // AdGuard対策：常に表示を強制する設定
             displayPredicate: function() {
                 return true;
             }
