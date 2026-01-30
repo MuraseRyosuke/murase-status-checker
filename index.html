@@ -19,10 +19,14 @@
     <meta name="twitter:card" content="summary">
 
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    
     <script>
-      // --- Hidden Console Logs ---
+      /**
+       * ------------------------------------------------------------------
+       * Hidden Console Logs (Easter Eggs)
+       * ------------------------------------------------------------------
+       */
       
-      // 1. Claude Code Style "MURASE"
       console.log(
 `%c
   * Welcome to the MURASE-STATUS-CHECKER!
@@ -40,7 +44,6 @@
           "color: #FF9F78; background: #252529; font-family: monospace; font-weight: normal; padding: 10px; line-height: 1.3;"
       );
 
-      // 2. Pattern B: Big Friend (Freemason Style)
       console.log(
 `%c
       /\\ 
@@ -55,83 +58,136 @@
         "color: #b0c4de; background: #101010; font-family: monospace; font-weight: normal; padding: 10px; line-height: 1.3;"
       );
 
-      // --- OneSignal Init ---
+      /**
+       * ------------------------------------------------------------------
+       * OneSignal Initialization
+       * ------------------------------------------------------------------
+       */
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
           appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b",
           safari_web_id: "", 
-          
           notifyButton: {
             enable: true,
-            displayPredicate: function() {
-                return true;
-            }
+            // Force display for users with ad-blockers
+            displayPredicate: function() { return true; }
           }
         });
       });
     </script>
 
     <style>
-        /* --- Variables --- */
+        /* * ------------------------------------------------------------------
+         * CSS Variables & Theme Configuration
+         * ------------------------------------------------------------------
+         */
         :root {
+            /* Effects */
             --glass-blur: 20px;
             --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
             --radius-card: 24px;
-            --color-ecg-alive: rgba(46, 204, 113, 0.6);
-            --color-ecg-lost: rgba(48, 209, 201, 0.6);
+
+            /* Status Colors */
             --color-good: #2e8b57;
-            --color-ok: #20b2aa;
-            --color-avg: #d97706;
-            --color-bad: #dc2626;
+            --color-ok:   #20b2aa;
+            --color-avg:  #d97706;
+            --color-bad:  #dc2626;
             --color-gold: #d4af37;
-            --color-tune-bg: rgba(155, 89, 182, 0.15); 
+
+            /* ECG Colors */
+            --color-ecg-alive: rgba(46, 204, 113, 0.6);
+            --color-ecg-lost:  rgba(48, 209, 201, 0.6);
+
+            /* UI Specific */
+            --color-tune-bg:     rgba(155, 89, 182, 0.15); 
             --color-tune-border: rgba(155, 89, 182, 0.5); 
-            --color-tune-text: #6c3483;
-            --color-bubble-bg: #ffffff;
+            --color-tune-text:   #6c3483;
+            --color-bubble-bg:   #ffffff;
             --color-bubble-text: #6c3483;
         }
 
-        /* --- Base --- */
+        /* * ------------------------------------------------------------------
+         * Base Styles
+         * ------------------------------------------------------------------
+         */
         * { box-sizing: border-box; }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-            margin: 0; padding: 2rem;
+            margin: 0; 
+            padding: 2rem;
             transition: background-color 0.5s ease, color 0.5s ease;
             -webkit-font-smoothing: antialiased;
-            min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow-x: hidden; 
+            min-height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow-x: hidden; 
         }
-        a { text-decoration: none; } a:hover { text-decoration: underline; }
+        
+        a { text-decoration: none; } 
+        a:hover { text-decoration: underline; }
 
-        /* Themes */
+        /* Light Mode (Alive State) */
         body.light-mode { 
-            background-color: #f5f5f7; color: #1d1d1f; 
-            --card-bg: rgba(255, 255, 255, 0.65); --card-border: rgba(255, 255, 255, 0.4);
-            --text-sub: #555559; --link-color: #0066cc;
-            --modal-bg: #ffffff; --modal-text: #1d1d1f;
-        }
-        body.dark-mode { 
-            background-color: #000000; color: #f5f5f7; 
-            --card-bg: rgba(28, 28, 30, 0.65); --card-border: rgba(255, 255, 255, 0.1);
-            --text-sub: #a1a1a6; --link-color: #0a84ff;
-            --color-tune-text: #a569bd; --color-bubble-bg: #333333; --color-bubble-text: #a569bd; 
-            --modal-bg: #1c1c1e; --modal-text: #f5f5f7;
+            background-color: #f5f5f7; 
+            color: #1d1d1f; 
+            --card-bg: rgba(255, 255, 255, 0.65); 
+            --card-border: rgba(255, 255, 255, 0.4);
+            --text-sub: #555559; 
+            --link-color: #0066cc;
+            --modal-bg: #ffffff; 
+            --modal-text: #1d1d1f;
         }
 
-        /* --- Components --- */
-        .card {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
-            border-radius: var(--radius-card); padding: 1.5rem;
-            display: flex; flex-direction: column; justify-content: space-between;
-            box-shadow: var(--shadow-card); transition: transform 0.2s ease, background-color 0.5s ease;
+        /* Dark Mode (Missing State) */
+        body.dark-mode { 
+            background-color: #000000; 
+            color: #f5f5f7; 
+            --card-bg: rgba(28, 28, 30, 0.65); 
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-sub: #a1a1a6; 
+            --link-color: #0a84ff;
+            --color-tune-text: #a569bd; 
+            --color-bubble-bg: #333333; 
+            --color-bubble-text: #a569bd; 
+            --modal-bg: #1c1c1e; 
+            --modal-text: #f5f5f7;
         }
+
+        /* * ------------------------------------------------------------------
+         * Component: Cards
+         * ------------------------------------------------------------------
+         */
+        .card {
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(var(--glass-blur)); 
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-radius: var(--radius-card); 
+            padding: 1.5rem;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
+            box-shadow: var(--shadow-card); 
+            transition: transform 0.2s ease, background-color 0.5s ease;
+        }
+        
         .card-interactive { cursor: pointer; position: relative; user-select: none; }
         .card-interactive:active { transform: scale(0.98); opacity: 0.9; }
+        
+        /* Flash Animation */
         .anim-flash { animation: flashAnim 0.3s ease-out; }
-        @keyframes flashAnim { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes flashAnim { 
+            0% { opacity: 0.2; transform: scale(0.98); } 
+            100% { opacity: 1; transform: scale(1); } 
+        }
 
-        /* Spirit Level */
+        /* * ------------------------------------------------------------------
+         * Component: Spirit Level (Balance)
+         * ------------------------------------------------------------------
+         */
         .spirit-level-container {
             width: 100%; height: 10px; background: rgba(0, 0, 0, 0.08);
             border-radius: 99px; margin-top: 10px; position: relative; overflow: hidden;
@@ -144,17 +200,26 @@
             box-shadow: 0 0 6px rgba(255,255,255,0.8) inset;
         }
         .wobble { animation: wobbleAnim 2.5s ease-in-out infinite; }
-        @keyframes wobbleAnim { 0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); } 50% { transform: translateX(calc(-50% + var(--wobble-amp))); } }
+        @keyframes wobbleAnim { 
+            0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); } 
+            50% { transform: translateX(calc(-50% + var(--wobble-amp))); } 
+        }
 
-        /* Tune Button */
+        /* * ------------------------------------------------------------------
+         * Component: Tune Button & Interactions
+         * ------------------------------------------------------------------
+         */
         .card-tune {
-            background: var(--color-tune-bg) !important; border: 1px solid var(--color-tune-border) !important;
-            color: var(--color-tune-text) !important; cursor: pointer;
+            background: var(--color-tune-bg) !important; 
+            border: 1px solid var(--color-tune-border) !important;
+            color: var(--color-tune-text) !important; 
+            cursor: pointer;
             align-items: center; justify-content: center; position: relative; z-index: 10;
         }
         .card-tune:active { transform: scale(0.96); opacity: 0.8; }
         .card-tune.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
         
+        /* Tooltip */
         .card-tune::after {
             content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%;
             transform: translateX(-50%) translateY(10px);
@@ -167,6 +232,7 @@
         .card-tune:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
         @media (max-width: 768px) { .card-tune::after { display: none; } }
 
+        /* Desktop Bubble Reaction */
         .tune-bubble {
             position: absolute; top: 10%; right: -10%;
             background: var(--color-bubble-bg); color: var(--color-bubble-text);
@@ -175,35 +241,72 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; 
             animation: bubblePop 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
         }
-        @keyframes bubblePop { 0% { opacity: 0; transform: scale(0.8) translate(-10px, 10px); } 15% { opacity: 1; transform: scale(1) translate(0, 0); } 100% { opacity: 0; transform: scale(0.9) translate(0, -10px); } }
+        @keyframes bubblePop { 
+            0% { opacity: 0; transform: scale(0.8) translate(-10px, 10px); } 
+            15% { opacity: 1; transform: scale(1) translate(0, 0); } 
+            100% { opacity: 0; transform: scale(0.9) translate(0, -10px); } 
+        }
         
+        /* Mobile Toast Reaction */
         .tune-toast {
             position: fixed; bottom: 30px; left: 50%; background: rgba(20, 20, 20, 0.9); color: #fff;
             padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; z-index: 9999;
-            white-space: nowrap; pointer-events: none; animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            white-space: nowrap; pointer-events: none; 
+            animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards;
         }
-        @keyframes toastSlideUp { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
+        @keyframes toastSlideUp { 
+            0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); } 
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); } 
+            100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } 
+        }
 
         .tune-icon { font-size: 1.5rem; margin-bottom: 0.2em; }
         .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
 
-        /* --- Typography & Grid --- */
-        .label { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; color: var(--text-sub); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4em; width: 100%; }
+        /* * ------------------------------------------------------------------
+         * Typography & Grid Layout
+         * ------------------------------------------------------------------
+         */
+        .label { 
+            font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; 
+            color: var(--text-sub); margin-bottom: 0.5rem; 
+            display: flex; align-items: center; gap: 0.4em; width: 100%; 
+        }
         .value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
         .unit { font-size: 0.9rem; font-weight: 500; color: var(--text-sub); margin-left: 0.2em; }
         .sub-value { font-size: 0.85rem; color: var(--text-sub); margin-top: 0.2em; }
         
-        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(110px, auto); gap: 1.25rem; width: 100%; max-width: 900px; }
+        .dashboard-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            grid-auto-rows: minmax(110px, auto); 
+            gap: 1.25rem; 
+            width: 100%; 
+            max-width: 900px; 
+        }
         
-        /* Layout Blocks */
-        .card-status { grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem; min-height: 160px; }
+        /* Grid Placements */
+        .card-status { 
+            grid-column: span 4; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            text-align: center; padding: 2rem 1rem; min-height: 160px; 
+        }
         #liveness-message { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; }
         #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.8rem; }
         #liveness-subtext:empty { display: none; margin-top: 0; }
         
-        .card-profile { grid-column: span 1; padding: 0; background: transparent !important; border: none !important; box-shadow: none !important; display: flex; align-items: center; justify-content: center; }
-        .profile-img { width: 100%; height: 100%; aspect-ratio: 1/1; border-radius: 24px; object-fit: cover; box-shadow: var(--shadow-card); transition: filter 0.5s; }
+        .card-profile { 
+            grid-column: span 1; padding: 0; 
+            background: transparent !important; border: none !important; box-shadow: none !important; 
+            display: flex; align-items: center; justify-content: center; 
+        }
+        .profile-img { 
+            width: 100%; height: 100%; aspect-ratio: 1/1; 
+            border-radius: 24px; object-fit: cover; 
+            box-shadow: var(--shadow-card); transition: filter 0.5s; 
+        }
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
 
         .card-heart { grid-column: span 3; position: relative; align-items: center; }
@@ -212,15 +315,22 @@
 
         .card-small { grid-column: span 1; }
         .card-device-location { grid-column: span 1; }
-        .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
-        
         .card-tune-container { grid-column: span 2; }
+        
+        .footer-info { 
+            grid-column: span 4; text-align: right; 
+            font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; 
+        }
 
-        /* --- Help Modal Styles --- */
+        /* * ------------------------------------------------------------------
+         * Component: Help Modal
+         * ------------------------------------------------------------------
+         */
         .help-trigger {
             grid-column: span 4;
             text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem;
-            font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8;
+            font-size: 0.8rem; color: var(--text-sub); 
+            cursor: pointer; text-decoration: underline; opacity: 0.8;
         }
         .help-trigger:hover { opacity: 1; color: var(--link-color); }
 
@@ -254,19 +364,21 @@
             background: var(--color-gold); color: #fff; width: 24px; height: 24px; 
             border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; 
         }
-        /* 画像スタイル修正: アスペクト比を維持して枠内に収める */
         .step-img {
-            width: auto; /* 幅を自動調整 */
-            max-width: 100%; /* 親要素からはみ出さない */
-            height: auto; /* 高さを自動調整 */
-            max-height: 250px; /* 高さを制限。これに合わせて幅も縮小される */
-            border-radius: 12px; margin-top: 0.5rem; border: 1px solid var(--card-border);
+            width: auto; max-width: 100%; height: auto; max-height: 250px;
+            border-radius: 12px; margin-top: 0.5rem; 
+            border: 1px solid var(--card-border);
             display: block; margin-left: auto; margin-right: auto;
         }
         .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
 
+        /* Background Canvas */
         #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
 
+        /* * ------------------------------------------------------------------
+         * Responsive Design (Mobile)
+         * ------------------------------------------------------------------
+         */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; }
             .dashboard-grid { display: flex; flex-direction: column; gap: 1rem; }
@@ -276,9 +388,15 @@
             .card-heart .value { font-size: 4rem; }
             .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
             
+            /* Order Re-arrangement for Dark Mode Mobile */
             body.dark-mode .card-status { order: 1; }
             body.dark-mode .card-heart  { order: 2; }
-            body.dark-mode .card-tune-container { order: 3; background-color: rgba(155, 89, 182, 0.25) !important; border-color: rgba(155, 89, 182, 0.8) !important; margin-bottom: 0.5rem; }
+            body.dark-mode .card-tune-container { 
+                order: 3; 
+                background-color: rgba(155, 89, 182, 0.25) !important; 
+                border-color: rgba(155, 89, 182, 0.8) !important; 
+                margin-bottom: 0.5rem; 
+            }
             body.dark-mode .help-trigger { order: 3; margin-top: 0; margin-bottom: 1rem; }
             body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; }
             body.dark-mode .footer-info { order: 5; }
@@ -394,33 +512,39 @@
         </div>
         
         <div class="help-trigger" onclick="openHelpModal()">⚠️ Beaconが届かない場合はこちら</div>
-
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
 
     <script>
+        // --- Configuration ---
         const NTFY_TOPIC = 'murase_status_tune'; 
-        const TUNE_COOLDOWN_MS = 30 * 60 * 1000; 
+        const TUNE_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
         const CONFIG = {
             gistId: '1f81b107b898201a865a613c319d579b',
             gistFileName: 'murase_status.json',
-            thresholdHours: 13,
-            links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' }
+            thresholdHours: 13, // Time to consider status unknown
+            links: { 
+                twitter: 'https://twitter.com/vl_lvoO', 
+                dosei: 'https://dosei.muraseryosuke.info/' 
+            }
         };
 
+        // --- State ---
         let globalSpeedKmh = 0;
-        let speedUnitIdx = 0;
+        let speedUnitIdx = 0; // 0: km/h, 1: m/min, 2: m/s
 
         // --- Helpers ---
-        function safeParseInt(val) { if (!val || val === "") return 0; return parseInt(val, 10); }
-        function safeParseFloat(val) { if (!val || val === "") return 0; return parseFloat(val); }
+        function safeParseInt(val) { return (!val || val === "") ? 0 : parseInt(val, 10); }
+        function safeParseFloat(val) { return (!val || val === "") ? 0 : parseFloat(val); }
         function getRelativeTime(date) {
             const now = new Date(), diffMins = Math.floor((now-date)/60000);
-            if(diffMins<1) return 'たった今'; if(diffMins<60) return `${diffMins}分前`;
-            const diffHours=Math.floor(diffMins/60); return diffHours<24?`${diffHours}時間前`:`${Math.floor(diffHours/24)}日前`;
+            if(diffMins < 1) return 'たった今';
+            if(diffMins < 60) return `${diffMins}分前`;
+            const diffHours = Math.floor(diffMins/60);
+            return diffHours < 24 ? `${diffHours}時間前` : `${Math.floor(diffHours/24)}日前`;
         }
 
-        // --- Help Modal Logic ---
+        // --- UI Logic: Modal ---
         function openHelpModal() {
             const m = document.getElementById('help-modal');
             m.style.display = 'flex';
@@ -434,75 +558,184 @@
             }
         }
 
-        // --- Tune Logic ---
+        // --- UI Logic: Tune Interaction ---
         function checkCooldown() {
             const last = localStorage.getItem('lastTuneTime');
-            if (last && Date.now() - parseInt(last,10) < TUNE_COOLDOWN_MS) disableTuneBtn(TUNE_COOLDOWN_MS - (Date.now()-parseInt(last,10)));
+            if (last && Date.now() - parseInt(last,10) < TUNE_COOLDOWN_MS) {
+                disableTuneBtn(TUNE_COOLDOWN_MS - (Date.now() - parseInt(last,10)));
+            }
         }
         function disableTuneBtn(t) {
             const btn = document.querySelector('.card-tune');
             document.getElementById('tune-text').textContent = 'Stay Tuned!'; 
             btn.classList.add('disabled'); 
-            setTimeout(() => { btn.classList.remove('disabled'); document.getElementById('tune-text').textContent = 'Tune'; localStorage.removeItem('lastTuneTime'); }, t);
+            setTimeout(() => { 
+                btn.classList.remove('disabled'); 
+                document.getElementById('tune-text').textContent = 'Tune'; 
+                localStorage.removeItem('lastTuneTime'); 
+            }, t);
         }
         function showTuneReaction() {
             const msgs = ['👋Tune!', '📡送信！', '👍Thanks!', '💫届きました！'];
             const msg = msgs[Math.floor(Math.random()*msgs.length)];
+            
             if (window.innerWidth <= 768) {
-                const t = document.createElement('div'); t.className = 'tune-toast'; t.innerHTML = `<span>${msg}</span>`; document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
+                // Mobile: Toast
+                const t = document.createElement('div'); 
+                t.className = 'tune-toast'; 
+                t.innerHTML = `<span>${msg}</span>`; 
+                document.body.appendChild(t); 
+                setTimeout(() => t.remove(), 3000);
             } else {
-                const b = document.createElement('div'); b.className = 'tune-bubble'; b.textContent = msg; document.getElementById('profile-card').appendChild(b); setTimeout(()=>b.remove(),2500);
+                // Desktop: Bubble
+                const b = document.createElement('div'); 
+                b.className = 'tune-bubble'; 
+                b.textContent = msg; 
+                document.getElementById('profile-card').appendChild(b); 
+                setTimeout(() => b.remove(), 2500);
             }
         }
         function sendTune() {
             const btn = document.querySelector('.card-tune');
             if (btn.classList.contains('disabled')) return;
+            
             showTuneReaction();
-            document.getElementById('tune-text').textContent = 'Tuning...'; btn.classList.add('disabled'); 
-            fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=Tune&priority=default&tags=zap`, { method:'POST', body:'Tune受信' })
-            .then(r => { if(r.ok){ document.getElementById('tune-text').textContent='Stay Tuned!'; localStorage.setItem('lastTuneTime', Date.now()); disableTuneBtn(TUNE_COOLDOWN_MS); } else throw new Error(); })
-            .catch(() => { document.getElementById('tune-text').textContent='通信エラー'; setTimeout(()=>{btn.classList.remove('disabled');document.getElementById('tune-text').textContent='Tune';},3000); });
+            document.getElementById('tune-text').textContent = 'Tuning...'; 
+            btn.classList.add('disabled'); 
+            
+            fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=Tune&priority=default&tags=zap`, { 
+                method:'POST', body:'Tune受信' 
+            })
+            .then(r => { 
+                if(r.ok){ 
+                    document.getElementById('tune-text').textContent = 'Stay Tuned!'; 
+                    localStorage.setItem('lastTuneTime', Date.now()); 
+                    disableTuneBtn(TUNE_COOLDOWN_MS); 
+                } else throw new Error(); 
+            })
+            .catch(() => { 
+                document.getElementById('tune-text').textContent = '通信エラー'; 
+                setTimeout(() => {
+                    btn.classList.remove('disabled');
+                    document.getElementById('tune-text').textContent = 'Tune';
+                }, 3000); 
+            });
         }
 
-        // --- Other Features ---
+        // --- UI Logic: Display Features ---
         function toggleSpeedUnit() { 
-            speedUnitIdx = (speedUnitIdx + 1) % 3; renderSpeed(); 
-            const c = document.getElementById('walking_speed').parentElement; c.classList.remove('anim-flash'); void c.offsetWidth; c.classList.add('anim-flash');
+            speedUnitIdx = (speedUnitIdx + 1) % 3; 
+            renderSpeed(); 
+            const c = document.getElementById('walking_speed').parentElement; 
+            c.classList.remove('anim-flash'); 
+            void c.offsetWidth; // Force reflow
+            c.classList.add('anim-flash');
         }
+        
         function renderSpeed() {
-            const el = document.getElementById('walking_speed'), unit = document.getElementById('speed_unit');
+            const el = document.getElementById('walking_speed');
+            const unit = document.getElementById('speed_unit');
+            
             if (!globalSpeedKmh) { el.textContent = '--'; return; }
-            if (speedUnitIdx === 0) { el.textContent = globalSpeedKmh.toFixed(1); unit.textContent = 'km/h'; }
-            else if (speedUnitIdx === 1) { el.textContent = (globalSpeedKmh * 16.6667).toFixed(0); unit.textContent = 'm/min'; }
-            else { el.textContent = (globalSpeedKmh / 3.6).toFixed(2); unit.textContent = 'm/s'; }
+            
+            if (speedUnitIdx === 0) { 
+                el.textContent = globalSpeedKmh.toFixed(1); 
+                unit.textContent = 'km/h'; 
+            } else if (speedUnitIdx === 1) { 
+                el.textContent = (globalSpeedKmh * 16.6667).toFixed(0); 
+                unit.textContent = 'm/min'; 
+            } else { 
+                el.textContent = (globalSpeedKmh / 3.6).toFixed(2); 
+                unit.textContent = 'm/s'; 
+            }
         }
+        
         function updateLevel(val) {
             const b = document.getElementById('spirit-bubble');
-            if (val === null || isNaN(val)) { b.style.opacity='0'; return; }
+            if (val === null || isNaN(val)) { 
+                b.style.opacity='0'; 
+                return; 
+            }
             b.style.opacity='1';
-            if(val===0) b.style.backgroundColor='var(--color-good)'; else if(val<0.05) b.style.backgroundColor='var(--color-ok)'; else b.style.backgroundColor='var(--color-bad)';
-            if(val>0) { b.style.setProperty('--wobble-amp', `${Math.min(val*400, 45)}%`); b.classList.add('wobble'); }
-            else { b.style.transform='translateX(-50%)'; b.classList.remove('wobble'); }
+            
+            // Color based on asymmetry magnitude
+            if(val === 0) b.style.backgroundColor = 'var(--color-good)'; 
+            else if(val < 0.05) b.style.backgroundColor = 'var(--color-ok)'; 
+            else b.style.backgroundColor = 'var(--color-bad)';
+            
+            // Animation logic
+            if(val > 0) { 
+                b.style.setProperty('--wobble-amp', `${Math.min(val*400, 45)}%`); 
+                b.classList.add('wobble'); 
+            } else { 
+                b.style.transform = 'translateX(-50%)'; 
+                b.classList.remove('wobble'); 
+            }
         }
 
+        // --- Core Logic: ECG Animation ---
         class ECGMonitor {
-            constructor(cid) { this.c=document.getElementById(cid); this.ctx=this.c.getContext('2d'); this.x=0; this.y=window.innerHeight/2; this.bpm=60; this.alive=true; this.last=0; this.resize(); window.addEventListener('resize',()=>this.resize()); }
-            resize() { this.c.width=window.innerWidth; this.c.height=window.innerHeight; this.y=this.c.height/2; }
-            setStatus(b,a) { this.bpm=b>0?b:60; this.alive=a; }
+            constructor(cid) { 
+                this.c = document.getElementById(cid); 
+                this.ctx = this.c.getContext('2d'); 
+                this.x = 0; 
+                this.y = window.innerHeight/2; 
+                this.bpm = 60; 
+                this.alive = true; 
+                this.last = 0; 
+                this.resize(); 
+                window.addEventListener('resize', () => this.resize()); 
+            }
+            resize() { 
+                this.c.width = window.innerWidth; 
+                this.c.height = window.innerHeight; 
+                this.y = this.c.height/2; 
+            }
+            setStatus(b, a) { 
+                this.bpm = b > 0 ? b : 60; 
+                this.alive = a; 
+            }
             draw() {
-                const now=Date.now(), int=this.alive?60000/this.bpm:Infinity;
-                this.ctx.clearRect(this.x,0,10,this.c.height); this.ctx.beginPath(); this.ctx.moveTo(this.x-2,this.y);
-                let ty=this.c.height/2;
-                if(this.alive) { const d=now-this.last; if(d>int){this.last=now;ty-=this.c.height*0.25;}else if(d<50)ty+=this.c.height*0.05;else if(d>int-200)ty+=this.c.height*0.1; }
-                this.y=this.y*0.9+ty*0.1; this.ctx.lineTo(this.x,this.y);
-                this.ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue(document.body.classList.contains('dark-mode')?'--color-ecg-lost':'--color-ecg-alive').trim();
-                this.ctx.lineWidth=2; this.ctx.stroke();
-                this.x++; if(this.x>this.c.width){this.x=0;this.ctx.clearRect(0,0,this.c.width,this.c.height);}
-                requestAnimationFrame(()=>this.draw());
+                const now = Date.now();
+                const int = this.alive ? 60000/this.bpm : Infinity;
+                
+                // Clear previous point to create trail effect
+                this.ctx.clearRect(this.x, 0, 10, this.c.height); 
+                
+                this.ctx.beginPath(); 
+                this.ctx.moveTo(this.x - 2, this.y);
+                
+                let ty = this.c.height / 2;
+                if(this.alive) { 
+                    const d = now - this.last; 
+                    if(d > int) { this.last = now; ty -= this.c.height * 0.25; } // QRS complex
+                    else if(d < 50) ty += this.c.height * 0.05; // Return
+                    else if(d > int - 200) ty += this.c.height * 0.1; // P wave pre-beat
+                }
+                
+                // Smooth transition
+                this.y = this.y * 0.9 + ty * 0.1; 
+                this.ctx.lineTo(this.x, this.y);
+                
+                // Styling
+                this.ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue(
+                    document.body.classList.contains('dark-mode') ? '--color-ecg-lost' : '--color-ecg-alive'
+                ).trim();
+                this.ctx.lineWidth = 2; 
+                this.ctx.stroke();
+                
+                // Loop
+                this.x++; 
+                if(this.x > this.c.width) {
+                    this.x = 0;
+                    this.ctx.clearRect(0, 0, this.c.width, this.c.height);
+                }
+                requestAnimationFrame(() => this.draw());
             }
             start() { this.draw(); }
         }
 
+        // --- Core Logic: Data Fetch & Render ---
         async function updateStatus() {
             const els = {
                 body: document.body, msg: document.getElementById('liveness-message'), sub: document.getElementById('liveness-subtext'),
@@ -513,22 +746,30 @@
                 sndVal: document.getElementById('sound_value'), sndLbl: document.getElementById('sound_label'),
                 loc: document.getElementById('location'), batVal: document.getElementById('battery_val'), batIcon: document.getElementById('battery_icon')
             };
+            
             try {
+                // Fetch Data from GitHub Gist
                 const res = await fetch(`https://api.github.com/gists/${CONFIG.gistId}?t=${Date.now()}`);
-                if (!res.ok) throw new Error();
+                if (!res.ok) throw new Error("Network response was not ok");
+                
                 const json = await res.json();
                 const d = JSON.parse(json.files[CONFIG.gistFileName].content);
                 
+                // Determine Liveness
                 const last = new Date(d.last_updated);
-                const alive = (new Date()-last)/36e5 <= CONFIG.thresholdHours;
+                const alive = (new Date() - last) / 36e5 <= CONFIG.thresholdHours;
                 
-                if(alive){ els.body.className='light-mode'; els.msg.textContent='村瀨亮介は生きています。'; els.sub.textContent=''; }
-                else{ 
-                    els.body.className='dark-mode'; 
-                    els.msg.textContent='村瀨亮介からの応答がありません。'; 
-                    els.sub.innerHTML=`安否確認は <a href="${CONFIG.links.twitter}" target="_blank">X</a> または <a href="${CONFIG.links.dosei}" target="_blank">村瀨動静</a> へ`; 
+                if(alive){ 
+                    els.body.className = 'light-mode'; 
+                    els.msg.textContent = '村瀨亮介は生きています。'; 
+                    els.sub.textContent = ''; 
+                } else { 
+                    els.body.className = 'dark-mode'; 
+                    els.msg.textContent = '村瀨亮介からの応答がありません。'; 
+                    els.sub.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank">X</a> または <a href="${CONFIG.links.dosei}" target="_blank">村瀨動静</a> へ`; 
                 }
 
+                // Render Vital Data
                 const hr = safeParseInt(d.health.heart_rate);
                 ecg.setStatus(hr, alive);
                 els.hr.textContent = hr || 'N/A';
@@ -545,33 +786,53 @@
                 
                 const asym = safeParseFloat(d.health.walking_asymmetry);
                 if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") {
-                      els.asym.textContent = (asym * 100).toFixed(0); updateLevel(asym);
-                } else { els.asym.textContent = '--'; updateLevel(null); }
+                      els.asym.textContent = (asym * 100).toFixed(0); 
+                      updateLevel(asym);
+                } else { 
+                    els.asym.textContent = '--'; 
+                    updateLevel(null); 
+                }
 
                 els.stand.textContent = safeParseInt(d.health.stand_hours) || '0';
                 els.flights.textContent = safeParseInt(d.health.flights_climbed) || '0';
 
                 const hrv = safeParseFloat(d.health.condition_hrv);
-                if (hrv>=40) { els.cond.textContent='絶好調✨'; els.cond.style.color='var(--color-good)'; }
-                else if (hrv>=20) { els.cond.textContent='安定🌱'; els.cond.style.color='var(--color-ok)'; }
-                else if (hrv>0) { els.cond.textContent='疲労気味💤'; els.cond.style.color='var(--color-bad)'; }
-                else { els.cond.textContent='N/A'; els.cond.style.color='inherit'; }
+                if (hrv >= 40) { 
+                    els.cond.textContent = '絶好調✨'; 
+                    els.cond.style.color = 'var(--color-good)'; 
+                } else if (hrv >= 20) { 
+                    els.cond.textContent = '安定🌱'; 
+                    els.cond.style.color = 'var(--color-ok)'; 
+                } else if (hrv > 0) { 
+                    els.cond.textContent = '疲労気味💤'; 
+                    els.cond.style.color = 'var(--color-bad)'; 
+                } else { 
+                    els.cond.textContent = 'N/A'; 
+                    els.cond.style.color = 'inherit'; 
+                }
 
                 const db = safeParseFloat(d.environment && d.environment.sound_level_db);
                 if (db > 0) {
                     els.sndVal.textContent = Math.round(db);
-                    els.sndLbl.textContent = (db<40?'(静寂)':db<70?'(普通)':'(騒音)');
-                    els.sndLbl.style.color = db<40?'var(--color-good)':db<70?'var(--color-avg)':'var(--color-bad)';
-                } else { els.sndVal.textContent='N/A'; els.sndLbl.textContent=''; }
+                    els.sndLbl.textContent = (db < 40 ? '(静寂)' : db < 70 ? '(普通)' : '(騒音)');
+                    els.sndLbl.style.color = db < 40 ? 'var(--color-good)' : db < 70 ? 'var(--color-avg)' : 'var(--color-bad)';
+                } else { 
+                    els.sndVal.textContent = 'N/A'; 
+                    els.sndLbl.textContent = ''; 
+                }
 
                 els.batVal.textContent = d.device.battery;
-                els.batIcon.textContent = (d.device.is_charging==='Yes'||d.device.is_charging===true) ? '⚡️' : '';
+                els.batIcon.textContent = (d.device.is_charging === 'Yes' || d.device.is_charging === true) ? '⚡️' : '';
                 els.upd.textContent = last.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' });
                 els.loc.textContent = d.location.city || 'N/A';
 
-            } catch (e) { console.error(e); els.msg.textContent = '読み込み失敗'; }
+            } catch (e) { 
+                console.error("Failed to load status:", e); 
+                els.msg.textContent = '読み込み失敗'; 
+            }
         }
 
+        // --- Init ---
         const ecg = new ECGMonitor('ecg-canvas');
         ecg.start();
         updateStatus();
