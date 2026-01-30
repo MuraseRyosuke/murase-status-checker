@@ -72,6 +72,8 @@ jobs:
             URL="https://status.muraseryosuke.info/"
             
             # OneSignal API へ送信 (curl)
+            # large_icon: Android用ラージアイコン
+            # ios_attachments: iOS用添付画像（通知の右側に表示）
             curl --include \
                  --request POST \
                  --header "Content-Type: application/json; charset=utf-8" \
@@ -81,6 +83,8 @@ jobs:
                    \"headings\": {\"en\": \"$TITLE\", \"ja\": \"$TITLE\"},
                    \"contents\": {\"en\": \"$MESSAGE\", \"ja\": \"$MESSAGE\"},
                    \"url\": \"$URL\",
+                   \"large_icon\": \"https://status.muraseryosuke.info/gameover_face.png\",
+                   \"ios_attachments\": {\"id1\": \"https://status.muraseryosuke.info/gameover_face.png\"},
                    \"included_segments\": [\"All\"]
                  }" \
                  https://onesignal.com/api/v1/notifications
