@@ -418,24 +418,14 @@
             const diffHours=Math.floor(diffMins/60); return diffHours<24?`${diffHours}時間前`:`${Math.floor(diffHours/24)}日前`;
         }
 
-        // --- Manual Beacon Connect Logic (Improved) ---
-        async function manualBeaconConnect() {
-            try {
-                if (window.OneSignal && window.OneSignal.User) {
-                    await window.OneSignal.User.PushSubscription.optIn();
-                } 
-                else if (window.OneSignalDeferred) {
-                    window.OneSignalDeferred.push(async function(OneSignal) {
-                        await OneSignal.User.PushSubscription.optIn();
-                    });
-                } else {
-                    alert("接続システムを読み込めませんでした。\n広告ブロッカーを一時停止してリロードしてください。");
-                }
-            } catch (e) {
-                console.error("Manual connect failed:", e);
-                // 失敗時でも反応がないと困るのでアラートを出すか、サイレント失敗にするか
-                // ここではユーザー体験のため何も出さないか、必要ならalert(e)
-            }
+        // --- Manual Beacon Connect Logic (Force Mode) ---
+        function manualBeaconConnect() {
+            // グローバルスコープのOneSignal変数に直接プッシュ
+            window.OneSignalDeferred = window.OneSignalDeferred || [];
+            window.OneSignalDeferred.push(function(OneSignal) {
+                // optIn はPromiseを返さない場合があるため、awaitせず呼び出す
+                OneSignal.User.PushSubscription.optIn();
+            });
         }
 
         // --- Help Modal Logic ---
