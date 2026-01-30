@@ -20,6 +20,36 @@
 
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
+      // --- Hidden Console Logs ---
+      // Pattern A: System Boot
+      console.log(
+        "%c" +
+        "███    ███ ██    ██ ██████   █████  ███████ ███████ \n" +
+        "████  ████ ██    ██ ██   ██ ██   ██ ██      ██      \n" +
+        "██ ████ ██ ██    ██ ██████  ███████ ███████ █████   \n" +
+        "██  ██  ██ ██    ██ ██   ██ ██   ██      ██ ██      \n" +
+        "██      ██  ██████  ██   ██ ██   ██ ███████ ███████ \n" +
+        "\n" +
+        "SYSTEM: MURASE_STATUS_CHECKER \n" +
+        "STATUS: MONITORING...         \n" +
+        "Target: Ryosuke Murase        ",
+        "color: #d4af37; background: #1c1c1e; font-weight: bold; padding: 10px; font-family: monospace;"
+      );
+
+      // Pattern B: Big Friend
+      console.log(
+        "%c" +
+        "      /\\ \n" +
+        "     /  \\ \n" +
+        "    / 👁️ \\   BIG FRIEND\n" +
+        "   /      \\  IS WATCHING\n" +
+        "  /________\\ MURASE.\n" +
+        "\n" +
+        "  [ Beacon System Active ]",
+        "color: #00ff00; background: #000000; font-weight: bold; padding: 10px; font-family: monospace;"
+      );
+
+      // --- OneSignal Init ---
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
@@ -27,10 +57,9 @@
           safari_web_id: "", 
           
           // 純正ベルアイコン設定
-          // ※テキストや色はOneSignalダッシュボードの設定が優先されます
           notifyButton: {
             enable: true,
-            // AdGuard対策：常に表示を強制する設定（これだけは残します）
+            // AdGuard対策：常に表示を強制する設定
             displayPredicate: function() {
                 return true;
             }
@@ -273,7 +302,7 @@
             </div>
 
             <div class="modal-note">
-                ✅一度接続できれば、その後は広告ブロックを有効に戻してもBeaconは届きます。<br>
+                ✅ 一度接続できれば、その後は広告ブロックを有効に戻してもBeaconは届きます。<br>
                 ※うまくいかない場合は、ブラウザの設定で通知がブロックされていないかご確認ください。
             </div>
         </div>
@@ -426,7 +455,7 @@
             if (btn.classList.contains('disabled')) return;
             showTuneReaction();
             document.getElementById('tune-text').textContent = 'Tuning...'; btn.classList.add('disabled'); 
-            fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=Tune&priority=default&tags=zap`, { method:'POST', body:'Tuneを受信しました。' })
+            fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=Tune&priority=default&tags=zap`, { method:'POST', body:'Tune受信' })
             .then(r => { if(r.ok){ document.getElementById('tune-text').textContent='Stay Tuned!'; localStorage.setItem('lastTuneTime', Date.now()); disableTuneBtn(TUNE_COOLDOWN_MS); } else throw new Error(); })
             .catch(() => { document.getElementById('tune-text').textContent='通信エラー'; setTimeout(()=>{btn.classList.remove('disabled');document.getElementById('tune-text').textContent='Tune';},3000); });
         }
@@ -543,5 +572,48 @@
         ecg.start();
         updateStatus();
     </script>
+<!--
+g@gg@HH0TWHgg@MMHHHHHHHHH#HH@mg@@@gqqkkbkkHWpppppbqmggmkkkbHMMMN##NNm&+(+gHHHHHH
+ggmmqH>__<Wqqqmg@@@@@HHH##HHgg@@@@@mqqkkm@@gmkbbpbqgg@ggHHyfHMNN#NMMMMMNM@MHHMHH
+kqqqkR<` (Xkkbkg@@gmg@HNN#H@@@@H@@@ggmkkg@@gmkbpppkmggggHWWWMNMNNNNMMMMMMgmg@qpp
+kkkHWS< `(dbppk@@@ggg@#NNNHHHHHMHH@@@Hmg@@@@gqHpfbqg@@@@HHqHMMMMMMMMMMMMMmqqmqbp
+bbpVyXo-(jWpfVWHHqqqgMMMMNNHMHfWMHHHH@@@@HMH9!~_?vWH@@@@@gkkHMMNMHgHMMMMMkbkqkpf
+pffVyZZZZZyVyyVppkqqmHMMMMMM@HHkHMMHHHHgHH0v<    (1ZWHHHHHbHHMMMMM@MMMMMMHppkbfV
+VVVyZZuuZZyyyWWWHmmmmg@@ggm@@@mqHHWWWkHmHkwz+-...gAwXWHkpyZXWWWpHkkHg@@HMmqkqHWW
+VVVyyyXXyVVfpppHHHbbkkqqHHHHggHHWXZXWHgmHWppWWQWHQWHHHHWWHkXvwXXWWWHHHHMHHkkHgmq
+WWWWkbpfVyffpfWWWWWkkHqHkkbkHHWyXXXWHHkWHqbWkHHMMHHHMHWWHMMNkuuuuZyWpbkqkkbbbkkb
+gmqqbpfyyVpkbbkmggmmqmmqHHWUVwXUUUWMMMMMHHHHqHHHHHpbkWqHMMMMHuXXXXWpppbbkkqmmqqk
+kkkbpfW0XXpbppbHHHHWWUUUVVOz?<1z<<<wMMMMMMMHpppHHXWHHMMMHMM@HXOlOwyyXZXXWWWWWWWp
+ppppVWC<<jXffVVWUVOwZI<<<1OOz<;>++jMMMMHM@HHHWHHCjbH@HMMMHMHNuOtwXpWuzvvwXXZZyyy
+pppfVWI~_jXppVyZZz>1tz<::+wvO?>>zwdMHMNMH@@MH@Hk+gHW@@M@HMMMMZIzOZ00XvrI11OwuXWf
+VVVyyXz:(zXWVVyXOz?zrI+::+wuOz?>?dMRXWHMH@MMNVXAwUMHHMMMMHMMMz?>?=ltttt=??=OwXpp
+yyyyyuI<+zuZyWpWXOzzuOz;;+wuwO1??dMKvW@gHHM9Cz<?1OUUWHMHH#MMM????=llz==??=lOuXpf
+ZZXuuuzrwzZyfpkHkwrwZwz<;+Ourtl=?+HN&dMM@HD<<((<:_?<j0UWHMMN8??????<<<<<+=twXWpW
+zvrrrrtttwXXUUWWWXzXyXOz<+zzvttz<:+HMNM#HHI<_~:<<<~.(OOwXWM#<::;;;<~_   (zOwXfW0
+wwwwwwwwwwrrtOZVVOOZU0ZI??zXuzrz<<~+dMMMHS=<;:~~_?TuAz1zXMB;::::;;:_   .(zvuypSZ
+UWWfWyWZZXwOll=?<<;<?????zwU0ZI!..(+MMNHSwl=z+j&-(+zrzzw91<<::::::~~~~_(1tvuyfkI
+vvzzvvrwXZuwwOOz?>;+??>>>??<<i(gM#YwMM#UXwOl=<<;<++dUXQROwwzzzz++<<:::(+zrzZypkI
+zzzzvrrrOOOOOtll??????;;;;>!.?M"~-<?M#VtOXuwOz;;++OzXUM#wXZZZZZuwOz?;;>1tvuZWpSI
+zzzvvrrttttllll=?>>??>>;;><<(= _`   JI=ltwuZykwOwwwQkZWX0wzuuuzrttl=?>+zwwXXWHkO
+vvvvrvvrrrrrttttll===??;;<:;>-.     !<?=truyWpWHNMMM8OOv1zzuuurrtll====zOVUUWHHy
+vrrvrrrttttttrtttll=1<<<~(++z1&+<((-..(?zOwZWHMMBSOOz<<:<zzOOOtlllll===???=lOOwX
+wwwwwwrttttrrtttlzz<!`     _?OUUXWXUUXX&_~~<+++1llzz<::~(0><<<<11lll===????=lltr
+HkqkHSwrrvrrrrrtz<```  `` `._~<11111<<<<~(+?==l=z<<<:~~(XI:(~_. ?1zzll=1???==lll
+XXXuzvrrrrrrtrOv! `` ``  ````___~~:<;:(+1=lllzz<<~~~:(<dI<~_~_.``.zOwXXwwwwwwwwt
+rrrrrvvrrrtrttv_.```````   ```....~<<<?1lz1<<<:~~~:(<?dC<~~~~_...`(zwOOOOOOOwVOI
+rrttrrrrttttz>~~_`..-```.  `````.....~i+<<<~~~.~__(++v<~~..._.-_~ _(+1??????????
+uZZZZuuuzzrI<~~__``` _```.```````....._<7:::~~~~~~_~~.~~_..._____._ <+1?1zlzzzz1
+uuuuuuzzzrI<.~~._``.` _``.  `` ````...._::~~~~......~~~_...._<_~...`(1llttrrrttt
+uuuuuuuzwv<_.~~.~-`..`.```._.```````...~~~~~~........~~....._~__..``-+=lttttrrrw
+XXXXXzzwO!_~~.~~~.``.._`.....````````...~_~.........~.~.....((~..```((lltttttttt
+rrrrrrrO!~~~~~..~.``.._-.``...`.``.``...............~....`-_(~..``` _:1lltlllttr
+vvrrrttO1<~~~~.~....-__<.`...``..``..`.......`..........`.-~_...``.._<<=lltlltrr
+rrvrrrvZ?<:~~_.~~..`._<_.`.`.`.`.````..`...``.......~~_.`._~____....:<<1ltrrtrrr
+rrtrrrvZ?<:~~~~.~..`.._~......``..`````....`.``.`...._``.._:(~...~..~<;+llllllll
+rtOrrvvI?<:~~~.~~..``..(-....``.....````.```.```.....`....~:j+__~..~~:<>zttllltr
+rwuuuzzw?z<~:~~~....(Ju8_.~...```....````````.`..``.`....~~<(~~~~..~~:++ttll=lll
+rwzzuzvrz1;::~~~~._(+1O$>~~~...`.`....`.``.```...``......_::J<:~~..~~:<zrrrttrrt
+rrrrrrrrOz<::~.~~~~::<1><:~_..`.`......`.``..`.``..`....._::<<:~~~.~~:<ttrrrrrrt    
+-->
 </body>
 </html>
