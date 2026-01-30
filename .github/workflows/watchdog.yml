@@ -2,9 +2,9 @@ name: Watchdog Monitor
 
 on:
   schedule:
-    # 1時間に1回、毎時0分に実行
+    # Execute every hour at minute 0
     - cron: '0 * * * *'
-  # 手動実行ボタンも有効化（テスト用）
+  # Allow manual trigger for testing
   workflow_dispatch:
 
 jobs:
@@ -13,37 +13,33 @@ jobs:
     steps:
       - name: Check Vital Status & Notify
         env:
-          # --- 設定 ---
+          # --- Configuration ---
           GIST_ID: "1f81b107b898201a865a613c319d579b"
           FILE_NAME: "murase_status.json"
           THRESHOLD_HOURS: 72
-          # Secretsから読み込む鍵
+          # Secrets from Repository Settings
           ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
           ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
         run: |
-          # 1. Gistから最新ステータスを取得 (失敗してもスクリプトを止めないように || true を付与)
+          # 1. Fetch data from Gist (Suppress errors to handle gracefully later)
           RESPONSE=$(curl -s "https://api.github.com/gists/$GIST_ID") || true
 
-          # JSONパースを試みる
-          # コンテンツが取れなかったりJSONが壊れている場合は空になる
+          # Attempt to parse JSON content
           CONTENT=$(echo "$RESPONSE" | jq -r ".files[\"$FILE_NAME\"].content" 2>/dev/null) || true
           
-          # --- 【重要】読み込み失敗時のガード処理 ---
-          # データが空、または null の場合は、サーバーエラー等のため
-          # 72時間経過とはみなさず、何もせず正常終了(exit 0)する
+          # --- Guard Clause: Fetch Failure ---
+          # If content is empty or null (Server Error/Network Issue), exit cleanly.
+          # We do NOT want to send a false "death" notification due to API errors.
           if [ -z "$CONTENT" ] || [ "$CONTENT" = "null" ]; then
             echo "⚠️ Failed to fetch Gist data (Server Error or Network Issue). Skipping check."
             exit 0
           fi
 
-          # 2. 最終更新日時と場所を抽出
+          # 2. Extract timestamp and location
           LAST_UPDATED_STR=$(echo "$CONTENT" | jq -r ".last_updated")
-          
-          # 【修正】jq内のデフォルト値文字列はダブルクォート(")である必要があります
-          # 外側をシングルクォートで囲み、内側をダブルクォートにします
           CITY=$(echo "$CONTENT" | jq -r '.location.city // "不明な場所"')
           
-          # 日付データが不正な場合もスキップ
+          # Check for invalid timestamp
           if [ -z "$LAST_UPDATED_STR" ] || [ "$LAST_UPDATED_STR" = "null" ]; then
              echo "⚠️ Invalid timestamp data. Skipping."
              exit 0
@@ -52,8 +48,7 @@ jobs:
           echo "Last Updated: $LAST_UPDATED_STR"
           echo "Last Location: $CITY"
           
-          # 3. 経過時間を計算
-          # 日付文字列をUNIX時間に変換して差分を取る
+          # 3. Calculate elapsed time
           LAST_UPDATED_TS=$(date -d "$LAST_UPDATED_STR" +%s)
           NOW_TS=$(date +%s)
           
@@ -62,18 +57,17 @@ jobs:
           
           echo "Elapsed Hours: $DIFF_HOURS (Threshold: $THRESHOLD_HOURS)"
           
-          # 4. 判定 & 通知実行
+          # 4. Check Status & Notify
           if [ "$DIFF_HOURS" -ge "$THRESHOLD_HOURS" ]; then
             echo "🚨 Status: UNKNOWN (Over $THRESHOLD_HOURS h). Sending Notification..."
             
-            # 通知内容
+            # Notification Payload
             TITLE="最後の更新から72時間が経ちました"
             MESSAGE="最後に更新されたのは ${CITY} です。"
             URL="https://status.muraseryosuke.info/"
+            ICON="https://status.muraseryosuke.info/gameover_face.png"
             
-            # OneSignal API へ送信 (curl)
-            # large_icon: Android用ラージアイコン
-            # ios_attachments: iOS用添付画像（通知の右側に表示）
+            # Send to OneSignal API
             curl --include \
                  --request POST \
                  --header "Content-Type: application/json; charset=utf-8" \
@@ -83,8 +77,8 @@ jobs:
                    \"headings\": {\"en\": \"$TITLE\", \"ja\": \"$TITLE\"},
                    \"contents\": {\"en\": \"$MESSAGE\", \"ja\": \"$MESSAGE\"},
                    \"url\": \"$URL\",
-                   \"large_icon\": \"https://status.muraseryosuke.info/gameover_face.png\",
-                   \"ios_attachments\": {\"id1\": \"https://status.muraseryosuke.info/gameover_face.png\"},
+                   \"large_icon\": \"$ICON\",
+                   \"ios_attachments\": {\"id1\": \"$ICON\"},
                    \"included_segments\": [\"All\"]
                  }" \
                  https://onesignal.com/api/v1/notifications
