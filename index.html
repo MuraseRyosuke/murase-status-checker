@@ -183,13 +183,26 @@
         
         .card-tune-container { grid-column: span 2; }
 
-        /* --- Help Modal Styles --- */
-        .help-trigger {
+        /* --- Help & Beacon Button Styles --- */
+        .help-section {
             grid-column: span 4;
-            text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem;
+            display: flex; justify-content: center; align-items: center; gap: 1.5rem;
+            margin-top: 0.5rem; margin-bottom: 0.5rem;
+        }
+        .help-trigger {
             font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8;
         }
         .help-trigger:hover { opacity: 1; color: var(--link-color); }
+        
+        /* 手動接続ボタン */
+        .beacon-manual-btn {
+            background: rgba(255, 215, 0, 0.15); border: 1px solid rgba(255, 215, 0, 0.5);
+            color: #d4af37; padding: 6px 12px; border-radius: 99px;
+            font-size: 0.85rem; font-weight: 700; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .beacon-manual-btn:hover { background: rgba(255, 215, 0, 0.25); transform: scale(1.02); }
+        .beacon-manual-btn:active { transform: scale(0.98); }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -246,9 +259,12 @@
             body.dark-mode .card-status { order: 1; }
             body.dark-mode .card-heart  { order: 2; }
             body.dark-mode .card-tune-container { order: 3; background-color: rgba(155, 89, 182, 0.25) !important; border-color: rgba(155, 89, 182, 0.8) !important; margin-bottom: 0.5rem; }
-            body.dark-mode .help-trigger { order: 3; margin-top: 0; margin-bottom: 1rem; }
-            body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; }
-            body.dark-mode .footer-info { order: 5; }
+            
+            /* ヘルプと手動ボタンを縦並びに */
+            body.dark-mode .help-section { order: 4; margin-top: 0; margin-bottom: 1rem; flex-direction: column; gap: 0.8rem; }
+            
+            body.dark-mode .card-small, body.dark-mode .card-device-location { order: 5; }
+            body.dark-mode .footer-info { order: 6; }
         }
     </style>
 </head>
@@ -360,7 +376,10 @@
             </div>
         </div>
         
-        <div class="help-trigger" onclick="openHelpModal()">⚠️ Beaconが届かない場合はこちら</div>
+        <div class="help-section">
+            <div class="beacon-manual-btn" onclick="manualBeaconConnect()">🔔 Beaconに接続する</div>
+            <div class="help-trigger" onclick="openHelpModal()">⚠️ 届かない場合はこちら</div>
+        </div>
 
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
@@ -385,6 +404,17 @@
             const now = new Date(), diffMins = Math.floor((now-date)/60000);
             if(diffMins<1) return 'たった今'; if(diffMins<60) return `${diffMins}分前`;
             const diffHours=Math.floor(diffMins/60); return diffHours<24?`${diffHours}時間前`:`${Math.floor(diffHours/24)}日前`;
+        }
+
+        // --- Manual Beacon Connect Logic ---
+        function manualBeaconConnect() {
+            if (typeof OneSignalDeferred !== 'undefined') {
+                OneSignalDeferred.push(async function(OneSignal) {
+                    await OneSignal.User.PushSubscription.optIn();
+                });
+            } else {
+                alert("読み込み中、または広告ブロックにより機能が制限されています。");
+            }
         }
 
         // --- Help Modal Logic ---
