@@ -30,7 +30,7 @@
           // ※テキストや色はOneSignalダッシュボードの設定が優先されます
           notifyButton: {
             enable: true,
-            // AdGuard対策：常に表示を強制する設定
+            // AdGuard対策：常に表示を強制する設定（これだけは残します）
             displayPredicate: function() {
                 return true;
             }
@@ -426,7 +426,7 @@
             if (btn.classList.contains('disabled')) return;
             showTuneReaction();
             document.getElementById('tune-text').textContent = 'Tuning...'; btn.classList.add('disabled'); 
-            fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=Tune&priority=default&tags=zap`, { method:'POST', body:'Tune受信' })
+            fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=Tune&priority=default&tags=zap`, { method:'POST', body:'Tuneを受信しました。' })
             .then(r => { if(r.ok){ document.getElementById('tune-text').textContent='Stay Tuned!'; localStorage.setItem('lastTuneTime', Date.now()); disableTuneBtn(TUNE_COOLDOWN_MS); } else throw new Error(); })
             .catch(() => { document.getElementById('tune-text').textContent='通信エラー'; setTimeout(()=>{btn.classList.remove('disabled');document.getElementById('tune-text').textContent='Tune';},3000); });
         }
