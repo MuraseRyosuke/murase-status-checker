@@ -18,6 +18,8 @@
 
 Apple Watchが収集するヘルスケアデータ（心拍、活動量、歩行バランスなど）と、iPhoneの環境情報（位置、騒音レベル）を組み合わせ、**「生存しているか」「体調は安定しているか」「今どんな環境にいるか」** をひと目で把握できるように設計されています。
 
+また、開発者向けの「隠し要素（Easter Eggs）」として、特定の操作やコンソールログにハッカーライクな演出を組み込んでいます。
+
 ## ✨ 主な機能
 
 ### 1. ❤️ バイタル & コンディション
@@ -30,6 +32,7 @@ Apple Watchが収集するヘルスケアデータ（心拍、活動量、歩行
 
 ### 3. 🛡️ 安否確認 (Liveness Check)
 * **自動モード切替**: 最終データ更新から一定時間（デフォルト: 13時間）以上経過すると、自動的に画面が「安否不明モード（Dark Mode）」に切り替わり、緊急連絡先への誘導を表示します。通常時は「生存モード（Light Mode）」で動作します。
+* **GitHub Actions監視**: 定期実行されるワークフローがデータの更新状況を監視し、72時間以上更新がない場合は緊急通知（プッシュ通知）を発報します。
 
 ### 4. 🌍 環境 & デバイスコンテキスト
 * **環境音レベル**: Apple Watchのマイクで測定した騒音レベル(dB)を表示し、静かな場所にいるか騒がしい場所にいるかを伝えます。
@@ -43,23 +46,33 @@ Apple Watchが収集するヘルスケアデータ（心拍、活動量、歩行
 
 サーバー代をかけず、堅牢かつメンテナンスフリーな構成を採用しています。
 
-1.  **📲 iOS Shortcuts (Edge Device)**
+1. **📲 iOS Shortcuts (Edge Device)**
     * 定期オートメーションにより、ヘルスケア(HealthKit)からデータを取得・集計。
     * データの欠損処理やフォーマットを行い、JSONを生成して送信します。
-2.  **🔒 GitHub Gist (Database)**
+2. **🔒 GitHub Gist (Database)**
     * 非公開(Secret)のGistをJSONデータベースとして利用。
     * ショートカットからの`PATCH`リクエストを受け付け、常に最新のステータスを保持します。
-3.  **🌐 GitHub Pages (Frontend)**
+3. **🌐 GitHub Pages (Frontend)**
     * HTML/CSS/JSのみで構成されたSPA。
     * アクセス時にGist APIを叩き、クライアントサイドでレンダリングを行います。
+4. **🤖 GitHub Actions (Watchdog)**
+    * 定期的にGistの状態をチェックし、長期間更新がない場合に管理者へ警告を送ります。
 
 ## 📂 ディレクトリ構成
 
 ```text
 .
-├── index.html      # ダッシュボード本体 (Logic & UI)
-├── ogp.webp        # OGP画像・プロフィールアイコン
-└── README.md       # 本ドキュメント
+├── .github/
+│   └── workflows/
+│       └── watchdog.yml    # 生存監視・自動通知ワークフロー
+├── index.html              # ダッシュボード本体 (Logic & UI & Hidden Codes)
+├── OneSignalSDKWorker.js   # 通知機能用 Service Worker (Main)
+├── OneSignalSDK.sw.js      # 通知機能用 Service Worker (Fallback)
+├── CNAME                   # カスタムドメイン設定
+├── .nojekyll               # Jekyll処理無効化設定
+├── LICENSE                 # ライセンスファイル
+├── ogp.webp                # OGP画像・プロフィールアイコン
+└── README.md               # 本ドキュメント
 ```
 
 ## 🚀 セットアップ (再現手順)
@@ -74,10 +87,10 @@ Apple Watchが収集するヘルスケアデータ（心拍、活動量、歩行
 ### 手順
 
 #### 1. GitHub Gistの準備
-1.  [GitHub Gist](https://gist.github.com/) で新規Gistを作成します。
-2.  ファイル名を任意の名前（例: `status.json`）とし、中身を `{}` にして "Create secret gist" で保存します。
-3.  作成後のURL末尾にある英数字列（**Gist ID**）を控えます。
-4.  GitHub設定から、Gistの書き込み権限（`gist` scope）を持つ **Personal Access Token** を発行します。
+1. [GitHub Gist](https://gist.github.com/) で新規Gistを作成します。
+2. ファイル名を任意の名前（例: `status.json`）とし、中身を `{}` にして "Create secret gist" で保存します。
+3. 作成後のURL末尾にある英数字列（**Gist ID**）を控えます。
+4. GitHub設定から、Gistの書き込み権限（`gist` scope）を持つ **Personal Access Token** を発行します。
 
 #### 2. iOSショートカットの導入
 以下のリンクから、データ送信用のショートカットをiPhoneに追加してください。
