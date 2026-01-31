@@ -2,9 +2,9 @@ name: Watchdog Monitor
 
 on:
   schedule:
-    # Execute every hour at minute 0
+    # 1時間に1回、毎時0分に実行
     - cron: '0 * * * *'
-  # Allow manual trigger for testing
+  # 手動実行ボタンも有効化（テスト用）
   workflow_dispatch:
 
 jobs:
@@ -16,58 +16,70 @@ jobs:
           # --- Configuration ---
           GIST_ID: "1f81b107b898201a865a613c319d579b"
           FILE_NAME: "murase_status.json"
-          THRESHOLD_HOURS: 72
-          # Secrets from Repository Settings
+          
+          # Thresholds (監視閾値)
+          WARN_HOURS: 71      # 管理者への予備通知 (ntfy)
+          CRITICAL_HOURS: 72  # 全体への本通知 (OneSignal)
+          
+          # Notification Channels
+          NTFY_TOPIC: "murase_status_tune"
+          
+          # Secrets for OneSignal
           ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
           ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+          
         run: |
-          # 1. Fetch data from Gist (Suppress errors to handle gracefully later)
+          # ---------------------------------------------------------
+          # 1. Fetch Data from Gist
+          # ---------------------------------------------------------
+          # 失敗してもスクリプトを止めないように || true を付与
           RESPONSE=$(curl -s "https://api.github.com/gists/$GIST_ID") || true
-
-          # Attempt to parse JSON content
+          
+          # JSONパースを試みる
           CONTENT=$(echo "$RESPONSE" | jq -r ".files[\"$FILE_NAME\"].content" 2>/dev/null) || true
           
-          # --- Guard Clause: Fetch Failure ---
-          # If content is empty or null (Server Error/Network Issue), exit cleanly.
-          # We do NOT want to send a false "death" notification due to API errors.
+          # Guard: データ取得失敗時は誤作動を防ぐため終了
           if [ -z "$CONTENT" ] || [ "$CONTENT" = "null" ]; then
             echo "⚠️ Failed to fetch Gist data (Server Error or Network Issue). Skipping check."
             exit 0
           fi
 
-          # 2. Extract timestamp and location
+          # ---------------------------------------------------------
+          # 2. Parse Timestamp & Calculate Duration
+          # ---------------------------------------------------------
           LAST_UPDATED_STR=$(echo "$CONTENT" | jq -r ".last_updated")
           CITY=$(echo "$CONTENT" | jq -r '.location.city // "不明な場所"')
           
-          # Check for invalid timestamp
+          # 日付データ不正チェック
           if [ -z "$LAST_UPDATED_STR" ] || [ "$LAST_UPDATED_STR" = "null" ]; then
              echo "⚠️ Invalid timestamp data. Skipping."
              exit 0
           fi
 
-          echo "Last Updated: $LAST_UPDATED_STR"
-          echo "Last Location: $CITY"
-          
-          # 3. Calculate elapsed time
           LAST_UPDATED_TS=$(date -d "$LAST_UPDATED_STR" +%s)
           NOW_TS=$(date +%s)
           
           DIFF_SEC=$((NOW_TS - LAST_UPDATED_TS))
           DIFF_HOURS=$((DIFF_SEC / 3600))
           
-          echo "Elapsed Hours: $DIFF_HOURS (Threshold: $THRESHOLD_HOURS)"
+          echo "🕒 Last Updated: $LAST_UPDATED_STR ($CITY)"
+          echo "⏳ Elapsed: $DIFF_HOURS hours"
+
+          # ---------------------------------------------------------
+          # 3. Logic Branching (Status Check)
+          # ---------------------------------------------------------
           
-          # 4. Check Status & Notify
-          if [ "$DIFF_HOURS" -ge "$THRESHOLD_HOURS" ]; then
-            echo "🚨 Status: UNKNOWN (Over $THRESHOLD_HOURS h). Sending Notification..."
+          # Case A: Critical (Over 72h) -> OneSignal to ALL Users
+          # 72時間を超えたら、即座に全ユーザーへ通知
+          if [ "$DIFF_HOURS" -ge "$CRITICAL_HOURS" ]; then
+            echo "🚨 Status: CRITICAL (Over $CRITICAL_HOURS h). Sending OneSignal to ALL..."
             
-            # Notification Payload
             TITLE="最後の更新から72時間が経ちました"
             MESSAGE="最後に更新されたのは ${CITY} です。"
             URL="https://status.muraseryosuke.info/"
             ICON="https://status.muraseryosuke.info/gameover_face.png"
             
-            # Send to OneSignal API
+            # OneSignal API (All Users)
             curl --include \
                  --request POST \
                  --header "Content-Type: application/json; charset=utf-8" \
@@ -82,7 +94,25 @@ jobs:
                    \"included_segments\": [\"All\"]
                  }" \
                  https://onesignal.com/api/v1/notifications
-                 
+
+          # Case B: Warning (Exactly 71h) -> ntfy.sh to Admin ONLY
+          # "71時間以上、かつ72時間未満" の1時間だけ動作する管理者向け警告
+          elif [ "$DIFF_HOURS" -ge "$WARN_HOURS" ]; then
+            echo "⚠️ Status: WARNING (Over $WARN_HOURS h). Sending ntfy alert to Admin..."
+            
+            NTFY_TITLE="⚠️ 更新期限まであと1時間"
+            NTFY_MSG="最終更新から71時間が経過しました。72時間を超えるとBeaconが送信されます。"
+            NTFY_URL="https://status.muraseryosuke.info/"
+            
+            # ntfy.sh (Priority: urgent = 激しい通知音)
+            curl \
+              -H "Title: $NTFY_TITLE" \
+              -H "Priority: urgent" \
+              -H "Tags: warning,hourglass" \
+              -H "Click: $NTFY_URL" \
+              -d "$NTFY_MSG" \
+              https://ntfy.sh/$NTFY_TOPIC
+
           else
             echo "✅ Status: ALIVE (Within limits)"
           fi
