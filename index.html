@@ -78,7 +78,7 @@
 
     <style>
         /* * ------------------------------------------------------------------
-         * 🕰️ True 3D Abstract Overlay Styles (Tokei-Tick & Cornelius MV)
+         * 🕰️ True 3D Abstract Overlay Styles (Tokei-Tick & FLASH BACK MV)
          * ------------------------------------------------------------------
          */
         #tokei-tic-overlay {
@@ -329,7 +329,7 @@
         // Camera & Interaction
         let ttMouseX = 0, ttMouseY = 0;
         let ttRotX = 0, ttRotY = 0, ttRotZ = 0, ttScale = 1;
-        let ttTargetRotX = 0, ttTargetRotY = 0, ttTargetRotZ = 0, ttTargetScale = 1;
+        let ttTargetRotX = 0, ttTargetRotY = 0, ttTargetRotZ = 0, ttTargetScale = 1.2;
         
         function resizeTT() {
             if (!ttCanvas) return;
@@ -359,7 +359,8 @@
             ttTargetRotX = (Math.random() - 0.5) * 360; 
             ttTargetRotY = (Math.random() - 0.5) * 360; 
             ttTargetRotZ = (Math.random() - 0.5) * 90;  
-            ttTargetScale = Math.random() * 0.5 + 0.7; // 遠近感
+            // 以前よりも被写体に近く（大迫力）設定
+            ttTargetScale = Math.random() * 0.8 + 1.2; 
         }, 1000);
 
         // 5x3 Dot Matrix
@@ -376,8 +377,8 @@
         const TT_COLORS = ['#ff00aa', '#00ffff', '#ffff00', '#b38f00', '#a29bfe'];
         const ttParticles = [];
         
-        // MV風 カラフル高速パーティクル (平面バレ防止のため完全3D座標で生成)
-        for(let i=0; i<80; i++) {
+        // MV風 カラフル高速パーティクル (処理落ち防止のため40個に厳選)
+        for(let i=0; i<40; i++) {
             ttParticles.push({
                 x: (Math.random() - 0.5) * 3000, y: (Math.random() - 0.5) * 3000, z: (Math.random() - 0.5) * 3000,
                 size: Math.random() * 15 + 2, color: TT_COLORS[Math.floor(Math.random() * TT_COLORS.length)],
@@ -386,8 +387,8 @@
             });
         }
         
-        // Cornelius風 無限に広がる白い水玉（星屑）
-        for(let i=0; i<400; i++) {
+        // Cornelius風 無限に広がる白い星屑 (処理落ち防止と美しさを両立する150個)
+        for(let i=0; i<150; i++) {
             ttParticles.push({
                 x: (Math.random() - 0.5) * 3000, y: (Math.random() - 0.5) * 3000, z: (Math.random() - 0.5) * 3000,
                 size: Math.random() * 3 + 1, color: '#ffffff',
@@ -492,33 +493,47 @@
             });
             ttCtx.globalAlpha = 1.0;
             
-            // --- 2. Draw Rotating Abstract Squares ---
+            // --- 2. Draw Rotating Abstract Squares & Triangles (FLASH BACK Style) ---
             const timeSec = Date.now() / 1000;
+            // FLASH BACK特有の超高速ストロボ（点滅）効果
+            const strobe = (Math.floor(Date.now() / 80) % 2 === 0) ? 1 : 0.1;
+            const beatScale = 1 + Math.sin(timeSec * 8) * 0.3;
+
             ttCtx.globalCompositeOperation = 'screen';
-            for(let i=0; i<3; i++) {
-                let localRot = timeSec * (0.3 + i*0.1) * (i%2===0?1:-1);
-                let s = 250 + Math.sin(timeSec*2 + i) * 40 + i*80;
+            for(let i=0; i<5; i++) {
+                let localRot = timeSec * (1.0 + i*0.5) * (i%2===0?1:-1);
+                let s = 200 + i*150 * beatScale; // ビートに合わせたサイズ拡大
                 let half = s/2;
                 
-                // 正方形の4頂点をローカルZ軸で回転させてから、3D空間へプロジェクション
-                let corners = [{x: -half, y: -half}, {x: half, y: -half}, {x: half, y: half}, {x: -half, y: half}];
+                // 四角形と三角形を交互に生成
+                let corners = [];
+                if (i % 2 === 0) {
+                    corners = [{x: -half, y: -half}, {x: half, y: -half}, {x: half, y: half}, {x: -half, y: half}];
+                } else {
+                    let h = s * Math.sqrt(3) / 2;
+                    corners = [{x: 0, y: -h/2}, {x: half, y: h/2}, {x: -half, y: h/2}];
+                }
+                
                 let cosL = Math.cos(localRot), sinL = Math.sin(localRot);
                 
                 let projCorners = corners.map(c => {
                     let lx = c.x * cosL - c.y * sinL;
                     let ly = c.x * sinL + c.y * cosL;
-                    return project3D(lx, ly, 0, cx, sx, cy, sy, cz, sz, ttScale);
+                    // 少しZ軸方向にずらして立体感を出す
+                    return project3D(lx, ly, -300 + i*100, cx, sx, cy, sy, cz, sz, ttScale);
                 });
 
                 if (projCorners.every(p => p !== null)) {
-                    ttCtx.fillStyle = i%2===0 ? 'rgba(255, 0, 170, 0.08)' : 'rgba(0, 255, 255, 0.08)';
-                    ttCtx.strokeStyle = i%2===0 ? 'rgba(255, 0, 170, 0.5)' : 'rgba(0, 255, 255, 0.5)';
-                    ttCtx.lineWidth = 1.5;
+                    // FLASH BACK風のネオンカラーグラデーション
+                    let hue = (timeSec * 150 + i * 50) % 360;
+                    ttCtx.fillStyle = `hsla(${hue}, 100%, 60%, ${strobe * 0.15})`;
+                    ttCtx.strokeStyle = `hsla(${hue}, 100%, 60%, ${strobe * 0.9})`;
+                    ttCtx.lineWidth = 3;
                     ttCtx.beginPath();
                     ttCtx.moveTo(projCorners[0].x, projCorners[0].y);
-                    ttCtx.lineTo(projCorners[1].x, projCorners[1].y);
-                    ttCtx.lineTo(projCorners[2].x, projCorners[2].y);
-                    ttCtx.lineTo(projCorners[3].x, projCorners[3].y);
+                    for(let j=1; j<projCorners.length; j++){
+                        ttCtx.lineTo(projCorners[j].x, projCorners[j].y);
+                    }
                     ttCtx.closePath();
                     ttCtx.fill(); ttCtx.stroke();
                 }
