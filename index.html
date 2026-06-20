@@ -84,7 +84,11 @@
          */
         #tokei-tic-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #050505; z-index: 999999;
+            /* 背景の透明度をかなり下げ、ダッシュボードが透けて見えるように調整 */
+            background: rgba(0, 0, 0, 0.45); 
+            backdrop-filter: blur(6px); /* ネオンカラーを見やすくするための軽いすりガラス効果 */
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 999999;
             display: flex; justify-content: center; align-items: center;
             overflow: hidden; cursor: crosshair;
             transition: opacity 0.8s cubic-bezier(0.19, 1, 0.22, 1), transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
@@ -97,9 +101,10 @@
         }
         .tt-hint {
             position: absolute; bottom: 8%; text-align: center; width: 100%;
-            color: rgba(255, 255, 255, 0.4); font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+            color: rgba(255, 255, 255, 0.7); font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
             font-size: 0.85rem; letter-spacing: 0.2em; pointer-events: none;
             animation: tt-blink 2s infinite;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
         @keyframes tt-blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
 
