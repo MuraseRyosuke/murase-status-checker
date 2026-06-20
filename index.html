@@ -84,9 +84,8 @@
          */
         #tokei-tic-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            /* 背景の透明度をかなり下げ、ダッシュボードが透けて見えるように調整 */
             background: rgba(0, 0, 0, 0.45); 
-            backdrop-filter: blur(6px); /* ネオンカラーを見やすくするための軽いすりガラス効果 */
+            backdrop-filter: blur(6px); 
             -webkit-backdrop-filter: blur(6px);
             z-index: 999999;
             display: flex; justify-content: center; align-items: center;
@@ -102,7 +101,7 @@
         .tt-hint {
             position: absolute; bottom: 8%; text-align: center; width: 100%;
             color: rgba(255, 255, 255, 0.7); font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
-            font-size: 0.85rem; letter-spacing: 0.2em; pointer-events: none;
+            font-size: 0.85rem; letter-spacing: 0.1em; pointer-events: none;
             animation: tt-blink 2s infinite;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
@@ -204,7 +203,7 @@
     
     <div id="tokei-tic-overlay">
         <canvas id="tt-canvas"></canvas>
-        <div class="tt-hint">CLICK ANYWHERE TO ENTER DASHBOARD</div>
+        <div class="tt-hint">続行するには何かをタップしてください...</div>
     </div>
 
     <canvas id="ecg-canvas"></canvas>
@@ -328,7 +327,11 @@
         const ttCanvas = document.getElementById('tt-canvas');
         const ttCtx = ttCanvas.getContext('2d');
         let ttActive = true;
+        
+        // Mouse and Camera Tracking
         let ttMouseX = 0, ttMouseY = 0;
+        let ttRotX = 0, ttRotY = 0, ttRotZ = 0, ttScale = 1;
+        let ttTargetRotX = 0, ttTargetRotY = 0, ttTargetRotZ = 0, ttTargetScale = 1;
         
         function resizeTT() {
             if (!ttCanvas) return;
@@ -351,6 +354,16 @@
             checkBirthdayUnlock(); 
         });
 
+        // カメラ（視点）を1秒おきにランダムに変更するロジック
+        setInterval(() => {
+            if (!ttActive) return;
+            // X, Y軸は-180度〜180度で裏返しも含めた完全ランダム
+            ttTargetRotX = (Math.random() - 0.5) * 360; 
+            ttTargetRotY = (Math.random() - 0.5) * 360; 
+            ttTargetRotZ = (Math.random() - 0.5) * 90;  // Z軸の傾き
+            ttTargetScale = Math.random() * 0.6 + 0.6;  // 遠近感 (0.6倍〜1.2倍)
+        }, 1000);
+
         // 5x3 Dot Matrix Dictionary (For Digital Clock)
         const DOT_MATRIX = {
             '0': [1,1,1, 1,0,1, 1,0,1, 1,0,1, 1,1,1], '1': [0,1,0, 1,1,0, 0,1,0, 0,1,0, 1,1,1],
@@ -365,7 +378,8 @@
         const ttParticles = Array.from({length: 80}).map(() => ({
             x: (Math.random() - 0.5) * 2000, y: (Math.random() - 0.5) * 2000, z: Math.random() * 1000,
             size: Math.random() * 15 + 2, color: TT_COLORS[Math.floor(Math.random() * TT_COLORS.length)],
-            speedZ: Math.random() * 3 + 1
+            // 水玉のスピードを大幅にアップ（超加速）
+            speedZ: Math.random() * 15 + 10 
         }));
 
         function drawTTString(str, startX, startY, dotSize, color) {
@@ -391,7 +405,17 @@
         function renderTT() {
             if (!ttActive) return;
             
-            ttCanvas.style.transform = `translate(-50%, -50%) perspective(1000px) rotateY(${ttMouseX * 30}deg) rotateX(${-ttMouseY * 30}deg)`;
+            // カメラ位置をターゲットに向かって滑らかに補間 (イージング)
+            ttRotX += (ttTargetRotX - ttRotX) * 0.05;
+            ttRotY += (ttTargetRotY - ttRotY) * 0.05;
+            ttRotZ += (ttTargetRotZ - ttRotZ) * 0.05;
+            ttScale += (ttTargetScale - ttScale) * 0.05;
+
+            // マウス位置による視差効果を最終的な角度に乗せる
+            const finalRotX = ttRotX - ttMouseY * 40;
+            const finalRotY = ttRotY + ttMouseX * 40;
+
+            ttCanvas.style.transform = `translate(-50%, -50%) perspective(1000px) scale(${ttScale}) rotateX(${finalRotX}deg) rotateY(${finalRotY}deg) rotateZ(${ttRotZ}deg)`;
             
             ttCtx.clearRect(0, 0, ttCanvas.width, ttCanvas.height);
             ttCtx.save();
