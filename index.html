@@ -27,6 +27,7 @@
        * ------------------------------------------------------------------
        */
       
+      // 注意: テンプレートリテラル内のバックスラッシュはエスケープ(\\)が必要です
       console.log(
 `%c
   * Welcome to MURASE-STATUS-CHECKER!
@@ -365,17 +366,9 @@
             ttTargetRotZ = (Math.random() - 0.5) * 90;  
             ttTargetScale = Math.random() * 0.8 + 1.4; // 1.4 〜 2.2 倍でより迫る
 
-            // 2. 図形の組み合わせ (1秒おきの明滅)
-            const combinationPattern = Math.floor(Math.random() * 4); // 0: 三角, 1: 四角, 2: 両方, 3: なし
-            
+            // 2. 図形の構成（組み合わせ）をランダムに変更
             ttPlaneShapes.forEach(shape => {
-                let show = false;
-                if (combinationPattern === 0) show = shape.type === 'triangle';
-                else if (combinationPattern === 1) show = shape.type === 'square';
-                else if (combinationPattern === 2) show = true;
-                else if (combinationPattern === 3) show = false;
-                
-                shape.visible = show; 
+                shape.visible = Math.random() > 0.5; 
             });
 
         }, 1000);
@@ -415,16 +408,18 @@
             });
         }
 
-        // 時計プレーン上の図形 (12個)
+        // 時計プレーン上の図形 (タイマーの後ろに配置する背景)
         const ttPlaneShapes = [];
-        const numShapes = 12; 
+        const numShapes = 15; 
         for(let i=0; i<numShapes; i++) {
             ttPlaneShapes.push({
-                x: (Math.random() - 0.5) * 1200, y: (Math.random() - 0.5) * 800,
-                size: Math.random() * 50 + 20, 
-                type: i % 2 === 0 ? 'square' : 'triangle',
+                x: (Math.random() - 0.5) * 400, // タイマーの中央付近に集める
+                y: (Math.random() - 0.5) * 400,
+                size: Math.random() * 200 + 150, // 大きめサイズ
+                type: Math.random() > 0.5 ? 'square' : 'triangle',
                 rotationOffset: Math.random() * Math.PI * 2,
-                visible: true,
+                rotSpeed: (Math.random() - 0.5) * 1.5, // ゆるやかな回転
+                visible: Math.random() > 0.5,
                 color: TT_COLORS[Math.floor(Math.random() * TT_COLORS.length)] 
             });
         }
@@ -449,6 +444,56 @@
             };
         }
 
+        // --- 図形描画 (タイマーの背面レイヤー) ---
+        function drawClockPlaneShapes(ttPlaneShapes, timeSec, cx, sx, cy, sy, cz, sz, ttScale) {
+            ttCtx.globalCompositeOperation = 'screen';
+            
+            ttPlaneShapes.forEach((shape, i) => {
+                if (!shape.visible) return;
+
+                let localRot = timeSec * shape.rotSpeed + shape.rotationOffset;
+                let s = shape.size; 
+                let half = s/2;
+                
+                let corners = [];
+                if (shape.type === 'square') {
+                    corners = [{x: -half, y: -half}, {x: half, y: -half}, {x: half, y: half}, {x: -half, y: half}];
+                } else { 
+                    let h = s * Math.sqrt(3) / 2;
+                    corners = [{x: 0, y: -h/2}, {x: half, y: h/2}, {x: -half, y: h/2}];
+                }
+                
+                let cosL = Math.cos(localRot), sinL = Math.sin(localRot);
+                
+                let projCorners = corners.map(c => {
+                    let lx = shape.x + (c.x * cosL - c.y * sinL);
+                    let ly = shape.y + (c.x * sinL + c.y * cosL);
+                    // Z座標に 50 を足し、タイマー(Z=0)より奥の背景に配置する
+                    return project3D(lx, ly, 50, cx, sx, cy, sy, cz, sz, ttScale);
+                });
+
+                if (projCorners.every(p => p !== null)) {
+                    ttCtx.fillStyle = shape.color; 
+                    ttCtx.globalAlpha = 0.25; // 透過させてタイマーを見やすくする
+                    ttCtx.beginPath();
+                    ttCtx.moveTo(projCorners[0].x, projCorners[0].y);
+                    for(let j=1; j<projCorners.length; j++){
+                        ttCtx.lineTo(projCorners[j].x, projCorners[j].y);
+                    }
+                    ttCtx.closePath();
+                    ttCtx.fill(); 
+                    
+                    ttCtx.globalAlpha = 0.6;
+                    ttCtx.strokeStyle = shape.color;
+                    ttCtx.lineWidth = 2 * Math.max(0.5, ttScale);
+                    ttCtx.stroke();
+                }
+            });
+            ttCtx.globalAlpha = 1.0;
+            ttCtx.globalCompositeOperation = 'source-over';
+        }
+
+        // --- タイマー文字描画 (図形より手前レイヤー) ---
         function drawClockPlaneStrings(diff, dotSize, cx, sx, cy, sy, cz, sz, ttScale) {
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -472,7 +517,7 @@
         function drawTTString3D(str, startX, startY, dotSize, cx, sx, cy, sy, cz, sz, ttScale, color) {
             ttCtx.fillStyle = color;
             ttCtx.shadowColor = color;
-            ttCtx.shadowBlur = dotSize * 0.5; // 光彩を抑えてクッキリ・滲まないように
+            ttCtx.shadowBlur = dotSize * 0.8; // 滲まない程度の光彩
 
             const gap = dotSize * 1.8;
             const spacing = (3 * gap) + dotSize * 1.5;
@@ -484,6 +529,7 @@
                             if(matrix[r*3 + c]) {
                                 let localX = startX + i*spacing + c*gap;
                                 let localY = startY + r*gap;
+                                // z=0 (手前) で投影
                                 let proj = project3D(localX, localY, 0, cx, sx, cy, sy, cz, sz, ttScale);
                                 if (proj) {
                                     ttCtx.beginPath();
@@ -496,50 +542,6 @@
                 }
             }
             ttCtx.shadowBlur = 0; // 他の描画に影響しないようリセット
-        }
-
-        function drawClockPlaneShapes(ttPlaneShapes, timeSec, cx, sx, cy, sy, cz, sz, ttScale) {
-            const beatScale = 1 + Math.sin(timeSec * 8) * 0.1; 
-            ttCtx.globalCompositeOperation = 'screen';
-            
-            ttPlaneShapes.forEach((shape, i) => {
-                if (!shape.visible) return;
-
-                let localRot = (timeSec + i) * 0.5 + shape.rotationOffset;
-                let s = shape.size * beatScale; 
-                let half = s/2;
-                
-                let corners = [];
-                if (shape.type === 'square') {
-                    corners = [{x: -half, y: -half}, {x: half, y: -half}, {x: half, y: half}, {x: -half, y: half}];
-                } else { 
-                    let h = s * Math.sqrt(3) / 2;
-                    corners = [{x: 0, y: -h/2}, {x: half, y: h/2}, {x: -half, y: h/2}];
-                }
-                
-                let cosL = Math.cos(localRot), sinL = Math.sin(localRot);
-                
-                let projCorners = corners.map(c => {
-                    let lx = shape.x + (c.x * cosL - c.y * sinL);
-                    let ly = shape.y + (c.x * sinL + c.y * cosL);
-                    return project3D(lx, ly, 0, cx, sx, cy, sy, cz, sz, ttScale);
-                });
-
-                if (projCorners.every(p => p !== null)) {
-                    let hue = (timeSec * 150 + i * 50) % 360;
-                    ttCtx.fillStyle = `hsla(${hue}, 100%, 60%, 0.15)`; 
-                    ttCtx.strokeStyle = `hsla(${hue}, 100%, 60%, 0.9)`;
-                    ttCtx.lineWidth = 3 * ttScale;
-                    ttCtx.beginPath();
-                    ttCtx.moveTo(projCorners[0].x, projCorners[0].y);
-                    for(let j=1; j<projCorners.length; j++){
-                        ttCtx.lineTo(projCorners[j].x, projCorners[j].y);
-                    }
-                    ttCtx.closePath();
-                    ttCtx.fill(); ttCtx.stroke();
-                }
-            });
-            ttCtx.globalCompositeOperation = 'source-over';
         }
 
         function renderTT() {
@@ -585,15 +587,16 @@
             });
             ttCtx.globalAlpha = 1.0;
             
-            // 2. Draw HUD (Clock Strings & Plane Shapes)
+            // 2. Draw Background Shapes & HUD Timer
             const timeSec = Date.now() / 1000;
             const diff = Math.max(0, BIRTHDAY_TARGET - new Date());
             
             // ドットのベースサイズを大きく調整 (迫力アップ)
-            const dotSize = window.innerWidth < 768 ? 5 : 8;
+            const dotSize = window.innerWidth < 768 ? 8 : 14;
 
-            drawClockPlaneStrings(diff, dotSize, cx, sx, cy, sy, cz, sz, ttScale);
+            // 描画順：背景図形 -> タイマー（文字が前面に来る）
             drawClockPlaneShapes(ttPlaneShapes, timeSec, cx, sx, cy, sy, cz, sz, ttScale);
+            drawClockPlaneStrings(diff, dotSize, cx, sx, cy, sy, cz, sz, ttScale);
             
             ttCtx.restore();
             requestAnimationFrame(renderTT);
@@ -703,7 +706,7 @@
             if (!el) return;
 
             if (diff <= 0) {
-                el.innerHTML = "🎉 <b>村瀨亮介の30歳の誕生日当日です！おめでとうございます！</b> 🎂";
+                el.innerHTML = "🎉 <b>村瀨亮介の30歳の誕生日当日です！いわえ！</b> 🎂";
                 el.style.color = "var(--color-gold)";
                 checkBirthdayUnlock(); 
                 return;
