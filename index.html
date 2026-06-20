@@ -27,7 +27,6 @@
        * ------------------------------------------------------------------
        */
       
-      // 注意: テンプレートリテラル内のバックスラッシュはエスケープ(\\)が必要です
       console.log(
 `%c
   * Welcome to MURASE-STATUS-CHECKER!
@@ -79,7 +78,7 @@
 
     <style>
         /* * ------------------------------------------------------------------
-         * 🕰️ Tokei-Tic Overlay Styles (New Feature)
+         * 🕰️ True 3D Abstract Overlay Styles (Tokei-Tick & Cornelius MV)
          * ------------------------------------------------------------------
          */
         #tokei-tic-overlay {
@@ -91,19 +90,18 @@
             display: flex; justify-content: center; align-items: center;
             overflow: hidden; cursor: crosshair;
             transition: opacity 0.8s cubic-bezier(0.19, 1, 0.22, 1), transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-            perspective: 1000px;
         }
         #tt-canvas {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            will-change: transform;
         }
         .tt-hint {
             position: absolute; bottom: 8%; text-align: center; width: 100%;
-            color: rgba(255, 255, 255, 0.7); font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+            color: rgba(255, 255, 255, 0.7); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
             font-size: 0.85rem; letter-spacing: 0.1em; pointer-events: none;
             animation: tt-blink 2s infinite;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            font-weight: 600;
         }
         @keyframes tt-blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
 
@@ -322,21 +320,21 @@
         const TUNE_COOLDOWN_MS = 30 * 60 * 1000; 
         const BIRTHDAY_TARGET = new Date('2026-06-24T00:00:00+09:00'); // 30th Birthday JST
         
-        // --- 🕰️ Tokei-Tic MV Abstract Overlay ---
+        // --- 🕰️ Software 3D Engine for Overlay ---
         const ttOverlay = document.getElementById('tokei-tic-overlay');
         const ttCanvas = document.getElementById('tt-canvas');
         const ttCtx = ttCanvas.getContext('2d');
         let ttActive = true;
         
-        // Mouse and Camera Tracking
+        // Camera & Interaction
         let ttMouseX = 0, ttMouseY = 0;
         let ttRotX = 0, ttRotY = 0, ttRotZ = 0, ttScale = 1;
         let ttTargetRotX = 0, ttTargetRotY = 0, ttTargetRotZ = 0, ttTargetScale = 1;
         
         function resizeTT() {
             if (!ttCanvas) return;
-            ttCanvas.width = window.innerWidth * 1.2;
-            ttCanvas.height = window.innerHeight * 1.2;
+            ttCanvas.width = window.innerWidth;
+            ttCanvas.height = window.innerHeight;
         }
         window.addEventListener('resize', resizeTT);
         resizeTT();
@@ -360,11 +358,11 @@
             // X, Y軸は-180度〜180度で裏返しも含めた完全ランダム
             ttTargetRotX = (Math.random() - 0.5) * 360; 
             ttTargetRotY = (Math.random() - 0.5) * 360; 
-            ttTargetRotZ = (Math.random() - 0.5) * 90;  // Z軸の傾き
-            ttTargetScale = Math.random() * 0.6 + 0.6;  // 遠近感 (0.6倍〜1.2倍)
+            ttTargetRotZ = (Math.random() - 0.5) * 90;  
+            ttTargetScale = Math.random() * 0.5 + 0.7; // 遠近感
         }, 1000);
 
-        // 5x3 Dot Matrix Dictionary (For Digital Clock)
+        // 5x3 Dot Matrix
         const DOT_MATRIX = {
             '0': [1,1,1, 1,0,1, 1,0,1, 1,0,1, 1,1,1], '1': [0,1,0, 1,1,0, 0,1,0, 0,1,0, 1,1,1],
             '2': [1,1,1, 0,0,1, 1,1,1, 1,0,0, 1,1,1], '3': [1,1,1, 0,0,1, 1,1,1, 0,0,1, 1,1,1],
@@ -374,15 +372,62 @@
             ':': [0,0,0, 0,1,0, 0,0,0, 0,1,0, 0,0,0], '.': [0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,1,0]
         };
 
-        const TT_COLORS = ['#ff00aa', '#00ffff', '#ffff00', '#b38f00', '#a29bfe', '#ffffff'];
-        const ttParticles = Array.from({length: 80}).map(() => ({
-            x: (Math.random() - 0.5) * 2000, y: (Math.random() - 0.5) * 2000, z: Math.random() * 1000,
-            size: Math.random() * 15 + 2, color: TT_COLORS[Math.floor(Math.random() * TT_COLORS.length)],
-            // 水玉のスピードを大幅にアップ（超加速）
-            speedZ: Math.random() * 15 + 10 
-        }));
+        // 宇宙の星(白) ＋ MV風カラフルパーティクルの統合定義
+        const TT_COLORS = ['#ff00aa', '#00ffff', '#ffff00', '#b38f00', '#a29bfe'];
+        const ttParticles = [];
+        
+        // MV風 カラフル高速パーティクル (平面バレ防止のため完全3D座標で生成)
+        for(let i=0; i<80; i++) {
+            ttParticles.push({
+                x: (Math.random() - 0.5) * 3000, y: (Math.random() - 0.5) * 3000, z: (Math.random() - 0.5) * 3000,
+                size: Math.random() * 15 + 2, color: TT_COLORS[Math.floor(Math.random() * TT_COLORS.length)],
+                speed: Math.random() * 30 + 20, // 超加速ワープ
+                isStar: false
+            });
+        }
+        
+        // Cornelius風 無限に広がる白い水玉（星屑）
+        for(let i=0; i<400; i++) {
+            ttParticles.push({
+                x: (Math.random() - 0.5) * 3000, y: (Math.random() - 0.5) * 3000, z: (Math.random() - 0.5) * 3000,
+                size: Math.random() * 3 + 1, color: '#ffffff',
+                speed: Math.random() * 5 + 2, // ゆったりとした奥行き移動
+                isStar: true
+            });
+        }
 
-        function drawTTString(str, startX, startY, dotSize, color) {
+        // 3D座標をCanvas 2D上に投影するマトリクス計算関数
+        function project3D(x, y, z, cx, sx, cy, sy, cz, sz, scale) {
+            x *= scale; y *= scale; z *= scale;
+
+            // X軸回転
+            let y1 = y * cx - z * sx;
+            let z1 = z * cx + y * sx;
+            // Y軸回転
+            let x1 = x * cy + z1 * sy;
+            let z2 = z1 * cy - x * sy;
+            // Z軸回転
+            let x2 = x1 * cz - y1 * sz;
+            let y2 = y1 * cz + x1 * sz;
+
+            // カメラの距離（遠近感）
+            let fov = 800;
+            let camZ = 1200; 
+            let z3 = z2 + camZ;
+
+            // カメラの背後にあるものは描画しない
+            if (z3 < 10) return null;
+            let s = fov / z3;
+            return {
+                x: x2 * s + ttCanvas.width / 2,
+                y: y2 * s + ttCanvas.height / 2,
+                s: s,
+                depth: z3
+            };
+        }
+
+        function drawTTString3D(str, startX, startY, dotSize, color, cx, sx, cy, sy, cz, sz, ttScale) {
+            ttCtx.fillStyle = color;
             const gap = dotSize * 1.8;
             const spacing = (3 * gap) + dotSize * 1.5;
             for(let i=0; i<str.length; i++) {
@@ -391,10 +436,14 @@
                     for(let r=0; r<5; r++){
                         for(let c=0; c<3; c++){
                             if(matrix[r*3 + c]) {
-                                ttCtx.beginPath();
-                                ttCtx.arc(startX + i*spacing + c*gap, startY + r*gap, dotSize/2, 0, Math.PI*2);
-                                ttCtx.fillStyle = color; ttCtx.shadowColor = color; ttCtx.shadowBlur = dotSize * 1.5;
-                                ttCtx.fill();
+                                let localX = startX + i*spacing + c*gap;
+                                let localY = startY + r*gap;
+                                let proj = project3D(localX, localY, 0, cx, sx, cy, sy, cz, sz, ttScale);
+                                if (proj) {
+                                    ttCtx.beginPath();
+                                    ttCtx.arc(proj.x, proj.y, (dotSize/2) * proj.s, 0, Math.PI*2);
+                                    ttCtx.fill();
+                                }
                             }
                         }
                     }
@@ -405,46 +454,78 @@
         function renderTT() {
             if (!ttActive) return;
             
-            // カメラ位置をターゲットに向かって滑らかに補間 (イージング)
+            // イージングで滑らかにカメラを追従
             ttRotX += (ttTargetRotX - ttRotX) * 0.05;
             ttRotY += (ttTargetRotY - ttRotY) * 0.05;
             ttRotZ += (ttTargetRotZ - ttRotZ) * 0.05;
             ttScale += (ttTargetScale - ttScale) * 0.05;
 
-            // マウス位置による視差効果を最終的な角度に乗せる
-            const finalRotX = ttRotX - ttMouseY * 40;
-            const finalRotY = ttRotY + ttMouseX * 40;
+            // マウスの視差効果を最終角度に加算
+            const finalRotX = (ttRotX - ttMouseY * 40) * Math.PI / 180;
+            const finalRotY = (ttRotY + ttMouseX * 40) * Math.PI / 180;
+            const finalRotZ = ttRotZ * Math.PI / 180;
 
-            ttCanvas.style.transform = `translate(-50%, -50%) perspective(1000px) scale(${ttScale}) rotateX(${finalRotX}deg) rotateY(${finalRotY}deg) rotateZ(${ttRotZ}deg)`;
+            // 事前計算してCPU負荷を軽減
+            const cx = Math.cos(finalRotX), sx = Math.sin(finalRotX);
+            const cy = Math.cos(finalRotY), sy = Math.sin(finalRotY);
+            const cz = Math.cos(finalRotZ), sz = Math.sin(finalRotZ);
             
             ttCtx.clearRect(0, 0, ttCanvas.width, ttCanvas.height);
-            ttCtx.save();
-            ttCtx.translate(ttCanvas.width/2, ttCanvas.height/2);
             
+            // --- 1. Draw True 3D Particles & Stars ---
             ttParticles.forEach(p => {
-                p.z -= p.speedZ;
-                if(p.z < 0) { p.z = 1000; p.x = (Math.random() - 0.5) * 2000; p.y = (Math.random() - 0.5) * 2000; }
-                const scale = 500 / (500 + p.z);
-                const px = p.x * scale, py = p.y * scale;
-                ttCtx.beginPath(); ttCtx.arc(px, py, p.size * scale, 0, Math.PI*2);
-                ttCtx.fillStyle = p.color; ttCtx.globalAlpha = Math.max(0, Math.min(1, scale)); ttCtx.fill();
+                p.z -= p.speed;
+                // 空間をループさせる（カメラが振り向いても対応できるように巨大な立方体空間を定義）
+                if(p.z < -1500) p.z += 3000;
+                if(p.z > 1500) p.z -= 3000;
+
+                let proj = project3D(p.x, p.y, p.z, cx, sx, cy, sy, cz, sz, ttScale);
+                if (proj) {
+                    ttCtx.beginPath(); 
+                    ttCtx.arc(proj.x, proj.y, p.size * proj.s, 0, Math.PI*2);
+                    ttCtx.fillStyle = p.color;
+                    // 遠くにある星は暗くする（フォグ効果）
+                    let alpha = Math.max(0, Math.min(1, (2000 - proj.depth) / 1000));
+                    ttCtx.globalAlpha = p.isStar ? alpha * 0.8 : alpha; 
+                    ttCtx.fill();
+                }
             });
             ttCtx.globalAlpha = 1.0;
             
+            // --- 2. Draw Rotating Abstract Squares ---
             const timeSec = Date.now() / 1000;
             ttCtx.globalCompositeOperation = 'screen';
             for(let i=0; i<3; i++) {
-                ttCtx.save();
-                ttCtx.rotate(timeSec * (0.3 + i*0.1) * (i%2===0?1:-1));
-                ttCtx.fillStyle = i%2===0 ? 'rgba(255, 0, 170, 0.08)' : 'rgba(0, 255, 255, 0.08)';
-                const s = 250 + Math.sin(timeSec*2 + i) * 40 + i*80;
-                ttCtx.fillRect(-s/2, -s/2, s, s);
-                ttCtx.strokeStyle = i%2===0 ? 'rgba(255, 0, 170, 0.5)' : 'rgba(0, 255, 255, 0.5)';
-                ttCtx.lineWidth = 1.5; ttCtx.strokeRect(-s/2, -s/2, s, s);
-                ttCtx.restore();
+                let localRot = timeSec * (0.3 + i*0.1) * (i%2===0?1:-1);
+                let s = 250 + Math.sin(timeSec*2 + i) * 40 + i*80;
+                let half = s/2;
+                
+                // 正方形の4頂点をローカルZ軸で回転させてから、3D空間へプロジェクション
+                let corners = [{x: -half, y: -half}, {x: half, y: -half}, {x: half, y: half}, {x: -half, y: half}];
+                let cosL = Math.cos(localRot), sinL = Math.sin(localRot);
+                
+                let projCorners = corners.map(c => {
+                    let lx = c.x * cosL - c.y * sinL;
+                    let ly = c.x * sinL + c.y * cosL;
+                    return project3D(lx, ly, 0, cx, sx, cy, sy, cz, sz, ttScale);
+                });
+
+                if (projCorners.every(p => p !== null)) {
+                    ttCtx.fillStyle = i%2===0 ? 'rgba(255, 0, 170, 0.08)' : 'rgba(0, 255, 255, 0.08)';
+                    ttCtx.strokeStyle = i%2===0 ? 'rgba(255, 0, 170, 0.5)' : 'rgba(0, 255, 255, 0.5)';
+                    ttCtx.lineWidth = 1.5;
+                    ttCtx.beginPath();
+                    ttCtx.moveTo(projCorners[0].x, projCorners[0].y);
+                    ttCtx.lineTo(projCorners[1].x, projCorners[1].y);
+                    ttCtx.lineTo(projCorners[2].x, projCorners[2].y);
+                    ttCtx.lineTo(projCorners[3].x, projCorners[3].y);
+                    ttCtx.closePath();
+                    ttCtx.fill(); ttCtx.stroke();
+                }
             }
             ttCtx.globalCompositeOperation = 'source-over';
             
+            // --- 3. Draw Main Countdown HUD ---
             const diff = Math.max(0, BIRTHDAY_TARGET - new Date());
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -460,12 +541,11 @@
             const spacing = (3 * gap) + dotSize * 1.5;
             
             const totalW = str.length * spacing;
-            drawTTString(str, -totalW/2, -gap*2.5, dotSize, '#ffffff'); 
+            drawTTString3D(str, -totalW/2, -gap*2.5, dotSize, '#ffffff', cx, sx, cy, sy, cz, sz, ttScale); 
             
             const msTotalW = msStr.length * spacing;
-            drawTTString(msStr, -msTotalW/2, gap*4, dotSize * 0.8, '#ff00aa'); 
+            drawTTString3D(msStr, -msTotalW/2, gap*4, dotSize * 0.8, '#ff00aa', cx, sx, cy, sy, cz, sz, ttScale); 
             
-            ttCtx.restore();
             requestAnimationFrame(renderTT);
         }
         requestAnimationFrame(renderTT);
