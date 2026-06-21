@@ -27,7 +27,6 @@
        * ------------------------------------------------------------------
        */
       
-      // 注意: テンプレートリテラル内のバックスラッシュはエスケープ(\\)が必要です
       console.log(
 `%c
   * Welcome to MURASE-STATUS-CHECKER!
@@ -79,7 +78,7 @@
 
     <style>
         /* * ------------------------------------------------------------------
-         * 🕰️ True 3D Abstract Overlay Styles (Tokei-Tick & FLASH BACK MV)
+         * 🕰️ Tokei-Tic & FLASH BACK True 3D Abstract Overlay
          * ------------------------------------------------------------------
          */
         #tokei-tic-overlay {
@@ -357,7 +356,7 @@
             checkBirthdayUnlock(); 
         });
 
-        // カメラ（視点）と図形の組み合わせを1秒おきに変更するロジック
+        // カメラ（視点）と図形の構成を1秒おきに変更するロジック (残像・組み合わせ変更同期)
         setInterval(() => {
             if (!ttActive) return;
             // 1. カメラワーク
@@ -366,7 +365,7 @@
             ttTargetRotZ = (Math.random() - 0.5) * 90;  
             ttTargetScale = Math.random() * 0.8 + 1.4; // 1.4 〜 2.2 倍でより迫る
 
-            // 2. 図形の構成（組み合わせ）をランダムに変更
+            // 2. 図形の構成（組み合わせ）をランダムに変更。これにより1秒おきにVJ背景が切り替わる
             ttPlaneShapes.forEach(shape => {
                 shape.visible = Math.random() > 0.5; 
             });
@@ -387,7 +386,7 @@
         const TT_COLORS = ['#ff00aa', '#00ffff', '#ffff00', '#b38f00', '#a29bfe'];
         const ttParticles = [];
         
-        // MV風 カラフル高速ネオン (40個) - サイズアップ
+        // MV風 カラフル高速ネオン (40個) - サイズアップ & 拡散効果対象
         for(let i=0; i<40; i++) {
             ttParticles.push({
                 x: (Math.random() - 0.5) * 3000, y: (Math.random() - 0.5) * 3000, z: (Math.random() - 0.5) * 3000,
@@ -398,7 +397,7 @@
             });
         }
         
-        // Cornelius風 白い星屑 (150個) - サイズ微増
+        // Cornelius風 白い星屑 (150個) - 残像のみ対象
         for(let i=0; i<150; i++) {
             ttParticles.push({
                 x: (Math.random() - 0.5) * 3000, y: (Math.random() - 0.5) * 3000, z: (Math.random() - 0.5) * 3000,
@@ -408,7 +407,7 @@
             });
         }
 
-        // 時計プレーン上の図形 (タイマーの後ろに配置する背景)
+        // 時計プレーン上の図形 (タイマーの後ろに配置する背景、ゆるやかに回転)
         const ttPlaneShapes = [];
         const numShapes = 15; 
         for(let i=0; i<numShapes; i++) {
@@ -424,7 +423,7 @@
             });
         }
 
-        // 3D座標をCanvas上に投影（軸ズレのバグを修正済）
+        // 3D座標をCanvas上に投影（軸ズレ修正済）
         function project3D(x, y, z, cx, sx, cy, sy, cz, sz, scale) {
             x *= scale; y *= scale; z *= scale;
 
@@ -444,7 +443,7 @@
             };
         }
 
-        // --- 図形描画 (タイマーの背面レイヤー) ---
+        // --- 図形描画 (タイマーの背面レイヤー、アルファとScreen効果でぼやけ拡散) ---
         function drawClockPlaneShapes(ttPlaneShapes, timeSec, cx, sx, cy, sy, cz, sz, ttScale) {
             ttCtx.globalCompositeOperation = 'screen';
             
@@ -468,7 +467,7 @@
                 let projCorners = corners.map(c => {
                     let lx = shape.x + (c.x * cosL - c.y * sinL);
                     let ly = shape.y + (c.x * sinL + c.y * cosL);
-                    // Z座標に 50 を足し、タイマー(Z=0)より奥の背景に配置する
+                    // Z座標に 50 を足し、タイマー(Z=0)より奥の背景に配置
                     return project3D(lx, ly, 50, cx, sx, cy, sy, cz, sz, ttScale);
                 });
 
@@ -493,7 +492,7 @@
             ttCtx.globalCompositeOperation = 'source-over';
         }
 
-        // --- タイマー文字描画 (図形より手前レイヤー) ---
+        // --- タイマー文字描画 (図形より手前レイヤー、滲まないグロー) ---
         function drawClockPlaneStrings(diff, dotSize, cx, sx, cy, sy, cz, sz, ttScale) {
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -544,6 +543,7 @@
             ttCtx.shadowBlur = 0; // 他の描画に影響しないようリセット
         }
 
+        // --- コアロジック：描画ループ (残像・拡散効果実装) ---
         function renderTT() {
             if (!ttActive) return;
             
@@ -560,13 +560,18 @@
             const cy = Math.cos(finalRotY), sy = Math.sin(finalRotY);
             const cz = Math.cos(finalRotZ), sz = Math.sin(finalRotZ);
             
-            // Retina(高画質)対応の描画リセット
+            // 滲み対策：Retina対応描画リセット
             const dpr = window.devicePixelRatio || 1;
             ttCtx.setTransform(dpr, 0, 0, dpr, 0, 0); 
-            ttCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            
+            // --- 実装：1. 夜中のテールランプのような残像（トレイル効果） ---
+            // `clearRect` ではなく、半透明の黒で塗りつぶす。
+            // アルファ値は 0.2 (20%) で、動きに合わせてシュッと消える残像感を出す。
+            ttCtx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
+            ttCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
             
             ttCtx.save();
-            // ここで一括して画面の中央を基準にする
+            // 画面中央を基準に設定
             ttCtx.translate(window.innerWidth / 2, window.innerHeight / 2); 
             
             // 1. Draw True 3D Particles & Stars
@@ -579,10 +584,31 @@
                 if (proj) {
                     ttCtx.beginPath(); 
                     ttCtx.arc(proj.x, proj.y, p.size * proj.s, 0, Math.PI*2);
-                    ttCtx.fillStyle = p.color;
-                    let alpha = Math.max(0, Math.min(1, (2000 - proj.depth) / 1000));
-                    ttCtx.globalAlpha = p.isStar ? alpha * 0.8 : alpha; 
-                    ttCtx.fill();
+                    
+                    if (!p.isStar) {
+                        // --- 実装：2. 光の拡散（グロー・Screen効果） ---
+                        ttCtx.globalCompositeOperation = 'screen';
+                        
+                        // 光の拡散を表現するため、ごく弱い `shadowBlur` を手前の玉にのみ適用
+                        ttCtx.shadowColor = p.color;
+                        ttCtx.shadowBlur = p.size * proj.s * 0.4; // サイズに同期
+                        ttCtx.fillStyle = p.color;
+                        
+                        // 拡散した「ぼやけ」を表現するため、アルファ値を少し上げる
+                        let alpha = Math.max(0, Math.min(1, (2000 - proj.depth) / 1000));
+                        ttCtx.globalAlpha = alpha; // 全開に
+                        ttCtx.fill();
+                        
+                        // リセット
+                        ttCtx.shadowBlur = 0;
+                        ttCtx.globalCompositeOperation = 'source-over';
+                    } else {
+                        // 白い星屑は滲ませない。滲むとタイマーが読みにくくなる
+                        ttCtx.fillStyle = p.color;
+                        let alpha = Math.max(0, Math.min(1, (2000 - proj.depth) / 1000));
+                        ttCtx.globalAlpha = alpha * 0.8; 
+                        ttCtx.fill();
+                    }
                 }
             });
             ttCtx.globalAlpha = 1.0;
@@ -594,8 +620,10 @@
             // ドットのベースサイズを大きく調整 (迫力アップ)
             const dotSize = window.innerWidth < 768 ? 8 : 14;
 
-            // 描画順：背景図形 -> タイマー（文字が前面に来る）
+            // 描画順：背景図形（背面レイヤー、アルファとScreen効果で滲ませる）
             drawClockPlaneShapes(ttPlaneShapes, timeSec, cx, sx, cy, sy, cz, sz, ttScale);
+            
+            // 描画順：HUDタイマー（前面レイヤー、滲まないグロー）
             drawClockPlaneStrings(diff, dotSize, cx, sx, cy, sy, cz, sz, ttScale);
             
             ttCtx.restore();
@@ -604,6 +632,7 @@
         requestAnimationFrame(renderTT);
 
 
+        // --- ヘルスコアロジック (維持) ---
         const CONFIG = {
             gistId: '1f81b107b898201a865a613c319d579b',
             gistFileName: 'murase_status.json',
@@ -611,13 +640,11 @@
             links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' }
         };
 
-        // --- State ---
         let globalSpeedKmh = 0;
         let speedUnitIdx = 0; 
         let isBirthdayMode = false; 
         let hasTriggeredLoadConfetti = false; 
 
-        // --- Helpers ---
         function safeParseInt(val) { return (!val || val === "") ? 0 : parseInt(val, 10); }
         function safeParseFloat(val) { return (!val || val === "") ? 0 : parseFloat(val); }
         function getRelativeTime(date) {
@@ -628,58 +655,48 @@
             return diffHours < 24 ? `${diffHours}時間前` : `${Math.floor(diffHours/24)}日前`;
         }
 
-        // --- 🎊 Confetti Logic (JS-Generated CSS Confetti) ---
+        // --- 🎊 Confetti Logic (JS-Generated CSS Confetti, 維持) ---
         function triggerConfetti() {
             if (!isBirthdayMode) return; 
-            
             const container = document.getElementById('confetti-container');
             if (!container) return;
-
             const confettiCount = window.innerWidth <= 768 ? 40 : 80; 
             const colors = ['#eccc68', '#ff7675', '#74b9ff', '#55efc4', '#a29bfe', '#fff']; 
-
             for (let i = 0; i < confettiCount; i++) {
                 const confetti = document.createElement('div');
                 confetti.className = 'confetti';
-                
                 const color = colors[Math.floor(Math.random() * colors.length)];
                 const left = Math.random() * 100 + '%';
                 const size = Math.random() * 8 + 6 + 'px';
                 const delay = Math.random() * 2 + 's';
                 const duration = Math.random() * 2 + 2 + 's'; 
-                
                 const fallTranslateX = (Math.random() - 0.5) * 300 + 'px';
                 const fallRotateX = Math.random() * 720 + 'deg';
                 const fallRotateY = Math.random() * 720 + 'deg';
                 const fallRotateZ = Math.random() * 720 + 'deg';
                 const swayAmount = (Math.random() - 0.5) * 80 + 'px';
-
                 confetti.style.backgroundColor = color;
                 confetti.style.left = left;
                 confetti.style.width = size;
                 confetti.style.height = size;
                 confetti.style.animationDelay = delay;
                 confetti.style.animationDuration = `${duration}, 1.5s`; 
-                
                 confetti.style.setProperty('--fall-translate-x', fallTranslateX);
                 confetti.style.setProperty('--fall-rotate-x', fallRotateX);
                 confetti.style.setProperty('--fall-rotate-y', fallRotateY);
                 confetti.style.setProperty('--fall-rotate-z', fallRotateZ);
                 confetti.style.setProperty('--sway-amount', swayAmount);
-
                 container.appendChild(confetti);
-
                 const totalAnimationTime = (parseFloat(delay) + parseFloat(duration)) * 1000;
                 setTimeout(() => confetti.remove(), totalAnimationTime + 500); 
             }
         }
 
-        // --- ⚙️ Automatic Birthday Mode Switcher ⚙️ ---
+        // --- ⚙️ Automatic Birthday Mode Switcher ⚙️ (維持) ---
         function checkBirthdayUnlock() {
             const now = new Date();
             if (now >= BIRTHDAY_TARGET && !isBirthdayMode) {
                 isBirthdayMode = true;
-                
                 document.body.classList.add('birthday-theme');
                 document.getElementById('tune-icon').textContent = '🎂';
                 const currentText = document.getElementById('tune-text').textContent;
@@ -687,10 +704,8 @@
                     document.getElementById('tune-text').textContent = '30th Anniv. Tune';
                 }
                 document.querySelector('.card-tune').setAttribute('data-tooltip', 'お祝いの合図を送る');
-                
                 const condEl = document.getElementById('condition');
                 if (condEl && condEl.textContent.includes('絶好調✨')) { condEl.textContent = '絶好調✨(祝)'; }
-                
                 if (!hasTriggeredLoadConfetti) {
                     hasTriggeredLoadConfetti = true;
                     setTimeout(triggerConfetti, 500);
@@ -698,41 +713,35 @@
             }
         }
 
-        // --- UI Logic: Birthday Countdown ---
+        // --- UI Logic: Birthday Countdown (維持) ---
         function updateCountdown() {
             const now = new Date();
             const diff = BIRTHDAY_TARGET - now;
             const el = document.getElementById('birthday-countdown');
             if (!el) return;
-
             if (diff <= 0) {
-                el.innerHTML = "🎉 <b>村瀨亮介の30歳の誕生日当日です！いわえ！</b> 🎂";
+                el.innerHTML = "🎉 <b>村瀨亮介の30歳の誕生日当日です！おめでとうございます！</b> 🎂";
                 el.style.color = "var(--color-gold)";
                 checkBirthdayUnlock(); 
                 return;
             }
-
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const secs = Math.floor((diff % (1000 * 60)) / 1000);
             const ms = Math.floor(diff % 1000);
-
             const hStr = String(hours).padStart(2, '0');
             const mStr = String(mins).padStart(2, '0');
             const sStr = String(secs).padStart(2, '0');
             const msStr = String(ms).padStart(3, '0');
-
             el.innerHTML = `🎂 村瀨亮介の30歳誕生日まで <span>${days}</span>日 <span>${hStr}</span>時間 <span>${mStr}</span>分 <span>${sStr}</span>秒<span>.${msStr}</span> です。`;
             checkBirthdayUnlock();
             requestAnimationFrame(updateCountdown);
         }
 
-        // --- UI Logic: Modal ---
         function openHelpModal() { const m = document.getElementById('help-modal'); m.style.display = 'flex'; setTimeout(() => m.classList.add('open'), 10); }
         function closeHelpModal(e) { if (e.target.id === 'help-modal' || e.target.classList.contains('modal-close')) { const m = document.getElementById('help-modal'); m.classList.remove('open'); setTimeout(() => m.style.display = 'none', 300); } }
 
-        // --- UI Logic: Tune Interaction ---
         function checkCooldown() { const last = localStorage.getItem('lastTuneTime'); if (last && Date.now() - parseInt(last,10) < TUNE_COOLDOWN_MS) { disableTuneBtn(TUNE_COOLDOWN_MS - (Date.now() - parseInt(last,10))); } }
         function disableTuneBtn(t) { const btn = document.querySelector('.card-tune'); document.getElementById('tune-text').textContent = isBirthdayMode ? 'Stay Tuned! (クラッカー補給中)' : 'Stay Tuned!'; btn.classList.add('disabled'); setTimeout(() => { btn.classList.remove('disabled'); document.getElementById('tune-text').textContent = isBirthdayMode ? '30th Anniv. Tune' : 'Tune'; localStorage.removeItem('lastTuneTime'); }, t); }
         function showTuneReaction() {
@@ -745,25 +754,20 @@
             const btn = document.querySelector('.card-tune');
             if (btn.classList.contains('disabled')) return;
             if (isBirthdayMode) triggerConfetti();
-
             showTuneReaction();
             document.getElementById('tune-text').textContent = isBirthdayMode ? 'クラッカー発射...' : 'Tuning...'; 
             btn.classList.add('disabled'); 
-            
             const url = isBirthdayMode ? `https://ntfy.sh/${NTFY_TOPIC}?title=BirthdayTune&priority=default&tags=birthday,cake` : `https://ntfy.sh/${NTFY_TOPIC}?title=Tune&priority=default&tags=zap`;
             const payloadStr = isBirthdayMode ? '30歳のお祝いを受信しました🎉' : 'Tune受信';
-            
             fetch(url, { method:'POST', body: payloadStr })
             .then(r => { if(r.ok){ document.getElementById('tune-text').textContent = isBirthdayMode ? 'Stay Tuned! (クラッカー補給中)' : 'Stay Tuned!'; localStorage.setItem('lastTuneTime', Date.now()); disableTuneBtn(TUNE_COOLDOWN_MS); } else throw new Error(); })
             .catch(() => { document.getElementById('tune-text').textContent = '通信エラー'; setTimeout(() => { btn.classList.remove('disabled'); document.getElementById('tune-text').textContent = isBirthdayMode ? '30th Anniv. Tune' : 'Tune'; }, 3000); });
         }
 
-        // --- UI Logic: Display Features ---
         function toggleSpeedUnit() { speedUnitIdx = (speedUnitIdx + 1) % 3; renderSpeed(); const c = document.getElementById('walking_speed').parentElement; c.classList.remove('anim-flash'); void c.offsetWidth; c.classList.add('anim-flash'); }
         function renderSpeed() { const el = document.getElementById('walking_speed'); const unit = document.getElementById('speed_unit'); if (!globalSpeedKmh) { el.textContent = '--'; return; } if (speedUnitIdx === 0) { el.textContent = globalSpeedKmh.toFixed(1); unit.textContent = 'km/h'; } else if (speedUnitIdx === 1) { el.textContent = (globalSpeedKmh * 16.6667).toFixed(0); unit.textContent = 'm/min'; } else { el.textContent = (globalSpeedKmh / 3.6).toFixed(2); unit.textContent = 'm/s'; } }
         function updateLevel(val) { const b = document.getElementById('spirit-bubble'); if (val === null || isNaN(val)) { b.style.opacity='0'; return; } b.style.opacity='1'; if(val === 0) b.style.backgroundColor = 'var(--color-good)'; else if(val < 0.05) b.style.backgroundColor = 'var(--color-ok)'; else b.style.backgroundColor = 'var(--color-bad)'; if(val > 0) { b.style.setProperty('--wobble-amp', `${Math.min(val*400, 45)}%`); b.classList.add('wobble'); } else { b.style.transform = 'translateX(-50%)'; b.classList.remove('wobble'); } }
 
-        // --- Core Logic: ECG Animation ---
         class ECGMonitor {
             constructor(cid) { this.c = document.getElementById(cid); this.ctx = this.c.getContext('2d'); this.x = 0; this.y = window.innerHeight/2; this.bpm = 60; this.alive = true; this.last = 0; this.resize(); window.addEventListener('resize', () => this.resize()); }
             resize() { this.c.width = window.innerWidth; this.c.height = window.innerHeight; this.y = this.c.height/2; }
@@ -771,7 +775,7 @@
             draw() { const now = Date.now(); const int = this.alive ? 60000/this.bpm : Infinity; this.ctx.clearRect(this.x, 0, 10, this.c.height); this.ctx.beginPath(); this.ctx.moveTo(this.x - 2, this.y); let ty = this.c.height / 2; if(this.alive) { const d = now - this.last; if(d > int) { this.last = now; ty -= this.c.height * 0.25; } else if(d < 50) ty += this.c.height * 0.05; else if(d > int - 200) ty += this.c.height * 0.1; } this.y = this.y * 0.9 + ty * 0.1; this.ctx.lineTo(this.x, this.y); this.ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue(document.body.classList.contains('dark-mode') ? '--color-ecg-lost' : '--color-ecg-alive').trim(); this.ctx.lineWidth = 2; this.ctx.stroke(); this.x++; if(this.x > this.c.width) { this.x = 0; this.ctx.clearRect(0, 0, this.c.width, this.c.height); } requestAnimationFrame(() => this.draw()); } start() { this.draw(); }
         }
 
-        // --- Core Logic: Data Fetch & Render ---
+        // --- コアロジック：データ取得とレンダリング (維持) ---
         async function updateStatus() {
             const els = { body: document.body, msg: document.getElementById('liveness-message'), sub: document.getElementById('liveness-subtext'), upd: document.getElementById('last_updated'), hr: document.getElementById('heart_rate'), hrSub: document.getElementById('heart_sub'), rHr: document.getElementById('resting_hr'), steps: document.getElementById('steps'), cal: document.getElementById('calories'), asym: document.getElementById('walking_asymmetry'), stand: document.getElementById('stand_hours'), flights: document.getElementById('flights'), cond: document.getElementById('condition'), sndVal: document.getElementById('sound_value'), sndLbl: document.getElementById('sound_label'), loc: document.getElementById('location'), batVal: document.getElementById('battery_val'), batIcon: document.getElementById('battery_icon') };
             try { const res = await fetch(`https://api.github.com/gists/${CONFIG.gistId}?t=${Date.now()}`); if (!res.ok) throw new Error("Network response was not ok"); const json = await res.json(); const d = JSON.parse(json.files[CONFIG.gistFileName].content); const last = new Date(d.last_updated); const alive = (new Date() - last) / 36e5 <= CONFIG.thresholdHours;
@@ -787,7 +791,7 @@
             } catch (e) { console.error("Failed to load status:", e); els.msg.textContent = '読み込み失敗'; }
         }
 
-        // --- Init ---
+        // --- 初期化 ---
         const ecg = new ECGMonitor('ecg-canvas'); ecg.start(); 
         checkBirthdayUnlock(); 
         updateStatus(); updateCountdown(); checkCooldown();
