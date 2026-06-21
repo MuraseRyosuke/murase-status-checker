@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>村瀨亮介のリアルタイム健康診断</title>
     <meta name="description" content="村瀨亮介の現在の体調、位置情報、安否状況をApple Watchのデータを用いてリアルタイムに可視化・公開するステータスチェッカーサイトです。">
     <meta name="author" content="Ryosuke Murase">
     <meta name="copyright" content="© 2026 Ryosuke Murase">
     <link rel="canonical" href="https://status.muraseryosuke.info/">
+
     <meta property="og:title" content="村瀨亮介のリアルタイム健康診断">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://status.muraseryosuke.info/">
@@ -17,7 +19,14 @@
     <meta name="twitter:card" content="summary">
 
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    
     <script>
+      /**
+       * ------------------------------------------------------------------
+       * Hidden Console Logs (Easter Eggs)
+       * ------------------------------------------------------------------
+       */
+      
       console.log(
 `%c
   * Welcome to MURASE-STATUS-CHECKER!
@@ -34,6 +43,7 @@
   Target: Ryosuke Murase`,
           "color: #FF9F78; background: #252529; font-family: monospace;"
       );
+
       console.log(
 `%c
       /\\ 
@@ -48,90 +58,247 @@
         "color: #b0c4de; background: #101010; font-family: monospace;"
       );
 
+      /**
+       * ------------------------------------------------------------------
+       * OneSignal Initialization
+       * ------------------------------------------------------------------
+       */
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
           appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b",
           safari_web_id: "", 
-          notifyButton: { enable: true, displayPredicate: function() { return true; } }
+          notifyButton: {
+            enable: true,
+            displayPredicate: function() { return true; }
+          }
         });
       });
     </script>
 
     <style>
-        /* 🕰️ True 3D Abstract Overlay */
+        /* * ------------------------------------------------------------------
+         * 🕰️ Tokei-Tic & FLASH BACK True 3D Abstract Overlay Styles
+         * ------------------------------------------------------------------
+         */
         #tokei-tic-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.15); 
-            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-            z-index: 999999; display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(6px); 
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 999999;
+            display: flex; justify-content: center; align-items: center;
             overflow: hidden; cursor: crosshair;
             transition: opacity 0.8s cubic-bezier(0.19, 1, 0.22, 1), transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        #tt-canvas { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        #tt-canvas {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
         .tt-hint {
             position: absolute; bottom: 8%; text-align: center; width: 100%;
-            color: rgba(255, 255, 255, 0.7); font-family: -apple-system, sans-serif;
+            color: rgba(255, 255, 255, 0.7); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
             font-size: 0.85rem; letter-spacing: 0.1em; pointer-events: none;
-            animation: tt-blink 2s infinite; text-shadow: 0 2px 4px rgba(0,0,0,0.8); font-weight: 600;
+            animation: tt-blink 2s infinite;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            font-weight: 600;
         }
         @keyframes tt-blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
 
-        /* Base & Variables */
+        /* * ------------------------------------------------------------------
+         * CSS Variables & Theme Configuration
+         * ------------------------------------------------------------------
+         */
         :root {
-            --glass-blur: 20px; --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1); --radius-card: 24px;
-            --color-good: #2e8b57; --color-ok: #20b2aa; --color-avg: #d97706; --color-bad: #dc2626; --color-gold: #d4af37;
-            --color-ecg-alive: rgba(46, 204, 113, 0.6); --color-ecg-lost: rgba(48, 209, 201, 0.6);
-            --color-tune-bg: rgba(155, 89, 182, 0.15); --color-tune-border: rgba(155, 89, 182, 0.5); 
-            --color-tune-text: #6c3483; --color-bubble-bg: #ffffff; --color-bubble-text: #6c3483;
+            --glass-blur: 20px;
+            --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
+            --radius-card: 24px;
+
+            --color-good: #2e8b57;
+            --color-ok:   #20b2aa;
+            --color-avg:  #d97706;
+            --color-bad:  #dc2626;
+            --color-gold: #d4af37;
+
+            --color-ecg-alive: rgba(46, 204, 113, 0.6);
+            --color-ecg-lost:  rgba(48, 209, 201, 0.6);
+
+            --color-tune-bg:     rgba(155, 89, 182, 0.15); 
+            --color-tune-border: rgba(155, 89, 182, 0.5); 
+            --color-tune-text:   #6c3483;
+            --color-bubble-bg:   #ffffff;
+            --color-bubble-text: #6c3483;
         }
+
+        /* 🎂 Birthday Mode Modifier */
         body.birthday-theme {
-            --color-tune-bg: rgba(212, 175, 55, 0.15); --color-tune-border: rgba(212, 175, 55, 0.5); 
-            --color-tune-text: #b38f00; --color-bubble-text: #b38f00;
+            --color-tune-bg:     rgba(212, 175, 55, 0.15); 
+            --color-tune-border: rgba(212, 175, 55, 0.5); 
+            --color-tune-text:   #b38f00;
+            --color-bubble-text: #b38f00;
         }
+
+        /* * ------------------------------------------------------------------
+         * Base Styles & Layouts
+         * ------------------------------------------------------------------
+         */
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem; transition: background-color 0.5s ease, color 0.5s ease; -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow-x: hidden; }
-        a { text-decoration: none; } a:hover { text-decoration: underline; }
-        body.light-mode { background-color: #f5f5f7; color: #1d1d1f; --card-bg: rgba(255, 255, 255, 0.65); --card-border: rgba(255, 255, 255, 0.4); --text-sub: #555559; --link-color: #0066cc; --modal-bg: #ffffff; --modal-text: #1d1d1f; }
-        body.dark-mode { background-color: #000000; color: #f5f5f7; --card-bg: rgba(28, 28, 30, 0.65); --card-border: rgba(255, 255, 255, 0.1); --text-sub: #a1a1a6; --link-color: #0a84ff; --modal-bg: #1c1c1e; --modal-text: #f5f5f7; }
         
-        .card { background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); border-radius: var(--radius-card); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-card); transition: transform 0.2s ease, background-color 0.5s ease; }
-        .card-interactive { cursor: pointer; position: relative; user-select: none; } .card-interactive:active { transform: scale(0.98); opacity: 0.9; }
-        .anim-flash { animation: flashAnim 0.3s ease-out; } @keyframes flashAnim { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1); } }
-        .spirit-level-container { width: 100%; height: 10px; background: rgba(0, 0, 0, 0.08); border-radius: 99px; margin-top: 10px; position: relative; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
-        .spirit-bubble { width: 24px; height: 100%; background: var(--color-good); border-radius: 99px; position: absolute; left: 50%; top: 0; transform: translateX(-50%); transition: background-color 0.5s, opacity 0.3s; box-shadow: 0 0 6px rgba(255,255,255,0.8) inset; }
-        .wobble { animation: wobbleAnim 2.5s ease-in-out infinite; } @keyframes wobbleAnim { 0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); } 50% { transform: translateX(calc(-50% + var(--wobble-amp))); } }
-        .card-tune { background: var(--color-tune-bg) !important; border: 1px solid var(--color-tune-border) !important; color: var(--color-tune-text) !important; cursor: pointer; align-items: center; justify-content: center; position: relative; z-index: 10; }
-        .card-tune:active { transform: scale(0.96); opacity: 0.8; } .card-tune.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
-        .card-tune::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 30; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); } .card-tune:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); } @media (max-width: 768px) { .card-tune::after { display: none; } }
-        .tune-bubble { position: absolute; top: 10%; right: -10%; background: var(--color-bubble-bg); color: var(--color-bubble-text); padding: 8px 16px; border-radius: 12px; border-bottom-left-radius: 2px; font-weight: 700; font-size: 0.95rem; pointer-events: none; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; animation: bubblePop 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards; } @keyframes bubblePop { 0% { opacity: 0; transform: scale(0.8) translate(-10px, 10px); } 15% { opacity: 1; transform: scale(1) translate(0, 0); } 100% { opacity: 0; transform: scale(0.9) translate(0, -10px); } }
-        .tune-toast { position: fixed; bottom: 30px; left: 50%; background: rgba(20, 20, 20, 0.9); color: #fff; padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; z-index: 9999; white-space: nowrap; pointer-events: none; animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards; } @keyframes toastSlideUp { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
-        .tune-icon { font-size: 1.5rem; margin-bottom: 0.2em; } .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; 
+            margin: 0; padding: 2rem; 
+            transition: background-color 0.5s ease, color 0.5s ease; 
+            -webkit-font-smoothing: antialiased; 
+            min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow-x: hidden; 
+        }
+        
+        a { text-decoration: none; } 
+        a:hover { text-decoration: underline; }
+
+        body.light-mode { 
+            background-color: #f5f5f7; color: #1d1d1f; 
+            --card-bg: rgba(255, 255, 255, 0.65); --card-border: rgba(255, 255, 255, 0.4); 
+            --text-sub: #555559; --link-color: #0066cc; 
+            --modal-bg: #ffffff; --modal-text: #1d1d1f; 
+        }
+
+        body.dark-mode { 
+            background-color: #000000; color: #f5f5f7; 
+            --card-bg: rgba(28, 28, 30, 0.65); --card-border: rgba(255, 255, 255, 0.1); 
+            --text-sub: #a1a1a6; --link-color: #0a84ff; 
+            --modal-bg: #1c1c1e; --modal-text: #f5f5f7; 
+        }
+
+        .card { 
+            background: var(--card-bg); border: 1px solid var(--card-border); 
+            backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); 
+            border-radius: var(--radius-card); padding: 1.5rem; 
+            display: flex; flex-direction: column; justify-content: space-between; 
+            box-shadow: var(--shadow-card); transition: transform 0.2s ease, background-color 0.5s ease; 
+        }
+        
+        .card-interactive { cursor: pointer; position: relative; user-select: none; } 
+        .card-interactive:active { transform: scale(0.98); opacity: 0.9; }
+        
+        .anim-flash { animation: flashAnim 0.3s ease-out; } 
+        @keyframes flashAnim { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1); } }
+
+        .spirit-level-container { 
+            width: 100%; height: 10px; background: rgba(0, 0, 0, 0.08); 
+            border-radius: 99px; margin-top: 10px; position: relative; overflow: hidden; 
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); 
+        }
+        .spirit-bubble { 
+            width: 24px; height: 100%; background: var(--color-good); 
+            border-radius: 99px; position: absolute; left: 50%; top: 0; 
+            transform: translateX(-50%); transition: background-color 0.5s, opacity 0.3s; 
+            box-shadow: 0 0 6px rgba(255,255,255,0.8) inset; 
+        }
+        
+        .wobble { animation: wobbleAnim 2.5s ease-in-out infinite; } 
+        @keyframes wobbleAnim { 
+            0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); } 
+            50% { transform: translateX(calc(-50% + var(--wobble-amp))); } 
+        }
+
+        .card-tune { 
+            background: var(--color-tune-bg) !important; border: 1px solid var(--color-tune-border) !important; 
+            color: var(--color-tune-text) !important; cursor: pointer; align-items: center; justify-content: center; position: relative; z-index: 10; 
+        }
+        .card-tune:active { transform: scale(0.96); opacity: 0.8; } 
+        .card-tune.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
+        
+        .card-tune::after { 
+            content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; 
+            transform: translateX(-50%) translateY(10px); background: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(4px); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; 
+            white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 30; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+        } 
+        .card-tune:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); } 
+        @media (max-width: 768px) { .card-tune::after { display: none; } }
+        
+        .tune-bubble { 
+            position: absolute; top: 10%; right: -10%; background: var(--color-bubble-bg); color: var(--color-bubble-text); 
+            padding: 8px 16px; border-radius: 12px; border-bottom-left-radius: 2px; font-weight: 700; font-size: 0.95rem; pointer-events: none; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; 
+            animation: bubblePop 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards; 
+        } 
+        @keyframes bubblePop { 0% { opacity: 0; transform: scale(0.8) translate(-10px, 10px); } 15% { opacity: 1; transform: scale(1) translate(0, 0); } 100% { opacity: 0; transform: scale(0.9) translate(0, -10px); } }
+        
+        .tune-toast { 
+            position: fixed; bottom: 30px; left: 50%; background: rgba(20, 20, 20, 0.9); color: #fff; padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; z-index: 9999; white-space: nowrap; pointer-events: none; 
+            animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards; 
+        } 
+        @keyframes toastSlideUp { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
+        
+        .tune-icon { font-size: 1.5rem; margin-bottom: 0.2em; } 
+        .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
+
         .label { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; color: var(--text-sub); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4em; width: 100%; }
-        .value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; } .unit { font-size: 0.9rem; font-weight: 500; color: var(--text-sub); margin-left: 0.2em; } .sub-value { font-size: 0.85rem; color: var(--text-sub); margin-top: 0.2em; }
+        .value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; } 
+        .unit { font-size: 0.9rem; font-weight: 500; color: var(--text-sub); margin-left: 0.2em; } 
+        .sub-value { font-size: 0.85rem; color: var(--text-sub); margin-top: 0.2em; }
+        
         .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(110px, auto); gap: 1.25rem; width: 100%; max-width: 900px; }
         .card-status { grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem; min-height: 160px; }
-        #liveness-message { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; } #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.8rem; } #liveness-subtext:empty { display: none; margin-top: 0; }
+        #liveness-message { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; } 
+        #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.8rem; } 
+        #liveness-subtext:empty { display: none; margin-top: 0; }
+        
         .bday-title { font-size: clamp(0.95rem, 3vw, 1.2rem); font-weight: 700; color: var(--color-avg); margin-bottom: 0.6rem; letter-spacing: 0.02em; }
         #birthday-countdown span { font-variant-numeric: tabular-nums; font-family: SF Mono, Menlo, Monaco, Consolas, monospace; }
-        .card-profile { grid-column: span 1; padding: 0; background: transparent !important; border: none !important; box-shadow: none !important; display: flex; align-items: center; justify-content: center; } .profile-img { width: 100%; height: 100%; aspect-ratio: 1/1; border-radius: 24px; object-fit: cover; box-shadow: var(--shadow-card); transition: filter 0.5s; } body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
-        .card-heart { grid-column: span 3; position: relative; align-items: center; } .heart-value-container { text-align: center; width: 100%; } .card-heart .value { font-size: 4rem; letter-spacing: -0.05em; }
-        .card-small { grid-column: span 1; } .card-device-location { grid-column: span 1; } .card-tune-container { grid-column: span 2; }
-        .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
-        .help-trigger { grid-column: span 4; text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8; } .help-trigger:hover { opacity: 1; color: var(--link-color); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; } .modal-overlay.open { display: flex; opacity: 1; } .modal-content { background: var(--modal-bg); color: var(--modal-text); padding: 2rem; border-radius: 24px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); max-height: 90vh; overflow-y: auto; } .modal-overlay.open .modal-content { transform: scale(1); } .modal-close { position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; opacity: 0.5; line-height: 1; } .modal-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; text-align: center; } .step-block { margin-bottom: 2rem; } .step-title { font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5em; } .step-num { background: var(--color-gold); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; } .step-img { width: auto; max-width: 100%; height: auto; max-height: 250px; border-radius: 12px; margin-top: 0.5rem; border: 1px solid var(--card-border); display: block; margin-left: auto; margin-right: auto; } .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
-        #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
+
+        .card-profile { grid-column: span 1; padding: 0; background: transparent !important; border: none !important; box-shadow: none !important; display: flex; align-items: center; justify-content: center; } 
+        .profile-img { width: 100%; height: 100%; aspect-ratio: 1/1; border-radius: 24px; object-fit: cover; box-shadow: var(--shadow-card); transition: filter 0.5s; } 
+        body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
         
-        /* 🎊 Confetti */
+        .card-heart { grid-column: span 3; position: relative; align-items: center; } 
+        .heart-value-container { text-align: center; width: 100%; } 
+        .card-heart .value { font-size: 4rem; letter-spacing: -0.05em; }
+        
+        .card-small { grid-column: span 1; } 
+        .card-device-location { grid-column: span 1; } 
+        .card-tune-container { grid-column: span 2; }
+        .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
+
+        .help-trigger { grid-column: span 4; text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8; } 
+        .help-trigger:hover { opacity: 1; color: var(--link-color); }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; } 
+        .modal-overlay.open { display: flex; opacity: 1; } 
+        .modal-content { background: var(--modal-bg); color: var(--modal-text); padding: 2rem; border-radius: 24px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); max-height: 90vh; overflow-y: auto; } 
+        .modal-overlay.open .modal-content { transform: scale(1); } 
+        .modal-close { position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; opacity: 0.5; line-height: 1; } 
+        .modal-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; text-align: center; } 
+        .step-block { margin-bottom: 2rem; } 
+        .step-title { font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5em; } 
+        .step-num { background: var(--color-gold); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; } 
+        .step-img { width: auto; max-width: 100%; height: auto; max-height: 250px; border-radius: 12px; margin-top: 0.5rem; border: 1px solid var(--card-border); display: block; margin-left: auto; margin-right: auto; } 
+        .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
+
+        #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
+
+        /* 🎊 Confetti Effect */
         #confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10000; overflow: hidden; display: none; }
         body.birthday-theme #confetti-container { display: block; }
         .confetti { position: absolute; width: 10px; height: 10px; background-color: #f00; opacity: 0; transform-origin: center bottom; animation: confetti-fall 3s ease-out forwards, confetti-sway 1.5s ease-in-out infinite alternate; }
         @keyframes confetti-fall { 0% { top: -10%; opacity: 1; transform: translateX(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 100% { top: 110%; opacity: 0; transform: translateX(var(--fall-translate-x)) rotateX(var(--fall-rotate-x)) rotateY(var(--fall-rotate-y)) rotateZ(var(--fall-rotate-z)); } }
         @keyframes confetti-sway { 0% { margin-left: 0px; } 100% { margin-left: var(--sway-amount); } }
-        
+
         @media (max-width: 768px) {
-            body { padding: 1rem; display: block; overflow-y: auto; } .dashboard-grid { display: flex; flex-direction: column; gap: 1rem; } .card { padding: 1.25rem; min-height: auto; } .card-profile { display: none !important; } .card-heart { min-height: 150px; justify-content: center; } .card-heart .value { font-size: 4rem; } .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-            body.dark-mode .card-status { order: 1; } body.dark-mode .card-heart  { order: 2; } body.dark-mode .card-tune-container { order: 3; margin-bottom: 0.5rem; } body.dark-mode .help-trigger { order: 3; margin-top: 0; margin-bottom: 1rem; } body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; } body.dark-mode .footer-info { order: 5; }
+            body { padding: 1rem; display: block; overflow-y: auto; } 
+            .dashboard-grid { display: flex; flex-direction: column; gap: 1rem; } 
+            .card { padding: 1.25rem; min-height: auto; } 
+            .card-profile { display: none !important; } 
+            .card-heart { min-height: 150px; justify-content: center; } 
+            .card-heart .value { font-size: 4rem; } 
+            .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+            
+            body.dark-mode .card-status { order: 1; } 
+            body.dark-mode .card-heart  { order: 2; } 
+            body.dark-mode .card-tune-container { order: 3; margin-bottom: 0.5rem; } 
+            body.dark-mode .help-trigger { order: 3; margin-top: 0; margin-bottom: 1rem; } 
+            body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; } 
+            body.dark-mode .footer-info { order: 5; }
         }
     </style>
 </head>
@@ -141,127 +308,402 @@
         <canvas id="tt-canvas"></canvas>
         <div class="tt-hint">続行するには何かをタップしてください...</div>
     </div>
+
     <canvas id="ecg-canvas"></canvas>
-    <div id="confetti-container"></div>
     
+    <div id="confetti-container"></div>
+
     <div id="help-modal" class="modal-overlay" onclick="closeHelpModal(event)">
         <div class="modal-content">
             <div class="modal-close" onclick="closeHelpModal(event)">×</div>
             <div class="modal-title">Beaconへの接続</div>
-            <div class="step-block"><div class="step-title"><span class="step-num">1</span> 広告ブロックを一時停止</div><div>広告ブロッカーが動作していると接続できない場合があります。「保護を一時停止」してください。</div><img src="guide_adguard.webp" alt="AdGuard Pause" class="step-img" width="332" height="636" loading="lazy"></div>
-            <div class="step-block"><div class="step-title"><span class="step-num">2</span> ページを更新して接続</div><div>ページを再読み込みし、右下のベルアイコンをクリック。</div><img src="guide_allow.webp" alt="Allow Notification" class="step-img" width="321" height="244" loading="lazy"></div>
-            <div class="modal-note">✅ 一度接続できれば、その後は広告ブロックを有効に戻してもBeaconは届きます。</div>
+            <div class="step-block">
+                <div class="step-title"><span class="step-num">1</span> 広告ブロックを一時停止</div>
+                <div>広告ブロッカー（AdGuardなど）が動作していると、接続ができない場合があります。「保護を一時停止」してください。</div>
+                <img src="guide_adguard.webp" alt="AdGuard Pause" class="step-img" width="332" height="636" loading="lazy">
+            </div>
+            <div class="step-block">
+                <div class="step-title"><span class="step-num">2</span> ページを更新して接続</div>
+                <div>ページを再読み込みし、右下の🔔ベルアイコン（<b>👻Beaconを受信する</b>）をクリック。</div>
+                <img src="guide_allow.webp" alt="Allow Notification" class="step-img" width="321" height="244" loading="lazy">
+            </div>
+            <div class="modal-note">
+                ✅ 一度接続できれば、その後は広告ブロックを有効に戻してもBeaconは届きます。
+            </div>
         </div>
     </div>
 
     <main class="dashboard-grid">
-        <div class="card card-status"><div id="birthday-countdown" class="bday-title"></div><div id="liveness-message">ステータス確認中...</div><div id="liveness-subtext"></div></div>
-        <div class="card card-profile" id="profile-card"><img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high"></div>
-        <div class="card card-heart"><div class="label">❤️心拍数</div><div class="heart-value-container"><span id="heart_rate" class="value">---</span><span class="unit">BPM</span></div><div class="sub-value" style="text-align: center; width: 100%;"><span id="heart_sub">---</span><span style="margin: 0 4px; opacity: 0.3;">|</span><span>安静時: <span id="resting_hr">---</span> BPM</span></div></div>
-        <div class="mobile-grid-2" style="display: contents;">
-            <div class="card card-small"><div class="label">👟歩数</div><div><span id="steps" class="value">---</span><span class="unit">歩</span></div></div>
-            <div class="card card-small"><div class="label">🔥カロリー</div><div><span id="calories" class="value">---</span><span class="unit">kcal</span></div></div>
+        <div class="card card-status">
+            <div id="birthday-countdown" class="bday-title"></div>
+            <div id="liveness-message">ステータス確認中...</div>
+            <div id="liveness-subtext"></div>
         </div>
-        <div class="mobile-grid-2" style="display: contents;">
-            <div class="card card-small card-interactive" onclick="toggleSpeedUnit()"><div class="label">🚶歩行速度</div><div><span id="walking_speed" class="value">---</span><span id="speed_unit" class="unit">km/h</span></div></div>
-            <div class="card card-small"><div class="label">⚖️バランス(非対称)</div><div><span id="walking_asymmetry" class="value">---</span><span class="unit">%</span></div><div class="spirit-level-container"><div id="spirit-bubble" class="spirit-bubble"></div></div></div>
+
+        <div class="card card-profile" id="profile-card">
+            <img src="ogp.webp" alt="Ryosuke Murase" class="profile-img" width="200" height="200" fetchpriority="high">
         </div>
-        <div class="mobile-grid-2" style="display: contents;">
-            <div class="card card-small"><div class="label">🕴️スタンド時間</div><div><span id="stand_hours" class="value">---</span><span class="unit">分</span></div></div>
-            <div class="card card-small"><div class="label">🪜階数</div><div><span id="flights" class="value">---</span><span class="unit">階</span></div></div>
+
+        <div class="card card-heart">
+            <div class="label">❤️心拍数</div>
+            <div class="heart-value-container"><span id="heart_rate" class="value">---</span><span class="unit">BPM</span></div>
+            <div class="sub-value" style="text-align: center; width: 100%;">
+                <span id="heart_sub">---</span><span style="margin: 0 4px; opacity: 0.3;">|</span><span>安静時: <span id="resting_hr">---</span> BPM</span>
+            </div>
         </div>
+
         <div class="mobile-grid-2" style="display: contents;">
-            <div class="card card-small"><div class="label">🩺体調 (HRV)</div><div id="condition" class="value" style="font-size: 1.5rem;">---</div></div>
-            <div class="card card-small"><div class="label">🔊騒音</div><div><span id="sound_value" class="value">---</span><span class="unit">dB</span> <span id="sound_label" class="unit" style="font-weight: 600;"></span></div></div>
+            <div class="card card-small">
+                <div class="label">👟歩数</div>
+                <div><span id="steps" class="value">---</span><span class="unit">歩</span></div>
+            </div>
+            <div class="card card-small">
+                <div class="label">🔥カロリー</div>
+                <div><span id="calories" class="value">---</span><span class="unit">kcal</span></div>
+            </div>
         </div>
+
         <div class="mobile-grid-2" style="display: contents;">
-            <div class="card card-device-location"><div class="label">📍現在地</div><div id="location" class="value" style="font-size: 1.4rem;">---</div></div>
-            <div class="card card-device-location"><div class="label">🔋バッテリー</div><div><span id="battery_val" class="value">---</span><span class="unit">%</span><span id="battery_icon" class="value" style="font-size: 1.4rem;"></span></div></div>
+            <div class="card card-small card-interactive" onclick="toggleSpeedUnit()">
+                <div class="label">🚶歩行速度</div>
+                <div><span id="walking_speed" class="value">---</span><span id="speed_unit" class="unit">km/h</span></div>
+            </div>
+            <div class="card card-small">
+                <div class="label">⚖️バランス(非対称)</div>
+                <div><span id="walking_asymmetry" class="value">---</span><span class="unit">%</span></div>
+                <div class="spirit-level-container"><div id="spirit-bubble" class="spirit-bubble"></div></div>
+            </div>
         </div>
+
         <div class="mobile-grid-2" style="display: contents;">
-            <div class="card card-tune card-tune-container" onclick="sendTune()" data-tooltip="更新の合図を送る"><div class="tune-icon" id="tune-icon">👋</div><div class="tune-label" id="tune-text">Tune</div></div>
+            <div class="card card-small">
+                <div class="label">🕴️スタンド時間</div>
+                <div><span id="stand_hours" class="value">---</span><span class="unit">分</span></div>
+            </div>
+            <div class="card card-small">
+                <div class="label">🪜階数</div>
+                <div><span id="flights" class="value">---</span><span class="unit">階</span></div>
+            </div>
         </div>
+
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-small">
+                <div class="label">🩺体調 (HRV)</div>
+                <div id="condition" class="value" style="font-size: 1.5rem;">---</div>
+            </div>
+            <div class="card card-small">
+                <div class="label">🔊騒音</div>
+                <div><span id="sound_value" class="value">---</span><span class="unit">dB</span> <span id="sound_label" class="unit" style="font-weight: 600;"></span></div>
+            </div>
+        </div>
+
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-device-location">
+                <div class="label">📍現在地</div>
+                <div id="location" class="value" style="font-size: 1.4rem;">---</div>
+            </div>
+            <div class="card card-device-location">
+                <div class="label">🔋バッテリー</div>
+                <div><span id="battery_val" class="value">---</span><span class="unit">%</span><span id="battery_icon" class="value" style="font-size: 1.4rem;"></span></div>
+            </div>
+        </div>
+
+        <div class="mobile-grid-2" style="display: contents;">
+            <div class="card card-tune card-tune-container" onclick="sendTune()" data-tooltip="更新の合図を送る">
+                <div class="tune-icon" id="tune-icon">👋</div>
+                <div class="tune-label" id="tune-text">Tune</div>
+            </div>
+        </div>
+        
         <div class="help-trigger" onclick="openHelpModal()">⚠️ Beaconが届かない場合はこちら</div>
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
 
     <script>
-        const NTFY_TOPIC = 'murase_status_tune'; const TUNE_COOLDOWN_MS = 30 * 60 * 1000; const BIRTHDAY_TARGET = new Date('2026-06-24T00:00:00+09:00');
+        // --- Configuration ---
+        const NTFY_TOPIC = 'murase_status_tune'; 
+        const TUNE_COOLDOWN_MS = 30 * 60 * 1000; 
+        const BIRTHDAY_TARGET = new Date('2026-06-24T00:00:00+09:00'); // 30th Birthday JST
         
-        // --- 🕰️ 3D Engine ---
-        const ttOverlay = document.getElementById('tokei-tic-overlay'); const ttCanvas = document.getElementById('tt-canvas'); const ttCtx = ttCanvas.getContext('2d');
-        let ttActive = true, ttMouseX = 0, ttMouseY = 0, ttRotX = 0, ttRotY = 0, ttRotZ = 0, ttScale = 1, ttTargetRotX = 0, ttTargetRotY = 0, ttTargetRotZ = 0, ttTargetScale = 1.6; 
+        // --- 🕰️ Software 3D Engine for Overlay ---
+        const ttOverlay = document.getElementById('tokei-tic-overlay');
+        const ttCanvas = document.getElementById('tt-canvas');
+        const ttCtx = ttCanvas.getContext('2d');
+        let ttActive = true;
         
-        function resizeTT() { if (!ttCanvas) return; const dpr = window.devicePixelRatio || 1; ttCanvas.width = window.innerWidth * dpr; ttCanvas.height = window.innerHeight * dpr; ttCanvas.style.width = window.innerWidth + 'px'; ttCanvas.style.height = window.innerHeight + 'px'; }
-        window.addEventListener('resize', resizeTT); resizeTT();
-        ttOverlay.addEventListener('mousemove', (e) => { ttMouseX = (e.clientX / window.innerWidth) - 0.5; ttMouseY = (e.clientY / window.innerHeight) - 0.5; });
-        ttOverlay.addEventListener('click', () => { ttActive = false; ttOverlay.style.opacity = '0'; ttOverlay.style.transform = 'scale(1.05)'; setTimeout(() => { if (ttOverlay.parentNode) ttOverlay.remove(); }, 1000); checkBirthdayUnlock(); });
-        setInterval(() => { if (!ttActive) return; ttTargetRotX = (Math.random() - 0.5) * 360; ttTargetRotY = (Math.random() - 0.5) * 360; ttTargetRotZ = (Math.random() - 0.5) * 90; ttTargetScale = Math.random() * 0.8 + 1.4; ttPlaneShapes.forEach(shape => { shape.visible = Math.random() > 0.5; }); }, 1000);
+        let ttMouseX = 0, ttMouseY = 0;
+        let ttRotX = 0, ttRotY = 0, ttRotZ = 0, ttScale = 1;
+        let ttTargetRotX = 0, ttTargetRotY = 0, ttTargetRotZ = 0, ttTargetScale = 1.6; 
         
+        function resizeTT() {
+            if (!ttCanvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            ttCanvas.width = window.innerWidth * dpr;
+            ttCanvas.height = window.innerHeight * dpr;
+            ttCanvas.style.width = window.innerWidth + 'px';
+            ttCanvas.style.height = window.innerHeight + 'px';
+        }
+        window.addEventListener('resize', resizeTT);
+        resizeTT();
+
+        ttOverlay.addEventListener('mousemove', (e) => {
+            ttMouseX = (e.clientX / window.innerWidth) - 0.5;
+            ttMouseY = (e.clientY / window.innerHeight) - 0.5;
+        });
+
+        ttOverlay.addEventListener('click', () => {
+            ttActive = false;
+            ttOverlay.style.opacity = '0';
+            ttOverlay.style.transform = 'scale(1.05)'; 
+            setTimeout(() => { if (ttOverlay.parentNode) ttOverlay.remove(); }, 1000);
+            checkBirthdayUnlock(); 
+        });
+
+        setInterval(() => {
+            if (!ttActive) return;
+            ttTargetRotX = (Math.random() - 0.5) * 360; 
+            ttTargetRotY = (Math.random() - 0.5) * 360; 
+            ttTargetRotZ = (Math.random() - 0.5) * 90;  
+            ttTargetScale = Math.random() * 0.8 + 1.4; 
+
+            ttPlaneShapes.forEach(shape => {
+                shape.visible = Math.random() > 0.5; 
+            });
+        }, 1000);
+
         const DOT_MATRIX = {
-            '0':[1,1,1, 1,0,1, 1,0,1, 1,0,1, 1,1,1], '1':[0,1,0, 1,1,0, 0,1,0, 0,1,0, 1,1,1], '2':[1,1,1, 0,0,1, 1,1,1, 1,0,0, 1,1,1], '3':[1,1,1, 0,0,1, 1,1,1, 0,0,1, 1,1,1],
-            '4':[1,0,1, 1,0,1, 1,1,1, 0,0,1, 0,0,1], '5':[1,1,1, 1,0,0, 1,1,1, 0,0,1, 1,1,1], '6':[1,1,1, 1,0,0, 1,1,1, 1,0,1, 1,1,1], '7':[1,1,1, 0,0,1, 0,0,1, 0,0,1, 0,0,1],
-            '8':[1,1,1, 1,0,1, 1,1,1, 1,0,1, 1,1,1], '9':[1,1,1, 1,0,1, 1,1,1, 0,0,1, 1,1,1], ':-':[0,0,0, 0,1,0, 0,0,0, 0,1,0, 0,0,0], ':':[0,0,0, 0,1,0, 0,0,0, 0,1,0, 0,0,0], '.':[0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,1,0]
+            '0': [1,1,1, 1,0,1, 1,0,1, 1,0,1, 1,1,1], '1': [0,1,0, 1,1,0, 0,1,0, 0,1,0, 1,1,1],
+            '2': [1,1,1, 0,0,1, 1,1,1, 1,0,0, 1,1,1], '3': [1,1,1, 0,0,1, 1,1,1, 0,0,1, 1,1,1],
+            '4': [1,0,1, 1,0,1, 1,1,1, 0,0,1, 0,0,1], '5': [1,1,1, 1,0,0, 1,1,1, 0,0,1, 1,1,1],
+            '6': [1,1,1, 1,0,0, 1,1,1, 1,0,1, 1,1,1], '7': [1,1,1, 0,0,1, 0,0,1, 0,0,1, 0,0,1],
+            '8': [1,1,1, 1,0,1, 1,1,1, 1,0,1, 1,1,1], '9': [1,1,1, 1,0,1, 1,1,1, 0,0,1, 1,1,1],
+            ':': [0,0,0, 0,1,0, 0,0,0, 0,1,0, 0,0,0], '.': [0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,1,0]
         };
-        const TT_COLORS = ['#ff00aa', '#00ffff', '#ffff00', '#b38f00', '#a29bfe']; const ttParticles = [];
-        for(let i=0; i<40; i++) ttParticles.push({ x: (Math.random() - 0.5) * 3000, y: (Math.random() - 0.5) * 3000, z: (Math.random() - 0.5) * 3000, size: Math.random() * 20 + 5, color: TT_COLORS[Math.floor(Math.random() * TT_COLORS.length)], speed: Math.random() * 30 + 20, isStar: false });
-        for(let i=0; i<150; i++) ttParticles.push({ x: (Math.random() - 0.5) * 3000, y: (Math.random() - 0.5) * 3000, z: (Math.random() - 0.5) * 3000, size: Math.random() * 4 + 1.5, color: '#ffffff', speed: Math.random() * 5 + 2, isStar: true });
-        const ttPlaneShapes = [];
-        for(let i=0; i<150; i++) ttPlaneShapes.push({ x: (Math.random() - 0.5) * 1600, y: (Math.random() - 0.5) * 1200, size: Math.random() * 100 + 50, type: Math.random() > 0.5 ? 'square' : 'triangle', rotationOffset: Math.random() * Math.PI * 2, rotSpeed: (Math.random() - 0.5) * 1.0, visible: Math.random() > 0.3, color: TT_COLORS[Math.floor(Math.random() * TT_COLORS.length)] });
+
+        const TT_COLORS = ['#ff00aa', '#00ffff', '#ffff00', '#b38f00', '#a29bfe'];
+        const ttParticles = [];
         
-        function project3D(x, y, z, cx, sx, cy, sy, cz, sz, scale) { x *= scale; y *= scale; z *= scale; let y1 = y * cx - z * sx; let z1 = z * cx + y * sx; let x1 = x * cy + z1 * sy; let z2 = z1 * cy - x * sy; let x2 = x1 * cz - y1 * sz; let y2 = y1 * cz + x1 * sz; let fov = 800; let camZ = 1200; let z3 = z2 + camZ; if (z3 < 10) return null; let s = fov / z3; return { x: x2 * s, y: y2 * s, s: s, depth: z3 }; }
+        for(let i=0; i<40; i++) {
+            ttParticles.push({
+                x: (Math.random() - 0.5) * 3000, y: (Math.random() - 0.5) * 3000, z: (Math.random() - 0.5) * 3000,
+                size: Math.random() * 20 + 5, 
+                color: TT_COLORS[Math.floor(Math.random() * TT_COLORS.length)],
+                speed: Math.random() * 30 + 20,
+                isStar: false
+            });
+        }
+        
+        for(let i=0; i<150; i++) {
+            ttParticles.push({
+                x: (Math.random() - 0.5) * 3000, y: (Math.random() - 0.5) * 3000, z: (Math.random() - 0.5) * 3000,
+                size: Math.random() * 4 + 1.5, color: '#ffffff',
+                speed: Math.random() * 5 + 2, 
+                isStar: true
+            });
+        }
+
+        const ttPlaneShapes = [];
+        const numShapes = 15; 
+        for(let i=0; i<numShapes; i++) {
+            ttPlaneShapes.push({
+                x: (Math.random() - 0.5) * 400,
+                y: (Math.random() - 0.5) * 400,
+                size: Math.random() * 200 + 150, 
+                type: Math.random() > 0.5 ? 'square' : 'triangle',
+                rotationOffset: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 1.5, 
+                visible: Math.random() > 0.5,
+                color: TT_COLORS[Math.floor(Math.random() * TT_COLORS.length)] 
+            });
+        }
+
+        function project3D(x, y, z, cx, sx, cy, sy, cz, sz, scale) {
+            x *= scale; y *= scale; z *= scale;
+
+            let y1 = y * cx - z * sx; let z1 = z * cx + y * sx;
+            let x1 = x * cy + z1 * sy; let z2 = z1 * cy - x * sy;
+            let x2 = x1 * cz - y1 * sz; let y2 = y1 * cz + x1 * sz;
+
+            let fov = 800; let camZ = 1200; 
+            let z3 = z2 + camZ;
+            if (z3 < 10) return null;
+            let s = fov / z3;
+            return {
+                x: x2 * s,
+                y: y2 * s,
+                s: s,
+                depth: z3
+            };
+        }
+
         function drawClockPlaneShapes(ttPlaneShapes, timeSec, cx, sx, cy, sy, cz, sz, ttScale) {
             ttCtx.globalCompositeOperation = 'screen';
-            ttPlaneShapes.forEach((shape) => {
-                if (!shape.visible) return; let localRot = timeSec * shape.rotSpeed + shape.rotationOffset; let s = shape.size; let half = s/2; let corners = [];
-                if (shape.type === 'square') { corners = [{x: -half, y: -half}, {x: half, y: -half}, {x: half, y: half}, {x: -half, y: half}]; } else { let h = s * Math.sqrt(3) / 2; corners = [{x: 0, y: -h/2}, {x: half, y: h/2}, {x: -half, y: h/2}]; }
+            
+            ttPlaneShapes.forEach((shape, i) => {
+                if (!shape.visible) return;
+
+                let localRot = timeSec * shape.rotSpeed + shape.rotationOffset;
+                let s = shape.size; 
+                let half = s/2;
+                
+                let corners = [];
+                if (shape.type === 'square') {
+                    corners = [{x: -half, y: -half}, {x: half, y: -half}, {x: half, y: half}, {x: -half, y: half}];
+                } else { 
+                    let h = s * Math.sqrt(3) / 2;
+                    corners = [{x: 0, y: -h/2}, {x: half, y: h/2}, {x: -half, y: h/2}];
+                }
+                
                 let cosL = Math.cos(localRot), sinL = Math.sin(localRot);
-                let projCorners = corners.map(c => { let lx = shape.x + (c.x * cosL - c.y * sinL); let ly = shape.y + (c.x * sinL + c.y * cosL); return project3D(lx, ly, 200, cx, sx, cy, sy, cz, sz, ttScale); });
-                if (projCorners.every(p => p !== null)) { ttCtx.fillStyle = shape.color; ttCtx.globalAlpha = 0.1; ttCtx.beginPath(); ttCtx.moveTo(projCorners[0].x, projCorners[0].y); for(let j=1; j<projCorners.length; j++){ ttCtx.lineTo(projCorners[j].x, projCorners[j].y); } ttCtx.closePath(); ttCtx.fill(); ttCtx.globalAlpha = 0.3; ttCtx.strokeStyle = shape.color; ttCtx.lineWidth = 1 * ttScale; ttCtx.stroke(); }
-            });
-            ttCtx.globalAlpha = 1.0; ttCtx.globalCompositeOperation = 'source-over';
-        }
-        function drawTTString3D(str, startX, startY, dotSize, cx, sx, cy, sy, cz, sz, ttScale, color) {
-            ttCtx.fillStyle = color; ttCtx.beginPath(); const gap = dotSize * 1.8; const spacing = (3 * gap) + dotSize * 1.5;
-            for(let i=0; i<str.length; i++) { const matrix = DOT_MATRIX[str[i]]; if(matrix) { for(let r=0; r<5; r++){ for(let c=0; c<3; c++){ if(matrix[r*3 + c]) { let localX = startX + i*spacing + c*gap; let localY = startY + r*gap; let proj = project3D(localX, localY, 0, cx, sx, cy, sy, cz, sz, ttScale); if (proj) { let rad = (dotSize/2) * proj.s; ttCtx.moveTo(proj.x + rad, proj.y); ttCtx.arc(proj.x, proj.y, rad, 0, Math.PI*2); } } } } } } ttCtx.fill(); 
-        }
-        function drawClockPlaneStrings(diff, dotSize, cx, sx, cy, sy, cz, sz, ttScale) {
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24)); const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)); const secs = Math.floor((diff % (1000 * 60)) / 1000); const ms = Math.floor(diff % 1000);
-            const str = `${String(days).padStart(2,'0')}:${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`; const msStr = `.${String(ms).padStart(3,'0')}`;
-            const gap = dotSize * 1.8; const spacing = (3 * gap) + dotSize * 1.5; const totalW = str.length * spacing; drawTTString3D(str, -totalW/2, -gap*2.5, dotSize, cx, sx, cy, sy, cz, sz, ttScale, '#ffffff'); const msTotalW = msStr.length * spacing; drawTTString3D(msStr, -msTotalW/2, gap*4, dotSize * 0.8, cx, sx, cy, sy, cz, sz, ttScale, '#ff00aa'); 
-        }
-        
-        function renderTT() {
-            if (!ttActive) return;
-            ttRotX += (ttTargetRotX - ttRotX) * 0.05; ttRotY += (ttTargetRotY - ttRotY) * 0.05; ttRotZ += (ttTargetRotZ - ttRotZ) * 0.05; ttScale += (ttTargetScale - ttScale) * 0.05;
-            const finalRotX = (ttRotX - ttMouseY * 40) * Math.PI / 180; const finalRotY = (ttRotY + ttMouseX * 40) * Math.PI / 180; const finalRotZ = ttRotZ * Math.PI / 180;
-            const cx = Math.cos(finalRotX), sx = Math.sin(finalRotX); const cy = Math.cos(finalRotY), sy = Math.sin(finalRotY); const cz = Math.cos(finalRotZ), sz = Math.sin(finalRotZ);
-            
-            const dpr = window.devicePixelRatio || 1;
-            ttCtx.setTransform(dpr, 0, 0, dpr, 0, 0); 
-            
-            // 透過フェードで地続き（Contiguous）な残像を生成
-            ttCtx.globalCompositeOperation = 'destination-out';
-            ttCtx.fillStyle = 'rgba(0, 0, 0, 0.12)'; 
-            ttCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-            ttCtx.globalCompositeOperation = 'source-over';
-            
-            ttCtx.save(); ttCtx.translate(window.innerWidth / 2, window.innerHeight / 2); 
-            
-            ttParticles.forEach(p => {
-                p.z -= p.speed; if(p.z < -1500) p.z += 3000; if(p.z > 1500) p.z -= 3000;
-                let proj = project3D(p.x, p.y, p.z, cx, sx, cy, sy, cz, sz, ttScale);
-                if (proj) {
-                    let alpha = Math.max(0, Math.min(1, (2000 - proj.depth) / 1000));
-                    if (!p.isStar) { ttCtx.globalCompositeOperation = 'screen'; ttCtx.beginPath(); ttCtx.arc(proj.x, proj.y, p.size * proj.s * 2.0, 0, Math.PI*2); ttCtx.fillStyle = p.color; ttCtx.globalAlpha = alpha * 0.15; ttCtx.fill(); ttCtx.beginPath(); ttCtx.arc(proj.x, proj.y, p.size * proj.s, 0, Math.PI*2); ttCtx.globalAlpha = alpha; ttCtx.fill(); ttCtx.globalCompositeOperation = 'source-over'; }
-                    else { ttCtx.beginPath(); ttCtx.arc(proj.x, proj.y, p.size * proj.s, 0, Math.PI*2); ttCtx.fillStyle = p.color; ttCtx.globalAlpha = alpha * 0.8; ttCtx.fill(); }
+                
+                let projCorners = corners.map(c => {
+                    let lx = shape.x + (c.x * cosL - c.y * sinL);
+                    let ly = shape.y + (c.x * sinL + c.y * cosL);
+                    return project3D(lx, ly, 50, cx, sx, cy, sy, cz, sz, ttScale);
+                });
+
+                if (projCorners.every(p => p !== null)) {
+                    ttCtx.fillStyle = shape.color; 
+                    ttCtx.globalAlpha = 0.25; 
+                    ttCtx.beginPath();
+                    ttCtx.moveTo(projCorners[0].x, projCorners[0].y);
+                    for(let j=1; j<projCorners.length; j++){
+                        ttCtx.lineTo(projCorners[j].x, projCorners[j].y);
+                    }
+                    ttCtx.closePath();
+                    ttCtx.fill(); 
+                    
+                    ttCtx.globalAlpha = 0.6;
+                    ttCtx.strokeStyle = shape.color;
+                    ttCtx.lineWidth = 2 * Math.max(0.5, ttScale);
+                    ttCtx.stroke();
                 }
             });
             ttCtx.globalAlpha = 1.0;
-            const timeSec = Date.now() / 1000; const diff = Math.max(0, BIRTHDAY_TARGET - new Date()); const dotSize = window.innerWidth < 768 ? 8 : 14;
+            ttCtx.globalCompositeOperation = 'source-over';
+        }
+
+        function drawClockPlaneStrings(diff, dotSize, cx, sx, cy, sy, cz, sz, ttScale) {
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+            const ms = Math.floor(diff % 1000);
+            
+            const str = `${String(days).padStart(2,'0')}:${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+            const msStr = `.${String(ms).padStart(3,'0')}`;
+
+            const gap = dotSize * 1.8;
+            const spacing = (3 * gap) + dotSize * 1.5;
+
+            const totalW = str.length * spacing;
+            drawTTString3D(str, -totalW/2, -gap*2.5, dotSize, cx, sx, cy, sy, cz, sz, ttScale, '#ffffff'); 
+            
+            const msTotalW = msStr.length * spacing;
+            drawTTString3D(msStr, -msTotalW/2, gap*4, dotSize * 0.8, cx, sx, cy, sy, cz, sz, ttScale, '#ff00aa'); 
+        }
+
+        // 🚀 超軽量・一括描画エンジン
+        function drawTTString3D(str, startX, startY, dotSize, cx, sx, cy, sy, cz, sz, ttScale, color) {
+            ttCtx.fillStyle = color;
+            ttCtx.beginPath();
+            
+            const gap = dotSize * 1.8;
+            const spacing = (3 * gap) + dotSize * 1.5;
+            for(let i=0; i<str.length; i++) {
+                const matrix = DOT_MATRIX[str[i]];
+                if(matrix) {
+                    for(let r=0; r<5; r++){
+                        for(let c=0; c<3; c++){
+                            if(matrix[r*3 + c]) {
+                                let localX = startX + i*spacing + c*gap;
+                                let localY = startY + r*gap;
+                                let proj = project3D(localX, localY, 0, cx, sx, cy, sy, cz, sz, ttScale);
+                                if (proj) {
+                                    let rad = (dotSize/2) * proj.s;
+                                    ttCtx.moveTo(proj.x + rad, proj.y);
+                                    ttCtx.arc(proj.x, proj.y, rad, 0, Math.PI*2);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ttCtx.fill(); // 最後に一気に塗る！
+        }
+
+        function renderTT() {
+            if (!ttActive) return;
+            
+            ttRotX += (ttTargetRotX - ttRotX) * 0.05;
+            ttRotY += (ttTargetRotY - ttRotY) * 0.05;
+            ttRotZ += (ttTargetRotZ - ttRotZ) * 0.05;
+            ttScale += (ttTargetScale - ttScale) * 0.05;
+
+            const finalRotX = (ttRotX - ttMouseY * 40) * Math.PI / 180;
+            const finalRotY = (ttRotY + ttMouseX * 40) * Math.PI / 180;
+            const finalRotZ = ttRotZ * Math.PI / 180;
+
+            const cx = Math.cos(finalRotX), sx = Math.sin(finalRotX);
+            const cy = Math.cos(finalRotY), sy = Math.sin(finalRotY);
+            const cz = Math.cos(finalRotZ), sz = Math.sin(finalRotZ);
+            
+            // Retina(高画質)対応の描画リセット
+            const dpr = window.devicePixelRatio || 1;
+            ttCtx.setTransform(1, 0, 0, 1, 0, 0); 
+            
+            // ✨ 絶妙なバランスの微残像（トレイル効果）
+            // 透過率を `0.6` に設定し、ほんの少しだけシュッと残るように調整
+            ttCtx.globalCompositeOperation = 'destination-out';
+            ttCtx.fillStyle = 'rgba(0, 0, 0, 0.6)'; 
+            ttCtx.fillRect(0, 0, ttCanvas.width, ttCanvas.height);
+            ttCtx.globalCompositeOperation = 'source-over';
+            
+            ttCtx.save();
+            ttCtx.scale(dpr, dpr);
+            ttCtx.translate(window.innerWidth / 2, window.innerHeight / 2); 
+            
+            ttParticles.forEach(p => {
+                p.z -= p.speed;
+                if(p.z < -1500) p.z += 3000;
+                if(p.z > 1500) p.z -= 3000;
+
+                let proj = project3D(p.x, p.y, p.z, cx, sx, cy, sy, cz, sz, ttScale);
+                if (proj) {
+                    let alpha = Math.max(0, Math.min(1, (2000 - proj.depth) / 1000));
+                    if (!p.isStar) {
+                        ttCtx.globalCompositeOperation = 'screen';
+                        ttCtx.beginPath();
+                        ttCtx.arc(proj.x, proj.y, p.size * proj.s * 2.0, 0, Math.PI*2);
+                        ttCtx.fillStyle = p.color;
+                        ttCtx.globalAlpha = alpha * 0.15;
+                        ttCtx.fill();
+                        
+                        ttCtx.beginPath();
+                        ttCtx.arc(proj.x, proj.y, p.size * proj.s, 0, Math.PI*2);
+                        ttCtx.globalAlpha = alpha;
+                        ttCtx.fill();
+                        ttCtx.globalCompositeOperation = 'source-over';
+                    } else {
+                        ttCtx.beginPath();
+                        ttCtx.arc(proj.x, proj.y, p.size * proj.s, 0, Math.PI*2);
+                        ttCtx.fillStyle = p.color;
+                        ttCtx.globalAlpha = alpha * 0.8;
+                        ttCtx.fill();
+                    }
+                }
+            });
+            ttCtx.globalAlpha = 1.0;
+            
+            const timeSec = Date.now() / 1000;
+            const diff = Math.max(0, BIRTHDAY_TARGET - new Date());
+            const dotSize = window.innerWidth < 768 ? 8 : 14;
+
             drawClockPlaneShapes(ttPlaneShapes, timeSec, cx, sx, cy, sy, cz, sz, ttScale);
             drawClockPlaneStrings(diff, dotSize, cx, sx, cy, sy, cz, sz, ttScale);
-            ttCtx.restore(); requestAnimationFrame(renderTT);
+            
+            ttCtx.restore();
+            requestAnimationFrame(renderTT);
         }
         requestAnimationFrame(renderTT);
 
@@ -269,23 +711,396 @@
         const GIST_URL = `https://api.github.com/gists/1f81b107b898201a865a613c319d579b?t=${Date.now()}`;
         let speedUnitIdx = 0, isBirthdayMode = false, hasTriggeredLoadConfetti = false, globalSpeedKmh = 0;
         
-        function safeParseInt(val) { return (!val || val === "") ? 0 : parseInt(val, 10); } function safeParseFloat(val) { return (!val || val === "") ? 0 : parseFloat(val); } function getRelativeTime(date) { const now = new Date(), diffMins = Math.floor((now-date)/60000); if(diffMins < 1) return 'たった今'; if(diffMins < 60) return `${diffMins}分前`; const diffHours = Math.floor(diffMins/60); return diffHours < 24 ? `${diffHours}時間前` : `${Math.floor(diffHours/24)}日前`; }
-        function triggerConfetti() { if (!isBirthdayMode) return; const container = document.getElementById('confetti-container'); if (!container) return; const confettiCount = window.innerWidth <= 768 ? 40 : 80; const colors = ['#eccc68', '#ff7675', '#74b9ff', '#55efc4', '#a29bfe', '#fff']; for (let i = 0; i < confettiCount; i++) { const confetti = document.createElement('div'); confetti.className = 'confetti'; const color = colors[Math.floor(Math.random() * colors.length)]; const left = Math.random() * 100 + '%'; const size = Math.random() * 8 + 6 + 'px'; const delay = Math.random() * 2 + 's'; const duration = Math.random() * 2 + 2 + 's'; const fallTranslateX = (Math.random() - 0.5) * 300 + 'px'; const fallRotateX = Math.random() * 720 + 'deg'; const fallRotateY = Math.random() * 720 + 'deg'; const fallRotateZ = Math.random() * 720 + 'deg'; const swayAmount = (Math.random() - 0.5) * 80 + 'px'; confetti.style.backgroundColor = color; confetti.style.left = left; confetti.style.width = size; confetti.style.height = size; confetti.style.animationDelay = delay; confetti.style.animationDuration = `${duration}, 1.5s`; confetti.style.setProperty('--fall-translate-x', fallTranslateX); confetti.style.setProperty('--fall-rotate-x', fallRotateX); confetti.style.setProperty('--fall-rotate-y', fallRotateY); confetti.style.setProperty('--fall-rotate-z', fallRotateZ); confetti.style.setProperty('--sway-amount', swayAmount); container.appendChild(confetti); setTimeout(() => confetti.remove(), (parseFloat(delay) + parseFloat(duration)) * 1000 + 500); } }
-        function checkBirthdayUnlock() { const now = new Date(); if (now >= BIRTHDAY_TARGET && !isBirthdayMode) { isBirthdayMode = true; document.body.classList.add('birthday-theme'); document.getElementById('tune-icon').textContent = '🎂'; const currentText = document.getElementById('tune-text').textContent; if (currentText === 'Tune' || currentText === 'Stay Tuned!') { document.getElementById('tune-text').textContent = '30th Anniv. Tune'; } document.querySelector('.card-tune').setAttribute('data-tooltip', 'お祝いの合図を送る'); const condEl = document.getElementById('condition'); if (condEl && condEl.textContent.includes('絶好調✨')) { condEl.textContent = '絶好調✨(祝)'; } if (!hasTriggeredLoadConfetti) { hasTriggeredLoadConfetti = true; triggerConfetti(); } } }
-        function updateCountdown() { const now = new Date(); const diff = BIRTHDAY_TARGET - now; const el = document.getElementById('birthday-countdown'); if (!el) return; if (diff <= 0) { el.innerHTML = "🎉 <b>村瀨亮介の30歳の誕生日当日です！おめでとうございます！</b> 🎂"; el.style.color = "var(--color-gold)"; checkBirthdayUnlock(); return; } const days = Math.floor(diff / (1000 * 60 * 60 * 24)); const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)); const secs = Math.floor((diff % (1000 * 60)) / 1000); const ms = Math.floor(diff % 1000); el.innerHTML = `🎂 村瀨亮介の30歳誕生日まで <span>${days}</span>日 <span>${String(hours).padStart(2, '0')}</span>時間 <span>${String(mins).padStart(2, '0')}</span>分 <span>${String(secs).padStart(2, '0')}</span>秒<span>.${String(ms).padStart(3, '0')}</span> です。`; requestAnimationFrame(updateCountdown); }
-        function openHelpModal() { const m = document.getElementById('help-modal'); m.style.display = 'flex'; setTimeout(() => m.classList.add('open'), 10); } function closeHelpModal(e) { if (e.target.id === 'help-modal' || e.target.classList.contains('modal-close')) { const m = document.getElementById('help-modal'); m.classList.remove('open'); setTimeout(() => m.style.display = 'none', 300); } }
-        function checkCooldown() { const last = localStorage.getItem('lastTuneTime'); if (last && Date.now() - parseInt(last,10) < TUNE_COOLDOWN_MS) { disableTuneBtn(TUNE_COOLDOWN_MS - (Date.now() - parseInt(last,10))); } }
-        function disableTuneBtn(t) { const btn = document.querySelector('.card-tune'); document.getElementById('tune-text').textContent = isBirthdayMode ? 'Stay Tuned! (クラッカー補給中)' : 'Stay Tuned!'; btn.classList.add('disabled'); localStorage.setItem('lastTuneTime', Date.now()); setTimeout(() => { btn.classList.remove('disabled'); document.getElementById('tune-text').textContent = isBirthdayMode ? '30th Anniv. Tune' : 'Tune'; localStorage.removeItem('lastTuneTime'); }, t); }
-        function showTuneReaction() { const msgs = isBirthdayMode ? ['🎉おめでとう！', '🎂祝・30歳！', '🥂乾杯！', '🎁Happy Birthday!'] : ['👋Tune!', '📡送信！', '👍Thanks!', '💫届きました！']; const msg = msgs[Math.floor(Math.random()*msgs.length)]; if (window.innerWidth <= 768) { const t = document.createElement('div'); t.className = 'tune-toast'; t.innerHTML = `<span>${msg}</span>`; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); } else { const b = document.createElement('div'); b.className = 'tune-bubble'; b.textContent = msg; document.getElementById('profile-card').appendChild(b); setTimeout(() => b.remove(), 2500); } }
-        function sendTune() { const btn = document.querySelector('.card-tune'); if (btn.classList.contains('disabled')) return; if (isBirthdayMode) triggerConfetti(); showTuneReaction(); document.getElementById('tune-text').textContent = isBirthdayMode ? 'クラッカー発射...' : 'Tuning...'; btn.classList.add('disabled'); fetch(`https://ntfy.sh/${NTFY_TOPIC}?title=Tune&priority=default&tags=${isBirthdayMode ? 'birthday,cake' : 'zap'}`, { method:'POST', body: isBirthdayMode ? 'Happy Birthday' : 'Tune' }).then(r => { if(r.ok){ disableTuneBtn(TUNE_COOLDOWN_MS); } else throw new Error(); }).catch(() => { document.getElementById('tune-text').textContent = 'エラー'; setTimeout(() => { btn.classList.remove('disabled'); document.getElementById('tune-text').textContent = isBirthdayMode ? '30th Anniv. Tune' : 'Tune'; }, 3000); }); }
-        function toggleSpeedUnit() { speedUnitIdx = (speedUnitIdx + 1) % 3; renderSpeed(); const c = document.getElementById('walking_speed').parentElement; c.classList.remove('anim-flash'); void c.offsetWidth; c.classList.add('anim-flash'); }
-        function renderSpeed() { const el = document.getElementById('walking_speed'), unit = document.getElementById('speed_unit'); if (!globalSpeedKmh) { el.textContent = '--'; return; } if (speedUnitIdx === 0) { el.textContent = globalSpeedKmh.toFixed(1); unit.textContent = 'km/h'; } else if (speedUnitIdx === 1) { el.textContent = (globalSpeedKmh * 16.6667).toFixed(0); unit.textContent = 'm/min'; } else { el.textContent = (globalSpeedKmh / 3.6).toFixed(2); unit.textContent = 'm/s'; } }
-        function updateLevel(val) { const b = document.getElementById('spirit-bubble'); if (val === null || isNaN(val)) { b.style.opacity='0'; return; } b.style.opacity='1'; b.style.backgroundColor = val === 0 ? 'var(--color-good)' : (val < 0.05 ? 'var(--color-ok)' : 'var(--color-bad)'); if(val > 0) { b.style.setProperty('--wobble-amp', `${Math.min(val*400, 45)}%`); b.classList.add('wobble'); } else { b.style.transform = 'translateX(-50%)'; b.classList.remove('wobble'); } }
-        class ECGMonitor { constructor(cid) { this.c = document.getElementById(cid); this.ctx = this.c.getContext('2d'); this.x = 0; this.y = window.innerHeight/2; this.bpm = 60; this.alive = true; this.last = 0; this.resize(); window.addEventListener('resize', () => this.resize()); } resize() { this.c.width = window.innerWidth; this.c.height = window.innerHeight; this.y = this.c.height/2; } setStatus(b, a) { this.bpm = b > 0 ? b : 60; this.alive = a; } draw() { const now = Date.now(); const int = this.alive ? 60000/this.bpm : Infinity; this.ctx.clearRect(this.x, 0, 10, this.c.height); this.ctx.beginPath(); this.ctx.moveTo(this.x - 2, this.y); let ty = this.c.height / 2; if(this.alive) { const d = now - this.last; if(d > int) { this.last = now; ty -= this.c.height * 0.25; } else if(d < 50) ty += this.c.height * 0.05; else if(d > int - 200) ty += this.c.height * 0.1; } this.y = this.y * 0.9 + ty * 0.1; this.ctx.lineTo(this.x, this.y); this.ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue(document.body.classList.contains('dark-mode') ? '--color-ecg-lost' : '--color-ecg-alive').trim(); this.ctx.lineWidth = 2; this.ctx.stroke(); this.x++; if(this.x > this.c.width) { this.x = 0; this.ctx.clearRect(0, 0, this.c.width, this.c.height); } requestAnimationFrame(() => this.draw()); } start() { this.draw(); } }
-        async function updateStatus() { const els = { body: document.body, msg: document.getElementById('liveness-message'), sub: document.getElementById('liveness-subtext'), upd: document.getElementById('last_updated'), hr: document.getElementById('heart_rate'), hrSub: document.getElementById('heart_sub'), rHr: document.getElementById('resting_hr'), steps: document.getElementById('steps'), cal: document.getElementById('calories'), asym: document.getElementById('walking_asymmetry'), stand: document.getElementById('stand_hours'), flights: document.getElementById('flights'), cond: document.getElementById('condition'), sndVal: document.getElementById('sound_value'), sndLbl: document.getElementById('sound_label'), loc: document.getElementById('location'), batVal: document.getElementById('battery_val'), batIcon: document.getElementById('battery_icon') }; try { const res = await fetch(GIST_URL); if (!res.ok) throw new Error(); const json = await res.json(), d = JSON.parse(json.files['murase_status.json'].content), last = new Date(d.last_updated), alive = (new Date() - last) / 36e5 <= CONFIG.thresholdHours; if(alive){ els.body.className = 'light-mode'; els.msg.textContent = '村瀨亮介は生きています。'; els.sub.textContent = ''; } else { els.body.className = 'dark-mode'; els.msg.textContent = '村瀨亮介からの応答がありません。'; els.sub.innerHTML = `安否確認は <a href="https://twitter.com/vl_lvoO" target="_blank">X</a> または <a href="https://dosei.muraseryosuke.info/" target="_blank">動静</a> へ`; } const hr = safeParseInt(d.health.heart_rate); ecg.setStatus(hr, alive); els.hr.textContent = hr || '---'; els.hrSub.textContent = getRelativeTime(last); els.rHr.textContent = safeParseInt(d.health.resting_heart_rate) || '--'; const steps = safeParseInt(d.health.steps); els.steps.textContent = steps.toLocaleString(); els.steps.style.color = steps >= 8000 ? 'var(--color-gold)' : 'inherit'; els.cal.textContent = Math.round(safeParseInt(d.health.active_calories)).toLocaleString(); globalSpeedKmh = safeParseFloat(d.health.walking_speed); renderSpeed(); const asym = safeParseFloat(d.health.walking_asymmetry); if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") { els.asym.textContent = (asym * 100).toFixed(0); updateLevel(asym); } else { els.asym.textContent = '--'; updateLevel(null); } els.stand.textContent = safeParseInt(d.health.stand_hours) || '0'; els.flights.textContent = safeParseInt(d.health.flights_climbed) || '0'; const hrv = safeParseFloat(d.health.condition_hrv); if (hrv >= 40) { els.cond.textContent = isBirthdayMode ? '絶好調✨(祝)' : '絶好調✨'; els.cond.style.color = 'var(--color-good)'; } else if (hrv >= 20) { els.cond.textContent = '安定🌱'; els.cond.style.color = 'var(--color-ok)'; } else if (hrv > 0) { els.cond.textContent = '疲労気味💤'; els.cond.style.color = 'var(--color-bad)'; } else { els.cond.textContent = '---'; els.cond.style.color = 'inherit'; } const db = safeParseFloat(d.environment && d.environment.sound_level_db); if (db > 0) { els.sndVal.textContent = Math.round(db); els.sndLbl.textContent = (db < 40 ? '(静寂)' : db < 70 ? '(普通)' : '(騒音)'); els.sndLbl.style.color = db < 40 ? 'var(--color-good)' : db < 70 ? 'var(--color-avg)' : 'var(--color-bad)'; } else { els.sndVal.textContent = '---'; els.sndLbl.textContent = ''; } els.batVal.textContent = d.device.battery; els.batIcon.textContent = (d.device.is_charging === 'Yes' || d.device.is_charging === true) ? '⚡️' : ''; els.upd.textContent = last.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }); els.loc.textContent = d.location.city || '---'; checkBirthdayUnlock(); } catch (e) { els.msg.textContent = '読み込み失敗'; } }
+        function safeParseInt(val) { return (!val || val === "") ? 0 : parseInt(val, 10); }
+        function safeParseFloat(val) { return (!val || val === "") ? 0 : parseFloat(val); }
+        function getRelativeTime(date) {
+            const now = new Date(), diffMins = Math.floor((now-date)/60000);
+            if(diffMins < 1) return 'たった今';
+            if(diffMins < 60) return `${diffMins}分前`;
+            const diffHours = Math.floor(diffMins/60);
+            return diffHours < 24 ? `${diffHours}時間前` : `${Math.floor(diffHours/24)}日前`;
+        }
+
+        // --- 🎊 Confetti Logic ---
+        function triggerConfetti() {
+            if (!isBirthdayMode) return; 
+            const container = document.getElementById('confetti-container');
+            if (!container) return;
+            const confettiCount = window.innerWidth <= 768 ? 40 : 80; 
+            const colors = ['#eccc68', '#ff7675', '#74b9ff', '#55efc4', '#a29bfe', '#fff']; 
+
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const left = Math.random() * 100 + '%';
+                const size = Math.random() * 8 + 6 + 'px';
+                const delay = Math.random() * 2 + 's';
+                const duration = Math.random() * 2 + 2 + 's'; 
+                const fallTranslateX = (Math.random() - 0.5) * 300 + 'px';
+                const fallRotateX = Math.random() * 720 + 'deg';
+                const fallRotateY = Math.random() * 720 + 'deg';
+                const fallRotateZ = Math.random() * 720 + 'deg';
+                const swayAmount = (Math.random() - 0.5) * 80 + 'px';
+
+                confetti.style.backgroundColor = color;
+                confetti.style.left = left;
+                confetti.style.width = size;
+                confetti.style.height = size;
+                confetti.style.animationDelay = delay;
+                confetti.style.animationDuration = `${duration}, 1.5s`; 
+                confetti.style.setProperty('--fall-translate-x', fallTranslateX);
+                confetti.style.setProperty('--fall-rotate-x', fallRotateX);
+                confetti.style.setProperty('--fall-rotate-y', fallRotateY);
+                confetti.style.setProperty('--fall-rotate-z', fallRotateZ);
+                confetti.style.setProperty('--sway-amount', swayAmount);
+
+                container.appendChild(confetti);
+
+                const totalAnimationTime = (parseFloat(delay) + parseFloat(duration)) * 1000;
+                setTimeout(() => confetti.remove(), totalAnimationTime + 500); 
+            }
+        }
+
+        // --- ⚙️ Automatic Birthday Mode Switcher ---
+        function checkBirthdayUnlock() {
+            const now = new Date();
+            if (now >= BIRTHDAY_TARGET && !isBirthdayMode) {
+                isBirthdayMode = true;
+                document.body.classList.add('birthday-theme');
+                document.getElementById('tune-icon').textContent = '🎂';
+                const currentText = document.getElementById('tune-text').textContent;
+                if (currentText === 'Tune' || currentText === 'Stay Tuned!') {
+                    document.getElementById('tune-text').textContent = '30th Anniv. Tune';
+                }
+                document.querySelector('.card-tune').setAttribute('data-tooltip', 'お祝いの合図を送る');
+                
+                const condEl = document.getElementById('condition');
+                if (condEl && condEl.textContent.includes('絶好調✨')) { condEl.textContent = '絶好調✨(祝)'; }
+                
+                if (!hasTriggeredLoadConfetti) {
+                    hasTriggeredLoadConfetti = true;
+                    setTimeout(triggerConfetti, 500);
+                }
+            }
+        }
+
+        // --- UI Logic: Birthday Countdown ---
+        function updateCountdown() {
+            const now = new Date();
+            const diff = BIRTHDAY_TARGET - now;
+            const el = document.getElementById('birthday-countdown');
+            if (!el) return;
+
+            if (diff <= 0) {
+                el.innerHTML = "🎉 <b>村瀨亮介の30歳の誕生日当日です！おめでとうございます！</b> 🎂";
+                el.style.color = "var(--color-gold)";
+                checkBirthdayUnlock(); 
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+            const ms = Math.floor(diff % 1000);
+
+            const hStr = String(hours).padStart(2, '0');
+            const mStr = String(mins).padStart(2, '0');
+            const sStr = String(secs).padStart(2, '0');
+            const msStr = String(ms).padStart(3, '0');
+
+            el.innerHTML = `🎂 村瀨亮介の30歳誕生日まで <span>${days}</span>日 <span>${hStr}</span>時間 <span>${mStr}</span>分 <span>${sStr}</span>秒<span>.${msStr}</span> です。`;
+            checkBirthdayUnlock();
+            requestAnimationFrame(updateCountdown);
+        }
+
+        function openHelpModal() { 
+            const m = document.getElementById('help-modal'); 
+            m.style.display = 'flex'; 
+            setTimeout(() => m.classList.add('open'), 10); 
+        }
         
-        const ecg = new ECGMonitor('ecg-canvas'); ecg.start(); 
-        updateStatus(); updateCountdown(); checkCooldown();
+        function closeHelpModal(e) { 
+            if (e.target.id === 'help-modal' || e.target.classList.contains('modal-close')) { 
+                const m = document.getElementById('help-modal'); 
+                m.classList.remove('open'); 
+                setTimeout(() => m.style.display = 'none', 300); 
+            } 
+        }
+
+        function checkCooldown() { 
+            const last = localStorage.getItem('lastTuneTime'); 
+            if (last && Date.now() - parseInt(last,10) < TUNE_COOLDOWN_MS) { 
+                disableTuneBtn(TUNE_COOLDOWN_MS - (Date.now() - parseInt(last,10))); 
+            } 
+        }
+        
+        function disableTuneBtn(t) { 
+            const btn = document.querySelector('.card-tune'); 
+            document.getElementById('tune-text').textContent = isBirthdayMode ? 'Stay Tuned! (クラッカー補給中)' : 'Stay Tuned!'; 
+            btn.classList.add('disabled'); 
+            localStorage.setItem('lastTuneTime', Date.now()); 
+            setTimeout(() => { 
+                btn.classList.remove('disabled'); 
+                document.getElementById('tune-text').textContent = isBirthdayMode ? '30th Anniv. Tune' : 'Tune'; 
+                localStorage.removeItem('lastTuneTime'); 
+            }, t); 
+        }
+        
+        function showTuneReaction() {
+            const msgs = isBirthdayMode ? ['🎉おめでとう！', '🎂祝・30歳！', '🥂乾杯！', '🎁Happy Birthday!'] : ['👋Tune!', '📡送信！', '👍Thanks!', '💫届きました！'];
+            const msg = msgs[Math.floor(Math.random()*msgs.length)];
+            if (window.innerWidth <= 768) { 
+                const t = document.createElement('div'); 
+                t.className = 'tune-toast'; 
+                t.innerHTML = `<span>${msg}</span>`; 
+                document.body.appendChild(t); 
+                setTimeout(() => t.remove(), 3000);
+            } else { 
+                const b = document.createElement('div'); 
+                b.className = 'tune-bubble'; 
+                b.textContent = msg; 
+                document.getElementById('profile-card').appendChild(b); 
+                setTimeout(() => b.remove(), 2500); 
+            }
+        }
+        
+        function sendTune() {
+            const btn = document.querySelector('.card-tune');
+            if (btn.classList.contains('disabled')) return;
+            if (isBirthdayMode) triggerConfetti();
+            
+            showTuneReaction();
+            document.getElementById('tune-text').textContent = isBirthdayMode ? 'クラッカー発射...' : 'Tuning...'; 
+            btn.classList.add('disabled'); 
+            
+            const url = isBirthdayMode ? `https://ntfy.sh/${NTFY_TOPIC}?title=BirthdayTune&priority=default&tags=birthday,cake` : `https://ntfy.sh/${NTFY_TOPIC}?title=Tune&priority=default&tags=zap`;
+            const payloadStr = isBirthdayMode ? '30歳のお祝いを受信しました🎉' : 'Tune受信';
+            
+            fetch(url, { method:'POST', body: payloadStr })
+            .then(r => { 
+                if(r.ok){ 
+                    disableTuneBtn(TUNE_COOLDOWN_MS); 
+                } else throw new Error(); 
+            })
+            .catch(() => { 
+                document.getElementById('tune-text').textContent = 'エラー'; 
+                setTimeout(() => { 
+                    btn.classList.remove('disabled'); 
+                    document.getElementById('tune-text').textContent = isBirthdayMode ? '30th Anniv. Tune' : 'Tune'; 
+                }, 3000); 
+            });
+        }
+
+        function toggleSpeedUnit() { 
+            speedUnitIdx = (speedUnitIdx + 1) % 3; 
+            renderSpeed(); 
+            const c = document.getElementById('walking_speed').parentElement; 
+            c.classList.remove('anim-flash'); 
+            void c.offsetWidth; 
+            c.classList.add('anim-flash'); 
+        }
+        
+        function renderSpeed() { 
+            const el = document.getElementById('walking_speed');
+            const unit = document.getElementById('speed_unit'); 
+            if (!globalSpeedKmh) { el.textContent = '--'; return; } 
+            
+            if (speedUnitIdx === 0) { 
+                el.textContent = globalSpeedKmh.toFixed(1); 
+                unit.textContent = 'km/h'; 
+            } else if (speedUnitIdx === 1) { 
+                el.textContent = (globalSpeedKmh * 16.6667).toFixed(0); 
+                unit.textContent = 'm/min'; 
+            } else { 
+                el.textContent = (globalSpeedKmh / 3.6).toFixed(2); 
+                unit.textContent = 'm/s'; 
+            } 
+        }
+        
+        function updateLevel(val) { 
+            const b = document.getElementById('spirit-bubble'); 
+            if (val === null || isNaN(val)) { b.style.opacity='0'; return; } 
+            
+            b.style.opacity='1'; 
+            b.style.backgroundColor = val === 0 ? 'var(--color-good)' : (val < 0.05 ? 'var(--color-ok)' : 'var(--color-bad)'); 
+            
+            if(val > 0) { 
+                b.style.setProperty('--wobble-amp', `${Math.min(val*400, 45)}%`); 
+                b.classList.add('wobble'); 
+            } else { 
+                b.style.transform = 'translateX(-50%)'; 
+                b.classList.remove('wobble'); 
+            } 
+        }
+
+        class ECGMonitor {
+            constructor(cid) { 
+                this.c = document.getElementById(cid); 
+                this.ctx = this.c.getContext('2d'); 
+                this.x = 0; 
+                this.y = window.innerHeight/2; 
+                this.bpm = 60; 
+                this.alive = true; 
+                this.last = 0; 
+                this.resize(); 
+                window.addEventListener('resize', () => this.resize()); 
+            }
+            resize() { 
+                this.c.width = window.innerWidth; 
+                this.c.height = window.innerHeight; 
+                this.y = this.c.height/2; 
+            }
+            setStatus(b, a) { 
+                this.bpm = b > 0 ? b : 60; 
+                this.alive = a; 
+            }
+            draw() { 
+                const now = Date.now(); 
+                const int = this.alive ? 60000/this.bpm : Infinity; 
+                
+                this.ctx.clearRect(this.x, 0, 10, this.c.height); 
+                this.ctx.beginPath(); 
+                this.ctx.moveTo(this.x - 2, this.y); 
+                
+                let ty = this.c.height / 2; 
+                if(this.alive) { 
+                    const d = now - this.last; 
+                    if(d > int) { 
+                        this.last = now; 
+                        ty -= this.c.height * 0.25; 
+                    } else if(d < 50) {
+                        ty += this.c.height * 0.05; 
+                    } else if(d > int - 200) {
+                        ty += this.c.height * 0.1; 
+                    }
+                } 
+                
+                this.y = this.y * 0.9 + ty * 0.1; 
+                this.ctx.lineTo(this.x, this.y); 
+                this.ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue(document.body.classList.contains('dark-mode') ? '--color-ecg-lost' : '--color-ecg-alive').trim(); 
+                this.ctx.lineWidth = 2; 
+                this.ctx.stroke(); 
+                
+                this.x++; 
+                if(this.x > this.c.width) { 
+                    this.x = 0; 
+                    this.ctx.clearRect(0, 0, this.c.width, this.c.height); 
+                } 
+                requestAnimationFrame(() => this.draw()); 
+            } 
+            start() { this.draw(); } 
+        }
+
+        async function updateStatus() { 
+            const els = { 
+                body: document.body, 
+                msg: document.getElementById('liveness-message'), 
+                sub: document.getElementById('liveness-subtext'), 
+                upd: document.getElementById('last_updated'), 
+                hr: document.getElementById('heart_rate'), 
+                hrSub: document.getElementById('heart_sub'), 
+                rHr: document.getElementById('resting_hr'), 
+                steps: document.getElementById('steps'), 
+                cal: document.getElementById('calories'), 
+                asym: document.getElementById('walking_asymmetry'), 
+                stand: document.getElementById('stand_hours'), 
+                flights: document.getElementById('flights'), 
+                cond: document.getElementById('condition'), 
+                sndVal: document.getElementById('sound_value'), 
+                sndLbl: document.getElementById('sound_label'), 
+                loc: document.getElementById('location'), 
+                batVal: document.getElementById('battery_val'), 
+                batIcon: document.getElementById('battery_icon') 
+            }; 
+            
+            try { 
+                const res = await fetch(GIST_URL); 
+                if (!res.ok) throw new Error(); 
+                
+                const json = await res.json();
+                const d = JSON.parse(json.files['murase_status.json'].content);
+                const last = new Date(d.last_updated);
+                const alive = (new Date() - last) / 36e5 <= CONFIG.thresholdHours; 
+                
+                if(alive){ 
+                    els.body.className = 'light-mode'; 
+                    els.msg.textContent = '村瀨亮介は生きています。'; 
+                    els.sub.textContent = ''; 
+                } else { 
+                    els.body.className = 'dark-mode'; 
+                    els.msg.textContent = '村瀨亮介からの応答がありません。'; 
+                    els.sub.innerHTML = `安否確認は <a href="https://twitter.com/vl_lvoO" target="_blank">X</a> または <a href="https://dosei.muraseryosuke.info/" target="_blank">動静</a> へ`; 
+                } 
+                
+                const hr = safeParseInt(d.health.heart_rate); 
+                ecg.setStatus(hr, alive); 
+                els.hr.textContent = hr || '---'; 
+                els.hrSub.textContent = getRelativeTime(last); 
+                els.rHr.textContent = safeParseInt(d.health.resting_heart_rate) || '--'; 
+                
+                const steps = safeParseInt(d.health.steps); 
+                els.steps.textContent = steps.toLocaleString(); 
+                els.steps.style.color = steps >= 8000 ? 'var(--color-gold)' : 'inherit'; 
+                els.cal.textContent = Math.round(safeParseInt(d.health.active_calories)).toLocaleString(); 
+                
+                globalSpeedKmh = safeParseFloat(d.health.walking_speed); 
+                renderSpeed(); 
+                
+                const asym = safeParseFloat(d.health.walking_asymmetry); 
+                if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") { 
+                    els.asym.textContent = (asym * 100).toFixed(0); 
+                    updateLevel(asym); 
+                } else { 
+                    els.asym.textContent = '--'; 
+                    updateLevel(null); 
+                } 
+                
+                els.stand.textContent = safeParseInt(d.health.stand_hours) || '0'; 
+                els.flights.textContent = safeParseInt(d.health.flights_climbed) || '0'; 
+                
+                const hrv = safeParseFloat(d.health.condition_hrv); 
+                if (hrv >= 40) { 
+                    els.cond.textContent = isBirthdayMode ? '絶好調✨(祝)' : '絶好調✨'; 
+                    els.cond.style.color = 'var(--color-good)'; 
+                } else if (hrv >= 20) { 
+                    els.cond.textContent = '安定🌱'; 
+                    els.cond.style.color = 'var(--color-ok)'; 
+                } else if (hrv > 0) { 
+                    els.cond.textContent = '疲労気味💤'; 
+                    els.cond.style.color = 'var(--color-bad)'; 
+                } else { 
+                    els.cond.textContent = '---'; 
+                    els.cond.style.color = 'inherit'; 
+                } 
+                
+                const db = safeParseFloat(d.environment && d.environment.sound_level_db); 
+                if (db > 0) { 
+                    els.sndVal.textContent = Math.round(db); 
+                    els.sndLbl.textContent = (db < 40 ? '(静寂)' : db < 70 ? '(普通)' : '(騒音)'); 
+                    els.sndLbl.style.color = db < 40 ? 'var(--color-good)' : db < 70 ? 'var(--color-avg)' : 'var(--color-bad)'; 
+                } else { 
+                    els.sndVal.textContent = '---'; 
+                    els.sndLbl.textContent = ''; 
+                } 
+                
+                els.batVal.textContent = d.device.battery; 
+                els.batIcon.textContent = (d.device.is_charging === 'Yes' || d.device.is_charging === true) ? '⚡️' : ''; 
+                els.upd.textContent = last.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }); 
+                els.loc.textContent = d.location.city || '---'; 
+                
+                checkBirthdayUnlock(); 
+            } catch (e) { 
+                els.msg.textContent = '読み込み失敗'; 
+            } 
+        }
+        
+        const ecg = new ECGMonitor('ecg-canvas'); 
+        ecg.start(); 
+        updateStatus(); 
+        updateCountdown(); 
+        checkCooldown();
     </script>
 </body>
 </html>
