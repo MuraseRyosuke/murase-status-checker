@@ -1091,9 +1091,13 @@
                 els.loc.textContent = d.location.city || '---'; 
                 
                 checkBirthdayUnlock(); 
-            } catch (e) { 
-                els.msg.textContent = '読み込み失敗'; 
-            } 
+} catch (e) { 
+    console.error("Failed to load status:", e); 
+    els.msg.textContent = '読み込み失敗'; 
+    els.sub.textContent = 'エラー詳細: ' + e.message; // 👈 画面に直接エラー内容を表示
+    els.sub.style.display = 'block';
+    els.sub.style.color = 'var(--color-bad)';
+}
         }
         
         const ecg = new ECGMonitor('ecg-canvas'); 
