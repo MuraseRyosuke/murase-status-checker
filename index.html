@@ -421,7 +421,7 @@
 
     <script>
         // ============================================================================
-        // ⚙️ SYSTEM CONFIGURATION (CRITICAL: 復活・維持)
+        // ⚙️ SYSTEM CONFIGURATION
         // ============================================================================
         const CONFIG = {
             gistId: '1f81b107b898201a865a613c319d579b',
@@ -605,13 +605,13 @@
             drawTTString3D(msStr, -msTotalW/2, gap*4, dotSize * 0.8, cx, sx, cy, sy, cz, sz, ttScale, '#ff00aa'); 
         }
 
-        // 🚀 超軽量・一括描画エンジン
+        // 🚀 超軽量・一括描画エンジン ＋ ✨ 星座ワイヤーフレーム
         function drawTTString3D(str, startX, startY, dotSize, cx, sx, cy, sy, cz, sz, ttScale, color) {
-            ttCtx.fillStyle = color;
-            ttCtx.beginPath();
-            
             const gap = dotSize * 1.8;
             const spacing = (3 * gap) + dotSize * 1.5;
+            let dots = []; 
+            
+            // 座標計算フェーズ
             for(let i=0; i<str.length; i++) {
                 const matrix = DOT_MATRIX[str[i]];
                 if(matrix) {
@@ -622,16 +622,47 @@
                                 let localY = startY + r*gap;
                                 let proj = project3D(localX, localY, 0, cx, sx, cy, sy, cz, sz, ttScale);
                                 if (proj) {
-                                    let rad = (dotSize/2) * proj.s;
-                                    ttCtx.moveTo(proj.x + rad, proj.y);
-                                    ttCtx.arc(proj.x, proj.y, rad, 0, Math.PI*2);
+                                    dots.push({x: proj.x, y: proj.y, rad: (dotSize/2) * proj.s, s: proj.s});
                                 }
                             }
                         }
                     }
                 }
             }
-            ttCtx.fill(); // 一筆書きで一気に塗る
+
+            // ✨ 星座ワイヤーフレーム描画フェーズ (軽量化のため距離と確率で間引く)
+            if (dots.length > 0) {
+                ttCtx.beginPath();
+                let maxDistSq = Math.pow(dotSize * 4 * dots[0].s, 2);
+                for(let i=0; i<dots.length; i++) {
+                    let di = dots[i];
+                    for(let j=i+1; j<Math.min(i+18, dots.length); j++) {
+                        if (Math.random() > 0.4) continue; 
+                        let dj = dots[j];
+                        let dx = di.x - dj.x;
+                        let dy = di.y - dj.y;
+                        if (dx*dx + dy*dy < maxDistSq) {
+                            ttCtx.moveTo(di.x, di.y);
+                            ttCtx.lineTo(dj.x, dj.y);
+                        }
+                    }
+                }
+                ttCtx.strokeStyle = color;
+                ttCtx.globalAlpha = 0.3; 
+                ttCtx.lineWidth = 0.8;
+                ttCtx.stroke();
+                ttCtx.globalAlpha = 1.0;
+            }
+
+            // 🚀 ドット本体の一括描画フェーズ
+            ttCtx.fillStyle = color;
+            ttCtx.beginPath();
+            for(let i=0; i<dots.length; i++) {
+                let p = dots[i];
+                ttCtx.moveTo(p.x + p.rad, p.y); 
+                ttCtx.arc(p.x, p.y, p.rad, 0, Math.PI*2);
+            }
+            ttCtx.fill(); 
         }
 
         function renderTT() {
@@ -653,8 +684,6 @@
             const dpr = window.devicePixelRatio || 1;
             ttCtx.setTransform(1, 0, 0, 1, 0, 0); 
             
-            // ✨ 絶妙なバランスの微残像（トレイル効果）
-            // 透過率0.6に設定し、長すぎないスタイリッシュなテールランプを再現
             ttCtx.globalCompositeOperation = 'destination-out';
             ttCtx.fillStyle = 'rgba(0, 0, 0, 0.6)'; 
             ttCtx.fillRect(0, 0, ttCanvas.width, ttCanvas.height);
@@ -792,7 +821,7 @@
             if (!el) return;
 
             if (diff <= 0) {
-                el.innerHTML = "🎉 <b>村瀨亮介の30歳の誕生日当日です！おめでとうございます！</b> 🎂";
+                el.innerHTML = "🎉 <b>村瀨亮介の30歳の誕生日当日です！いわえ！</b> 🎂";
                 el.style.color = "var(--color-gold)";
                 checkBirthdayUnlock(); 
                 return;
@@ -1015,7 +1044,6 @@
             }; 
             
             try { 
-                // CRITICAL: CONFIGを用いてデータを取得
                 const res = await fetch(`https://api.github.com/gists/${CONFIG.gistId}?t=${Date.now()}`); 
                 if (!res.ok) throw new Error(); 
                 
