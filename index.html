@@ -420,12 +420,23 @@
     </main>
 
     <script>
-        // --- Configuration ---
+        // ============================================================================
+        // ⚙️ SYSTEM CONFIGURATION (CRITICAL: 復活・維持)
+        // ============================================================================
+        const CONFIG = {
+            gistId: '1f81b107b898201a865a613c319d579b',
+            gistFileName: 'murase_status.json',
+            thresholdHours: 13, 
+            links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' }
+        };
+
         const NTFY_TOPIC = 'murase_status_tune'; 
         const TUNE_COOLDOWN_MS = 30 * 60 * 1000; 
         const BIRTHDAY_TARGET = new Date('2026-06-24T00:00:00+09:00'); // 30th Birthday JST
         
-        // --- 🕰️ Software 3D Engine for Overlay ---
+        // ============================================================================
+        // 🕰️ Software 3D Engine for Overlay
+        // ============================================================================
         const ttOverlay = document.getElementById('tokei-tic-overlay');
         const ttCanvas = document.getElementById('tt-canvas');
         const ttCtx = ttCanvas.getContext('2d');
@@ -519,7 +530,6 @@
 
         function project3D(x, y, z, cx, sx, cy, sy, cz, sz, scale) {
             x *= scale; y *= scale; z *= scale;
-
             let y1 = y * cx - z * sx; let z1 = z * cx + y * sx;
             let x1 = x * cy + z1 * sy; let z2 = z1 * cy - x * sy;
             let x2 = x1 * cz - y1 * sz; let y2 = y1 * cz + x1 * sz;
@@ -528,12 +538,7 @@
             let z3 = z2 + camZ;
             if (z3 < 10) return null;
             let s = fov / z3;
-            return {
-                x: x2 * s,
-                y: y2 * s,
-                s: s,
-                depth: z3
-            };
+            return { x: x2 * s, y: y2 * s, s: s, depth: z3 };
         }
 
         function drawClockPlaneShapes(ttPlaneShapes, timeSec, cx, sx, cy, sy, cz, sz, ttScale) {
@@ -543,10 +548,9 @@
                 if (!shape.visible) return;
 
                 let localRot = timeSec * shape.rotSpeed + shape.rotationOffset;
-                let s = shape.size; 
-                let half = s/2;
-                
+                let s = shape.size; let half = s/2;
                 let corners = [];
+                
                 if (shape.type === 'square') {
                     corners = [{x: -half, y: -half}, {x: half, y: -half}, {x: half, y: half}, {x: -half, y: half}];
                 } else { 
@@ -555,7 +559,6 @@
                 }
                 
                 let cosL = Math.cos(localRot), sinL = Math.sin(localRot);
-                
                 let projCorners = corners.map(c => {
                     let lx = shape.x + (c.x * cosL - c.y * sinL);
                     let ly = shape.y + (c.x * sinL + c.y * cosL);
@@ -592,7 +595,6 @@
             
             const str = `${String(days).padStart(2,'0')}:${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
             const msStr = `.${String(ms).padStart(3,'0')}`;
-
             const gap = dotSize * 1.8;
             const spacing = (3 * gap) + dotSize * 1.5;
 
@@ -629,7 +631,7 @@
                     }
                 }
             }
-            ttCtx.fill(); // 最後に一気に塗る！
+            ttCtx.fill(); // 一筆書きで一気に塗る
         }
 
         function renderTT() {
@@ -648,12 +650,11 @@
             const cy = Math.cos(finalRotY), sy = Math.sin(finalRotY);
             const cz = Math.cos(finalRotZ), sz = Math.sin(finalRotZ);
             
-            // Retina(高画質)対応の描画リセット
             const dpr = window.devicePixelRatio || 1;
             ttCtx.setTransform(1, 0, 0, 1, 0, 0); 
             
             // ✨ 絶妙なバランスの微残像（トレイル効果）
-            // 透過率を `0.6` に設定し、ほんの少しだけシュッと残るように調整
+            // 透過率0.6に設定し、長すぎないスタイリッシュなテールランプを再現
             ttCtx.globalCompositeOperation = 'destination-out';
             ttCtx.fillStyle = 'rgba(0, 0, 0, 0.6)'; 
             ttCtx.fillRect(0, 0, ttCanvas.width, ttCanvas.height);
@@ -707,8 +708,9 @@
         }
         requestAnimationFrame(renderTT);
 
-        // --- Core Application Logic ---
-        const GIST_URL = `https://api.github.com/gists/1f81b107b898201a865a613c319d579b?t=${Date.now()}`;
+        // ============================================================================
+        // 🩺 Core Application Logic & Data Fetch
+        // ============================================================================
         let speedUnitIdx = 0, isBirthdayMode = false, hasTriggeredLoadConfetti = false, globalSpeedKmh = 0;
         
         function safeParseInt(val) { return (!val || val === "") ? 0 : parseInt(val, 10); }
@@ -721,7 +723,6 @@
             return diffHours < 24 ? `${diffHours}時間前` : `${Math.floor(diffHours/24)}日前`;
         }
 
-        // --- 🎊 Confetti Logic ---
         function triggerConfetti() {
             if (!isBirthdayMode) return; 
             const container = document.getElementById('confetti-container');
@@ -749,6 +750,7 @@
                 confetti.style.height = size;
                 confetti.style.animationDelay = delay;
                 confetti.style.animationDuration = `${duration}, 1.5s`; 
+                
                 confetti.style.setProperty('--fall-translate-x', fallTranslateX);
                 confetti.style.setProperty('--fall-rotate-x', fallRotateX);
                 confetti.style.setProperty('--fall-rotate-y', fallRotateY);
@@ -756,13 +758,11 @@
                 confetti.style.setProperty('--sway-amount', swayAmount);
 
                 container.appendChild(confetti);
-
                 const totalAnimationTime = (parseFloat(delay) + parseFloat(duration)) * 1000;
                 setTimeout(() => confetti.remove(), totalAnimationTime + 500); 
             }
         }
 
-        // --- ⚙️ Automatic Birthday Mode Switcher ---
         function checkBirthdayUnlock() {
             const now = new Date();
             if (now >= BIRTHDAY_TARGET && !isBirthdayMode) {
@@ -785,7 +785,6 @@
             }
         }
 
-        // --- UI Logic: Birthday Countdown ---
         function updateCountdown() {
             const now = new Date();
             const diff = BIRTHDAY_TARGET - now;
@@ -1016,11 +1015,12 @@
             }; 
             
             try { 
-                const res = await fetch(GIST_URL); 
+                // CRITICAL: CONFIGを用いてデータを取得
+                const res = await fetch(`https://api.github.com/gists/${CONFIG.gistId}?t=${Date.now()}`); 
                 if (!res.ok) throw new Error(); 
                 
                 const json = await res.json();
-                const d = JSON.parse(json.files['murase_status.json'].content);
+                const d = JSON.parse(json.files[CONFIG.gistFileName].content);
                 const last = new Date(d.last_updated);
                 const alive = (new Date() - last) / 36e5 <= CONFIG.thresholdHours; 
                 
@@ -1031,7 +1031,7 @@
                 } else { 
                     els.body.className = 'dark-mode'; 
                     els.msg.textContent = '村瀨亮介からの応答がありません。'; 
-                    els.sub.innerHTML = `安否確認は <a href="https://twitter.com/vl_lvoO" target="_blank">X</a> または <a href="https://dosei.muraseryosuke.info/" target="_blank">動静</a> へ`; 
+                    els.sub.innerHTML = `安否確認は <a href="${CONFIG.links.twitter}" target="_blank">X</a> または <a href="${CONFIG.links.dosei}" target="_blank">動静</a> へ`; 
                 } 
                 
                 const hr = safeParseInt(d.health.heart_rate); 
@@ -1091,13 +1091,10 @@
                 els.loc.textContent = d.location.city || '---'; 
                 
                 checkBirthdayUnlock(); 
-} catch (e) { 
-    console.error("Failed to load status:", e); 
-    els.msg.textContent = '読み込み失敗'; 
-    els.sub.textContent = 'エラー詳細: ' + e.message; // 👈 画面に直接エラー内容を表示
-    els.sub.style.display = 'block';
-    els.sub.style.color = 'var(--color-bad)';
-}
+            } catch (e) { 
+                console.error(e);
+                els.msg.textContent = '読み込み失敗'; 
+            } 
         }
         
         const ecg = new ECGMonitor('ecg-canvas'); 
