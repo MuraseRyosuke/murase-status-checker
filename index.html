@@ -329,7 +329,7 @@
         // Camera & Interaction
         let ttMouseX = 0, ttMouseY = 0;
         let ttRotX = 0, ttRotY = 0, ttRotZ = 0, ttScale = 1;
-        let ttTargetRotX = 0, ttTargetRotY = 0, ttTargetRotZ = 0, ttTargetScale = 1.6; // よりド迫力（近く）に設定
+        let ttTargetRotX = 0, ttTargetRotY = 0, ttTargetRotZ = 0, ttTargetScale = 1.6; 
         
         // 滲み対策：Retinaディスプレイ(高DPI)対応のCanvasリサイズ
         function resizeTT() {
@@ -356,7 +356,7 @@
             checkBirthdayUnlock(); 
         });
 
-        // カメラ（視点）と図形の構成を1秒おきに変更するロジック (残像・組み合わせ変更同期)
+        // カメラ（視点）と図形の構成を1秒おきに変更するロジック
         setInterval(() => {
             if (!ttActive) return;
             // 1. カメラワーク
@@ -365,11 +365,10 @@
             ttTargetRotZ = (Math.random() - 0.5) * 90;  
             ttTargetScale = Math.random() * 0.8 + 1.4; // 1.4 〜 2.2 倍でより迫る
 
-            // 2. 図形の構成（組み合わせ）をランダムに変更。これにより1秒おきにVJ背景が切り替わる
+            // 2. 図形の構成（組み合わせ）をランダムに変更
             ttPlaneShapes.forEach(shape => {
                 shape.visible = Math.random() > 0.5; 
             });
-
         }, 1000);
 
         // 5x3 Dot Matrix
@@ -423,7 +422,7 @@
             });
         }
 
-        // 3D座標をCanvas上に投影（軸ズレ修正済）
+        // 3D座標をCanvas上に投影
         function project3D(x, y, z, cx, sx, cy, sy, cz, sz, scale) {
             x *= scale; y *= scale; z *= scale;
 
@@ -436,14 +435,14 @@
             if (z3 < 10) return null;
             let s = fov / z3;
             return {
-                x: x2 * s, // 画面中央合わせは renderTT 内の translate で一括処理
+                x: x2 * s,
                 y: y2 * s,
                 s: s,
                 depth: z3
             };
         }
 
-        // --- 図形描画 (タイマーの背面レイヤー、アルファとScreen効果でぼやけ拡散) ---
+        // --- 図形描画 (背面レイヤー、Screen効果で拡散) ---
         function drawClockPlaneShapes(ttPlaneShapes, timeSec, cx, sx, cy, sy, cz, sz, ttScale) {
             ttCtx.globalCompositeOperation = 'screen';
             
@@ -492,7 +491,7 @@
             ttCtx.globalCompositeOperation = 'source-over';
         }
 
-        // --- タイマー文字描画 (図形より手前レイヤー、滲まないグロー) ---
+        // --- タイマー文字描画 (前面レイヤー) ---
         function drawClockPlaneStrings(diff, dotSize, cx, sx, cy, sy, cz, sz, ttScale) {
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -513,11 +512,12 @@
             drawTTString3D(msStr, -msTotalW/2, gap*4, dotSize * 0.8, cx, sx, cy, sy, cz, sz, ttScale, '#ff00aa'); 
         }
 
+        // --- 超・軽量化 一括描画エンジン ---
         function drawTTString3D(str, startX, startY, dotSize, cx, sx, cy, sy, cz, sz, ttScale, color) {
             ttCtx.fillStyle = color;
-            ttCtx.shadowColor = color;
-            ttCtx.shadowBlur = dotSize * 0.8; // 滲まない程度の光彩
-
+            // 処理落ちの元凶であったネイティブのshadowBlurを撤廃。バッチ処理で高速化
+            ttCtx.beginPath();
+            
             const gap = dotSize * 1.8;
             const spacing = (3 * gap) + dotSize * 1.5;
             for(let i=0; i<str.length; i++) {
@@ -528,22 +528,22 @@
                             if(matrix[r*3 + c]) {
                                 let localX = startX + i*spacing + c*gap;
                                 let localY = startY + r*gap;
-                                // z=0 (手前) で投影
                                 let proj = project3D(localX, localY, 0, cx, sx, cy, sy, cz, sz, ttScale);
                                 if (proj) {
-                                    ttCtx.beginPath();
-                                    ttCtx.arc(proj.x, proj.y, (dotSize/2) * proj.s, 0, Math.PI*2);
-                                    ttCtx.fill();
+                                    let rad = (dotSize/2) * proj.s;
+                                    // パスを一筆書きで繋がないようにmoveToで移動してから円を描く
+                                    ttCtx.moveTo(proj.x + rad, proj.y);
+                                    ttCtx.arc(proj.x, proj.y, rad, 0, Math.PI*2);
                                 }
                             }
                         }
                     }
                 }
             }
-            ttCtx.shadowBlur = 0; // 他の描画に影響しないようリセット
+            ttCtx.fill(); // 最後に一気に塗る！ (FPS爆増の鍵)
         }
 
-        // --- コアロジック：描画ループ (残像・拡散効果実装) ---
+        // --- コアロジック：描画ループ ---
         function renderTT() {
             if (!ttActive) return;
             
@@ -560,13 +560,12 @@
             const cy = Math.cos(finalRotY), sy = Math.sin(finalRotY);
             const cz = Math.cos(finalRotZ), sz = Math.sin(finalRotZ);
             
-            // 滲み対策：Retina対応描画リセット
+            // Retina(高画質)対応の描画リセット
             const dpr = window.devicePixelRatio || 1;
             ttCtx.setTransform(dpr, 0, 0, dpr, 0, 0); 
             
-            // --- 実装：1. 夜中のテールランプのような残像（トレイル効果） ---
-            // `clearRect` ではなく、半透明の黒で塗りつぶす。
-            // アルファ値は 0.2 (20%) で、動きに合わせてシュッと消える残像感を出す。
+            // --- 夜中のテールランプのような残像（トレイル効果） ---
+            // 画面全体を半透明の黒で塗りつぶすことで、動いた軌跡がスーッと消えるようになる
             ttCtx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
             ttCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
             
@@ -582,30 +581,31 @@
 
                 let proj = project3D(p.x, p.y, p.z, cx, sx, cy, sy, cz, sz, ttScale);
                 if (proj) {
-                    ttCtx.beginPath(); 
-                    ttCtx.arc(proj.x, proj.y, p.size * proj.s, 0, Math.PI*2);
+                    let alpha = Math.max(0, Math.min(1, (2000 - proj.depth) / 1000));
                     
                     if (!p.isStar) {
-                        // --- 実装：2. 光の拡散（グロー・Screen効果） ---
+                        // --- 疑似グロー効果 (処理が重いshadowBlurの代わり) ---
                         ttCtx.globalCompositeOperation = 'screen';
                         
-                        // 光の拡散を表現するため、ごく弱い `shadowBlur` を手前の玉にのみ適用
-                        ttCtx.shadowColor = p.color;
-                        ttCtx.shadowBlur = p.size * proj.s * 0.4; // サイズに同期
+                        // ぼんやりした外側の光（大きく薄い円）
+                        ttCtx.beginPath(); 
+                        ttCtx.arc(proj.x, proj.y, p.size * proj.s * 2.0, 0, Math.PI*2);
                         ttCtx.fillStyle = p.color;
-                        
-                        // 拡散した「ぼやけ」を表現するため、アルファ値を少し上げる
-                        let alpha = Math.max(0, Math.min(1, (2000 - proj.depth) / 1000));
-                        ttCtx.globalAlpha = alpha; // 全開に
+                        ttCtx.globalAlpha = alpha * 0.15; 
                         ttCtx.fill();
                         
-                        // リセット
-                        ttCtx.shadowBlur = 0;
+                        // クッキリした芯の光（小さく濃い円）
+                        ttCtx.beginPath(); 
+                        ttCtx.arc(proj.x, proj.y, p.size * proj.s, 0, Math.PI*2);
+                        ttCtx.globalAlpha = alpha; 
+                        ttCtx.fill();
+                        
                         ttCtx.globalCompositeOperation = 'source-over';
                     } else {
-                        // 白い星屑は滲ませない。滲むとタイマーが読みにくくなる
+                        // 白い星屑はクッキリ描画
+                        ttCtx.beginPath(); 
+                        ttCtx.arc(proj.x, proj.y, p.size * proj.s, 0, Math.PI*2);
                         ttCtx.fillStyle = p.color;
-                        let alpha = Math.max(0, Math.min(1, (2000 - proj.depth) / 1000));
                         ttCtx.globalAlpha = alpha * 0.8; 
                         ttCtx.fill();
                     }
@@ -617,13 +617,11 @@
             const timeSec = Date.now() / 1000;
             const diff = Math.max(0, BIRTHDAY_TARGET - new Date());
             
-            // ドットのベースサイズを大きく調整 (迫力アップ)
+            // ドットのベースサイズ (迫力アップ)
             const dotSize = window.innerWidth < 768 ? 8 : 14;
 
-            // 描画順：背景図形（背面レイヤー、アルファとScreen効果で滲ませる）
+            // 背景図形（背面レイヤー） -> タイマー（前面レイヤー）の順で描画
             drawClockPlaneShapes(ttPlaneShapes, timeSec, cx, sx, cy, sy, cz, sz, ttScale);
-            
-            // 描画順：HUDタイマー（前面レイヤー、滲まないグロー）
             drawClockPlaneStrings(diff, dotSize, cx, sx, cy, sy, cz, sz, ttScale);
             
             ttCtx.restore();
