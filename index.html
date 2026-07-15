@@ -124,7 +124,7 @@
 
         .dashboard-grid { 
             display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(110px, auto); 
-            gap: 1.25rem; width: 100%; max-width: 900px; 
+            gap: 1.25rem; width: 100%; max-width: 900px; position: relative; z-index: 1;
         }
 
         /* ==================================================================
@@ -148,7 +148,7 @@
         .unit { font-size: 0.9rem; font-weight: 500; color: var(--text-sub); margin-left: 0.2em; } 
         .sub-value { font-size: 0.85rem; color: var(--text-sub); margin-top: 0.2em; }
         
-        /* 🚨 Card Status: overflow:hiddenを削除し、テープが外に飛び出せるように変更 */
+        /* Status Card */
         .card-status { grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem; min-height: 160px; position: relative; }
         #liveness-message { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; position: relative; z-index: 1; transition: opacity 0.5s ease; } 
         #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.8rem; position: relative; z-index: 1; } 
@@ -210,90 +210,50 @@
         .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
 
         /* ==================================================================
-           5. KEEP OUT Tape (428 Respect & Marquee Effect)
+           5. KEEP OUT Tape (428 Respect & Seamless Marquee)
            ================================================================== */
-        .marquee-container {
+        /* コンテナは画面全体に固定し、回転させて配置 */
+        .marquee-wrapper {
             display: none; 
-            position: absolute;
+            position: fixed; 
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            /* 🚨 画面の端から端まで突き抜けるように幅を十分に取る */
-            width: 250vw; 
-            z-index: 10; 
-            pointer-events: auto; /* クリックで消せるようにする */
+            transform: translate(-50%, -50%) rotate(-5deg);
+            width: 150vw; /* 画面端が見えないよう十分に幅広にする */
+            background: #ffee00;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 1000; /* カードより前面に */
             cursor: pointer;
             transition: opacity 0.5s ease;
+            overflow: hidden; /* ここで左右にはみ出た文字を隠す */
         }
 
-        .marquee {
-            /* 🚨 428リスペクトの鮮やかなイエロー */
-            --marquee--colour: #ffee00;
-            --marquee--repeat-count: 6;
-            --marquee--base-duration: 1.5s; 
-            --marquee--repeat-size: calc(100% / var(--marquee--repeat-count));
-            --marquee--double-size: calc(var(--marquee--repeat-size) * 2);
-            --marquee--duration: calc(var(--marquee--base-duration) * var(--char-count, 25));
-            --marquee--direction: 1;
-
-            overflow: hidden;
-            width: 100%;
-            transform: rotate(-5deg); /* 右肩上がり */
-            background: var(--marquee--colour);
-            /* 🚨 透過なし、真っ黒のテキスト指定は子要素で行う */
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        }
-
-        .marquee p {
-            transform: translateY(0.07em);
-            font-weight: 900; 
-            margin: 0;
+        /* アニメーションするトラック（2倍の幅で中身を繰り返す） */
+        .marquee-track {
             display: flex;
-            gap: 0.5em;
-            line-height: 1.1;
-            /* 🚨 テープの幅（太さ）を太く調整 */
-            padding: 0.2em 0; 
-            /* 🚨 透過させず真っ黒に固定 */
-            color: #000;
-            opacity: 1;
-            font-size: clamp(2rem, 6vw, 3.5rem); 
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-        }
-        
-        /* 🚨 区切りを ⚠ に変更 */
-        .marquee p::after {
-            content: "⚠";
-            transform: translateY(0.175em);
-        }
-        .marquee p::before {
-            content: "";
-        }
-
-        .marquee--inner {
             width: max-content;
-            display: flex;
-            text-transform: uppercase;
+            animation: marquee-scroll 10s linear infinite;
+        }
+
+        /* 隙間なく連続させるためのテキストブロック */
+        .marquee-text {
+            font-weight: 900;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            padding: 0.2em 0.5em; /* 上下のテープ幅と左右の隙間を調整 */
+            line-height: 1.1;
+            color: #000; /* 透過なしの黒 */
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            white-space: nowrap;
         }
         
-        @media (prefers-reduced-motion: no-preference) {
-            .marquee--inner {
-                animation: marquee var(--marquee--duration) infinite linear;
-            }
-            .marquee-container:hover .marquee--inner {
-                animation-play-state: paused;
-            }
+        /* 完璧なシームレスループアニメーション */
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            /* 全体幅の半分(50%)移動した時点で0%と同じ見た目になるようにDOMを2セット配置する */
+            100% { transform: translateX(-50%); } 
         }
 
-        @keyframes marquee {
-            from {
-                transform: translateX(calc( (-1 * var(--marquee--double-size)) - (var(--marquee--double-size) * var(--marquee--direction, 1)) ));
-            }
-            to {
-                transform: translateX(calc(var(--marquee--double-size) * -1));
-            }
-        }
-
-        /* 🚨 左から右へテープを引いて貼るアニメーション */
+        /* 左から右へテープを引いて貼るアニメーション */
         @keyframes applyTape {
             0% { 
                 clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); 
@@ -305,7 +265,7 @@
             }
         }
 
-        .marquee-container.apply-anim {
+        .marquee-wrapper.apply-anim {
             animation: applyTape 0.6s cubic-bezier(0.77, 0, 0.17, 1) forwards;
         }
 
@@ -335,6 +295,19 @@
 
     <canvas id="ecg-canvas"></canvas>
 
+    <div class="marquee-wrapper" id="marquee-tape">
+        <div class="marquee-track">
+            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+        </div>
+    </div>
+
     <div id="help-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-close" id="btn-close-modal">×</div>
@@ -360,19 +333,6 @@
         <div class="card card-status" id="card-status-container">
             <div id="liveness-message">ステータス確認中...</div>
             <div id="liveness-subtext"></div>
-            
-            <div class="marquee-container" id="marquee-tape" style="--char-count: 25;">
-                <div class="marquee">
-                    <div class="marquee--inner">
-                        <p>村瀨亮介からの応答がありません。</p>
-                        <p>村瀨亮介からの応答がありません。</p>
-                        <p>村瀨亮介からの応答がありません。</p>
-                        <p>村瀨亮介からの応答がありません。</p>
-                        <p>村瀨亮介からの応答がありません。</p>
-                        <p>村瀨亮介からの応答がありません。</p>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="card card-profile" id="profile-card">
@@ -468,7 +428,7 @@
         };
 
         // ============================================================================
-        // 🩺 2. ECG MONITOR ENGINE (Updated for Mobile Scroll Fix)
+        // 🩺 2. ECG MONITOR ENGINE
         // ============================================================================
         class ECGMonitor {
             constructor(canvasId) { 
@@ -579,7 +539,7 @@
                     btnOpenModal: document.getElementById('btn-open-modal'),
                     btnCloseModal: document.getElementById('btn-close-modal'),
                     modal: document.getElementById('help-modal'),
-                    marqueeTape: document.getElementById('marquee-tape') // 🚨 追加: テープ要素
+                    marqueeTape: document.getElementById('marquee-tape')
                 };
             }
 
@@ -648,7 +608,7 @@
                                 void this.els.marqueeTape.offsetWidth;
                                 this.els.marqueeTape.classList.add('apply-anim');
                             }
-                            this.els.msg.style.opacity = '0.4'; // 背面テキストを少し薄く
+                            this.els.msg.style.opacity = '0.4'; 
                         } else {
                             this.els.msg.style.opacity = '1';
                         }
