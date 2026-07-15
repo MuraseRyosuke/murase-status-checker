@@ -57,11 +57,6 @@
         "color: #b0c4de; background: #101010; font-family: monospace;"
       );
 
-      /**
-       * ------------------------------------------------------------------
-       * OneSignal Initialization
-       * ------------------------------------------------------------------
-       */
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
@@ -90,19 +85,11 @@
             --color-ecg-alive: rgba(46, 204, 113, 0.6);
             --color-ecg-lost:  rgba(48, 209, 201, 0.6);
 
-            /* Default Stable: Purple Style */
             --color-tune-bg:     rgba(155, 89, 182, 0.15); 
             --color-tune-border: rgba(155, 89, 182, 0.5); 
             --color-tune-text:   #6c3483;
             --color-bubble-bg:   #ffffff;
             --color-bubble-text: #6c3483;
-        }
-
-        body.birthday-theme {
-            --color-tune-bg:     rgba(212, 175, 55, 0.15); 
-            --color-tune-border: rgba(212, 175, 55, 0.5); 
-            --color-tune-text:   #b38f00;
-            --color-bubble-text: #b38f00;
         }
 
         /* ==================================================================
@@ -162,9 +149,9 @@
         .sub-value { font-size: 0.85rem; color: var(--text-sub); margin-top: 0.2em; }
         
         /* Specific Cards */
-        .card-status { grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem; min-height: 160px; }
-        #liveness-message { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; } 
-        #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.8rem; } 
+        .card-status { grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem; min-height: 160px; position: relative; overflow: hidden; }
+        #liveness-message { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; position: relative; z-index: 1; transition: opacity 0.5s ease; } 
+        #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.8rem; position: relative; z-index: 1; } 
         #liveness-subtext:empty { display: none; margin-top: 0; }
 
         .card-profile { grid-column: span 1; padding: 0; background: transparent !important; border: none !important; box-shadow: none !important; display: flex; align-items: center; justify-content: center; } 
@@ -223,7 +210,84 @@
         .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
 
         /* ==================================================================
-           5. Responsive Media Queries
+           5. KEEP OUT Tape (Marquee Effect)
+           ================================================================== */
+        .marquee-container {
+            display: none; 
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%; 
+            z-index: 10; 
+            pointer-events: auto; /* Allow clicking the tape */
+            cursor: pointer;
+            transition: opacity 0.5s ease;
+        }
+
+        .marquee {
+            --marquee--colour: #f3bb0b;
+            --marquee--repeat-count: 6;
+            --marquee--base-duration: 1.5s; /* Slightly slower for readable text */
+            --marquee--repeat-size: calc(100% / var(--marquee--repeat-count));
+            --marquee--double-size: calc(var(--marquee--repeat-size) * 2);
+            --marquee--duration: calc(var(--marquee--base-duration) * var(--char-count, 20));
+            --marquee--direction: 1;
+
+            overflow: hidden;
+            width: 100%;
+            transform: rotate(-5deg); /* Slanted upwards to the right */
+            background: var(--marquee--colour);
+            color: #000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .marquee p {
+            transform: translateY(0.07em);
+            font-weight: 800;
+            margin: 0;
+            display: flex;
+            gap: 0.5em;
+            line-height: 1.1;
+            /* Adjusted size for Japanese text to fit nicely */
+            font-size: clamp(1.4rem, 5vw, 2.5rem); 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        }
+        
+        .marquee p::after {
+            content: "*";
+            transform: translateY(0.175em);
+        }
+        .marquee p::before {
+            content: "";
+        }
+
+        .marquee--inner {
+            width: max-content;
+            display: flex;
+            text-transform: uppercase;
+        }
+        
+        @media (prefers-reduced-motion: no-preference) {
+            .marquee--inner {
+                animation: marquee var(--marquee--duration) infinite linear;
+            }
+            .marquee-container:hover .marquee--inner {
+                animation-play-state: paused;
+            }
+        }
+
+        @keyframes marquee {
+            from {
+                transform: translateX(calc( (-1 * var(--marquee--double-size)) - (var(--marquee--double-size) * var(--marquee--direction, 1)) ));
+            }
+            to {
+                transform: translateX(calc(var(--marquee--double-size) * -1));
+            }
+        }
+
+        /* ==================================================================
+           6. Responsive Media Queries
            ================================================================== */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; } 
@@ -246,8 +310,10 @@
 </head>
 <body class="light-mode">
 
+    <!-- 🩺 Background ECG Canvas -->
     <canvas id="ecg-canvas"></canvas>
 
+    <!-- 💡 Help Modal -->
     <div id="help-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-close" id="btn-close-modal">×</div>
@@ -269,9 +335,25 @@
     </div>
 
     <main class="dashboard-grid">
-        <div class="card card-status">
+        
+        <!-- 🚨 Status Card (With KEEP OUT Tape) -->
+        <div class="card card-status" id="card-status-container">
             <div id="liveness-message">ステータス確認中...</div>
             <div id="liveness-subtext"></div>
+            
+            <!-- KEEP OUT Tape Component -->
+            <div class="marquee-container" id="marquee-tape" style="--char-count: 35;">
+                <div class="marquee">
+                    <div class="marquee--inner">
+                        <p>村瀨亮介からの応答がありません。</p>
+                        <p>村瀨亮介からの応答がありません。</p>
+                        <p>村瀨亮介からの応答がありません。</p>
+                        <p>村瀨亮介からの応答がありません。</p>
+                        <p>村瀨亮介からの応答がありません。</p>
+                        <p>村瀨亮介からの応答がありません。</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="card card-profile" id="profile-card">
@@ -367,7 +449,7 @@
         };
 
         // ============================================================================
-        // 🩺 2. ECG MONITOR ENGINE (Updated for Mobile Scroll Fix)
+        // 🩺 2. ECG MONITOR ENGINE
         // ============================================================================
         class ECGMonitor {
             constructor(canvasId) { 
@@ -379,8 +461,6 @@
                 this.alive = true; 
                 this.last = 0;
                 
-                // モバイルでのスクロールによるアドレスバー伸縮への対策
-                // innerWidthが変更された場合のみリサイズをトリガーする
                 this.lastWidth = window.innerWidth;
                 this.resize(); 
                 
@@ -479,7 +559,8 @@
                     tuneText: document.getElementById('tune-text'),
                     btnOpenModal: document.getElementById('btn-open-modal'),
                     btnCloseModal: document.getElementById('btn-close-modal'),
-                    modal: document.getElementById('help-modal')
+                    modal: document.getElementById('help-modal'),
+                    marqueeTape: document.getElementById('marquee-tape')
                 };
             }
 
@@ -490,6 +571,14 @@
                 this.els.btnCloseModal.addEventListener('click', () => this.closeModal());
                 this.els.modal.addEventListener('click', (e) => {
                     if (e.target === this.els.modal) this.closeModal();
+                });
+                
+                // 🚨 テープをクリックした時の処理（滑らかに消えて元の表示に戻る）
+                this.els.marqueeTape.addEventListener('click', () => {
+                    this.els.marqueeTape.style.opacity = '0';
+                    this.els.marqueeTape.style.pointerEvents = 'none';
+                    this.els.marqueeTape.classList.add('hidden-by-user'); // ユーザーが消した状態を記録
+                    this.els.msg.style.opacity = '1'; // 背面のテキストを100%の濃さに戻す
                 });
             }
 
@@ -515,14 +604,28 @@
                     const last = new Date(d.last_updated);
                     const alive = (new Date() - last) / 36e5 <= AppConfig.thresholdHours; 
                     
+                    // 🚨 Liveness State handling
                     if(alive){ 
                         this.els.body.className = 'light-mode'; 
-                        this.els.msg.textContent = '村瀨亮介は生きています。'; 
+                        this.els.msg.textContent = '村瀨亮介は生きています。';
+                        this.els.msg.style.opacity = '1';
                         this.els.sub.textContent = ''; 
+                        this.els.marqueeTape.style.display = 'none'; 
                     } else { 
                         this.els.body.className = 'dark-mode'; 
+                        
                         this.els.msg.textContent = '村瀨亮介からの応答がありません。'; 
                         this.els.sub.innerHTML = `安否確認は <a href="${AppConfig.links.twitter}" target="_blank">X</a> または <a href="${AppConfig.links.dosei}" target="_blank">動静</a> へ`; 
+                        
+                        // ユーザーがまだテープを消していなければ、テープを表示して背景を薄くする
+                        if (!this.els.marqueeTape.classList.contains('hidden-by-user')) {
+                            this.els.marqueeTape.style.display = 'block'; 
+                            this.els.marqueeTape.style.opacity = '1';
+                            this.els.marqueeTape.style.pointerEvents = 'auto';
+                            this.els.msg.style.opacity = '0.4'; 
+                        } else {
+                            this.els.msg.style.opacity = '1';
+                        }
                     } 
                     
                     const hr = this.safeParseInt(d.health.heart_rate); 
@@ -702,5 +805,48 @@
             dashboard.checkCooldown();
         });
     </script>
+<!--
+g@gg@HH0TWHgg@MMHHHHHHHHH#HH@mg@@@gqqkkbkkHWpppppbqmggmkkkbHMMMN##NNm&+(+gHHHHHH
+ggmmqH>__<Wqqqmg@@@@@HHH##HHgg@@@@@mqqkkm@@gmkbbpbqgg@ggHHyfHMNN#NMMMMMNM@MHHMHH
+kqqqkR<` (Xkkbkg@@gmg@HNN#H@@@@H@@@ggmkkg@@gmkbpppkmggggHWWWMNMNNNNMMMMMMgmg@qpp
+kkkHWS< `(dbppk@@@ggg@#NNNHHHHHMHH@@@Hmg@@@@gqHpfbqg@@@@HHqHMMMMMMMMMMMMMmqqmqbp
+bbpVyXo-(jWpfVWHHqqqgMMMMNNHMHfWMHHHH@@@@HMH9!~_?vWH@@@@@gkkHMMNMHgHMMMMMkbkqkpf
+pffVyZZZZZyVyyVppkqqmHMMMMMM@HHkHMMHHHHgHH0v<    (1ZWHHHHHbHHMMMMM@MMMMMMHppkbfV
+VVVyZZuuZZyyyWWWHmmmmg@@ggm@@@mqHHWWWkHmHkwz+-...gAwXWHkpyZXWWWpHkkHg@@HMmqkqHWW
+VVVyyyXXyVVfpppHHHbbkkqqHHHHggHHWXZXWHgmHWppWWQWHQWHHHHWWHkXvwXXWWWHHHHMHHkkHgmq
+WWWWkbpfVyffpfWWWWWkkHqHkkbkHHWyXXXWHHkWHqbWkHHMMHHHMHWWHMMNkuuuuZyWpbkqkkbbbkkb
+gmqqbpfyyVpkbbkmggmmqmmqHHWUVwXUUUWMMMMMHHHHqHHHHHpbkWqHMMMMHuXXXXWpppbbkkqmmqqk
+kkkbpfW0XXpbppbHHHHWWUUUVVOz?<1z<<<wMMMMMMMHpppHHXWHHMMMHMM@HXOlOwyyXZXXWWWWWWWp
+ppppVWC<<jXffVVWUVOwZI<<<1OOz<;>++jMMMMHM@HHHWHHCjbH@HMMMHMHNuOtwXpWuzvvwXXZZyyy
+pppfVWI~_jXppVyZZz>1tz<::+wvO?>>zwdMHMNMH@@MH@Hk+gHW@@M@HMMMMZIzOZ00XvrI11OwuXWf
+VVVyyXz:(zXWVVyXOz?zrI+::+wuOz?>?dMRXWHMH@MMNVXAwUMHHMMMMHMMMz?>?=ltttt=??=OwXpp
+yyyyyuI<+zuZyWpWXOzzuOz;;+wuwO1??dMKvW@gHHM9Cz<?1OUUWHMHH#MMM????=llz==??=lOuXpf
+ZZXuuuzrwzZyfpkHkwrwZwz<;+Ourtl=?+HN&dMM@HD<<((<:_?<j0UWHMMN8??????<<<<<+=twXWpW
+zvrrrrtttwXXUUWWWXzXyXOz<+zzvttz<:+HMNM#HHI<_~:<<<~.(OOwXWM#<::;;;<~_   (zOwXfW0
+wwwwwwwwwwrrtOZVVOOZU0ZI??zXuzrz<<~+dMMMHS=<;:~~_?TuAz1zXMB;::::;;:_   .(zvuypSZ
+UWWfWyWZZXwOll=?<<;<?????zwU0ZI!..(+MMNHSwl=z+j&-(+zrzzw91<<::::::~~~~_(1tvuyfkI
+vvzzvvrwXZuwwOOz?>;+??>>>??<<i(gM#YwMM#UXwOl=<<;<++dUXQROwwzzzz++<<:::(+zrzZypkI
+zzzzvrrrOOOOOtll??????;;;;>!.?M"~-<?M#VtOXuwOz;;++OzXUM#wXZZZZZuwOz?;;>1tvuZWpSI
+zzzvvrrttttllll=?>>??>>;;><<(= _`   JI=ltwuZykwOwwwQkZWX0wzuuuzrttl=?>+zwwXXWHkO
+vvvvrvvrrrrrttttll===??;;<:;>-.     !<?=truyWpWHNMMM8OOv1zzuuurrtll====zOVUUWHHy
+vrrvrrrttttttrtttll=1<<<~(++z1&+<((-..(?zOwZWHMMBSOOz<<:<zzOOOtlllll===???=lOOwX
+wwwwwwrttttrrtttlzz<!`     _?OUUXWXUUXX&_~~<+++1llzz<::~(0><<<<11lll===????=lltr
+HkqkHSwrrvrrrrrtz<```  `` `._~<11111<<<<~(+?==l=z<<<:~~(XI:(~_. ?1zzll=1???==lll
+XXXuzvrrrrrrtrOv! `` ``  ````___~~:<;:(+1=lllzz<<~~~:(<dI<~_~_.``.zOwXXwwwwwwwwt
+rrrrrvvrrrtrttv_.```````    ```....~<<<?1lz1<<<:~~~:(<?dC<~~~~_...`(zwOOOOOOOwVOI
+rrttrrrrttttz>~~_`..-```.  `````.....~i+<<<~~~.~__(++v<~~..._.-_~ _(+1??????????
+uZZZZuuuzzrI<~~__``` _```.```````....._<7:::~~~~~~_~~.~~_..._____._ <+1?1zlzzzz1
+uuuuuuzzzrI<.~~._``.` _``.   `` ````...._::~~~~......~~~_...._<_~...`(1llttrrrttt
+uuuuuuuzwv<_.~~.~-`..`.```._.```````...~~~~~~........~~....._~__..``-+=lttttrrrw
+XXXXXzzwO!_~~.~~~.``.._`.....````````...~_~.........~.~.....((~..```((lltttttttt
+rrrrrrrO!~~~~~..~.``.._-.``...`.``.``...............~....`-_(~..``` _:1lltlllttr
+vvrrrttO1<~~~~.~....-__<.`...``..``..`.......`..........`.-~_...``.._<<=lltlltrr
+rrvrrrvZ?<:~~_.~~..`._<_.`.`.`.`.````..`...``.......~~_.`._~____....:<<1ltrrtrrr
+rrtrrrvZ?<:~~~~.~..`.._~......``..`````....`.``.`...._``.._:(~...~..~<;+llllllll
+rtOrrvvI?<:~~~.~~..``..(-....``.....````.```.```.....`....~:j+__~..~~:<>zttllltr
+rwuuuzzw?z<~:~~~....(Ju8_.~...```....````````.`..``.`....~~<(~~~~..~~:++ttll=lll
+rwzzuzvrz1;::~~~~._(+1O$>~~~...`.`....`.``.```...``......_::J<:~~..~~:<zrrrttrrt
+rrrrrrrrOz<::~.~~~~::<1><:~_..`.`......`.``..`.``..`....._::<<:~~~.~~:<ttrrrrrrt    
+-->
 </body>
 </html>
