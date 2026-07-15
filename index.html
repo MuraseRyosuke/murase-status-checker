@@ -66,10 +66,8 @@
       OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
           appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b",
-          safari_web_id: "", 
           notifyButton: {
-            enable: true,
-            displayPredicate: function() { return true; }
+            enable: true
           }
         });
       });
@@ -98,6 +96,13 @@
             --color-tune-text:   #6c3483;
             --color-bubble-bg:   #ffffff;
             --color-bubble-text: #6c3483;
+        }
+
+        body.birthday-theme {
+            --color-tune-bg:     rgba(212, 175, 55, 0.15); 
+            --color-tune-border: rgba(212, 175, 55, 0.5); 
+            --color-tune-text:   #b38f00;
+            --color-bubble-text: #b38f00;
         }
 
         /* ==================================================================
@@ -240,7 +245,7 @@
     </style>
 </head>
 <body class="light-mode">
-    
+
     <canvas id="ecg-canvas"></canvas>
 
     <div id="help-modal" class="modal-overlay">
@@ -362,24 +367,34 @@
         };
 
         // ============================================================================
-        // 🩺 2. ECG MONITOR ENGINE
+        // 🩺 2. ECG MONITOR ENGINE (Updated for Mobile Scroll Fix)
         // ============================================================================
         class ECGMonitor {
             constructor(canvasId) { 
-                this.canvas = document.getElementById(canvasId); 
-                this.ctx = this.canvas.getContext('2d'); 
+                this.c = document.getElementById(canvasId); 
+                this.ctx = this.c.getContext('2d'); 
                 this.x = 0; 
-                this.y = window.innerHeight/2; 
+                this.y = window.innerHeight / 2; 
                 this.bpm = 60; 
                 this.alive = true; 
-                this.last = 0; 
+                this.last = 0;
+                
+                // モバイルでのスクロールによるアドレスバー伸縮への対策
+                // innerWidthが変更された場合のみリサイズをトリガーする
+                this.lastWidth = window.innerWidth;
                 this.resize(); 
-                window.addEventListener('resize', () => this.resize()); 
+                
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth !== this.lastWidth) {
+                        this.lastWidth = window.innerWidth;
+                        this.resize();
+                    }
+                }); 
             }
             resize() { 
-                this.canvas.width = window.innerWidth; 
-                this.canvas.height = window.innerHeight; 
-                this.y = this.canvas.height/2; 
+                this.c.width = window.innerWidth; 
+                this.c.height = window.innerHeight; 
+                this.y = this.c.height / 2; 
             }
             setStatus(bpm, isAlive) { 
                 this.bpm = bpm > 0 ? bpm : 60; 
@@ -387,22 +402,22 @@
             }
             draw() { 
                 const now = Date.now(); 
-                const interval = this.alive ? 60000/this.bpm : Infinity; 
+                const interval = this.alive ? 60000 / this.bpm : Infinity; 
                 
-                this.ctx.clearRect(this.x, 0, 10, this.canvas.height); 
+                this.ctx.clearRect(this.x, 0, 10, this.c.height); 
                 this.ctx.beginPath(); 
                 this.ctx.moveTo(this.x - 2, this.y); 
                 
-                let targetY = this.canvas.height / 2; 
+                let targetY = this.c.height / 2; 
                 if(this.alive) { 
                     const delta = now - this.last; 
                     if(delta > interval) { 
                         this.last = now; 
-                        targetY -= this.canvas.height * 0.25; 
+                        targetY -= this.c.height * 0.25; 
                     } else if(delta < 50) {
-                        targetY += this.canvas.height * 0.05; 
+                        targetY += this.c.height * 0.05; 
                     } else if(delta > interval - 200) {
-                        targetY += this.canvas.height * 0.1; 
+                        targetY += this.c.height * 0.1; 
                     }
                 } 
                 
@@ -415,9 +430,9 @@
                 this.ctx.stroke(); 
                 
                 this.x++; 
-                if(this.x > this.canvas.width) { 
+                if(this.x > this.c.width) { 
                     this.x = 0; 
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); 
+                    this.ctx.clearRect(0, 0, this.c.width, this.c.height); 
                 } 
                 requestAnimationFrame(() => this.draw()); 
             } 
