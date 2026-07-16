@@ -212,11 +212,9 @@
         /* ==================================================================
            5. KEEP OUT Tape (428 Respect & Seamless Marquee)
            ================================================================== */
-        /* コンテナの位置を上部（応答がありませんの付近）に固定 */
         .marquee-wrapper {
             display: none; 
             position: fixed; 
-            /* top: 50% から 15% に変更し、上部に配置 */
             top: 15%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(-5deg);
@@ -232,7 +230,6 @@
         .marquee-track {
             display: flex;
             width: max-content;
-            /* アニメーション時間を遅くして読みやすく (10s -> 20s) */
             animation: marquee-scroll 20s linear infinite;
         }
 
@@ -246,10 +243,10 @@
             white-space: nowrap;
         }
         
-        /* 🚨 流れる方向を逆（右から左）に修正するため、translateX(0) から translateX(-50%) へ移動 */
+        /* 🚨 左から右へ流れるように修正: -50% から 0 へ移動 */
         @keyframes marquee-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); } 
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); } 
         }
 
         /* 左から右へテープを引いて貼るアニメーション */
@@ -295,14 +292,18 @@
 </head>
 <body class="light-mode">
 
+    <!-- 🩺 Background ECG Canvas -->
     <canvas id="ecg-canvas"></canvas>
 
+    <!-- 🚨 KEEP OUT Tape Component (Fixed outside grid for full-screen coverage) -->
     <div class="marquee-wrapper" id="marquee-tape">
         <div class="marquee-track">
+            <!-- Set 1 -->
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+            <!-- Set 2 (To enable seamless 50% scroll looping) -->
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
@@ -310,6 +311,7 @@
         </div>
     </div>
 
+    <!-- 💡 Help Modal -->
     <div id="help-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-close" id="btn-close-modal">×</div>
@@ -558,8 +560,8 @@
                 this.els.marqueeTape.addEventListener('click', () => {
                     this.els.marqueeTape.style.opacity = '0';
                     this.els.marqueeTape.style.pointerEvents = 'none';
-                    this.els.marqueeTape.classList.add('hidden-by-user'); 
-                    this.els.msg.style.opacity = '1'; 
+                    this.els.marqueeTape.classList.add('hidden-by-user'); // ユーザーが消した状態を記録
+                    this.els.msg.style.opacity = '1'; // 背面のテキストを100%の濃さに戻す
                 });
             }
 
@@ -608,7 +610,7 @@
                                 void this.els.marqueeTape.offsetWidth;
                                 this.els.marqueeTape.classList.add('apply-anim');
                             }
-                            this.els.msg.style.opacity = '0.4'; // 背面テキストを少し薄く
+                            this.els.msg.style.opacity = '0.4'; 
                         } else {
                             this.els.msg.style.opacity = '1';
                         }
@@ -790,5 +792,48 @@
             dashboard.checkCooldown();
         });
     </script>
+<!--
+g@gg@HH0TWHgg@MMHHHHHHHHH#HH@mg@@@gqqkkbkkHWpppppbqmggmkkkbHMMMN##NNm&+(+gHHHHHH
+ggmmqH>__<Wqqqmg@@@@@HHH##HHgg@@@@@mqqkkm@@gmkbbpbqgg@ggHHyfHMNN#NMMMMMNM@MHHMHH
+kqqqkR<` (Xkkbkg@@gmg@HNN#H@@@@H@@@ggmkkg@@gmkbpppkmggggHWWWMNMNNNNMMMMMMgmg@qpp
+kkkHWS< `(dbppk@@@ggg@#NNNHHHHHMHH@@@Hmg@@@@gqHpfbqg@@@@HHqHMMMMMMMMMMMMMmqqmqbp
+bbpVyXo-(jWpfVWHHqqqgMMMMNNHMHfWMHHHH@@@@HMH9!~_?vWH@@@@@gkkHMMNMHgHMMMMMkbkqkpf
+pffVyZZZZZyVyyVppkqqmHMMMMMM@HHkHMMHHHHgHH0v<    (1ZWHHHHHbHHMMMMM@MMMMMMHppkbfV
+VVVyZZuuZZyyyWWWHmmmmg@@ggm@@@mqHHWWWkHmHkwz+-...gAwXWHkpyZXWWWpHkkHg@@HMmqkqHWW
+VVVyyyXXyVVfpppHHHbbkkqqHHHHggHHWXZXWHgmHWppWWQWHQWHHHHWWHkXvwXXWWWHHHHMHHkkHgmq
+WWWWkbpfVyffpfWWWWWkkHqHkkbkHHWyXXXWHHkWHqbWkHHMMHHHMHWWHMMNkuuuuZyWpbkqkkbbbkkb
+gmqqbpfyyVpkbbkmggmmqmmqHHWUVwXUUUWMMMMMHHHHqHHHHHpbkWqHMMMMHuXXXXWpppbbkkqmmqqk
+kkkbpfW0XXpbppbHHHHWWUUUVVOz?<1z<<<wMMMMMMMHpppHHXWHHMMMHMM@HXOlOwyyXZXXWWWWWWWp
+ppppVWC<<jXffVVWUVOwZI<<<1OOz<;>++jMMMMHM@HHHWHHCjbH@HMMMHMHNuOtwXpWuzvvwXXZZyyy
+pppfVWI~_jXppVyZZz>1tz<::+wvO?>>zwdMHMNMH@@MH@Hk+gHW@@M@HMMMMZIzOZ00XvrI11OwuXWf
+VVVyyXz:(zXWVVyXOz?zrI+::+wuOz?>?dMRXWHMH@MMNVXAwUMHHMMMMHMMMz?>?=ltttt=??=OwXpp
+yyyyyuI<+zuZyWpWXOzzuOz;;+wuwO1??dMKvW@gHHM9Cz<?1OUUWHMHH#MMM????=llz==??=lOuXpf
+ZZXuuuzrwzZyfpkHkwrwZwz<;+Ourtl=?+HN&dMM@HD<<((<:_?<j0UWHMMN8??????<<<<<+=twXWpW
+zvrrrrtttwXXUUWWWXzXyXOz<+zzvttz<:+HMNM#HHI<_~:<<<~.(OOwXWM#<::;;;<~_   (zOwXfW0
+wwwwwwwwwwrrtOZVVOOZU0ZI??zXuzrz<<~+dMMMHS=<;:~~_?TuAz1zXMB;::::;;:_   .(zvuypSZ
+UWWfWyWZZXwOll=?<<;<?????zwU0ZI!..(+MMNHSwl=z+j&-(+zrzzw91<<::::::~~~~_(1tvuyfkI
+vvzzvvrwXZuwwOOz?>;+??>>>??<<i(gM#YwMM#UXwOl=<<;<++dUXQROwwzzzz++<<:::(+zrzZypkI
+zzzzvrrrOOOOOtll??????;;;;>!.?M"~-<?M#VtOXuwOz;;++OzXUM#wXZZZZZuwOz?;;>1tvuZWpSI
+zzzvvrrttttllll=?>>??>>;;><<(= _`   JI=ltwuZykwOwwwQkZWX0wzuuuzrttl=?>+zwwXXWHkO
+vvvvrvvrrrrrttttll===??;;<:;>-.     !<?=truyWpWHNMMM8OOv1zzuuurrtll====zOVUUWHHy
+vrrvrrrttttttrtttll=1<<<~(++z1&+<((-..(?zOwZWHMMBSOOz<<:<zzOOOtlllll===???=lOOwX
+wwwwwwrttttrrtttlzz<!`     _?OUUXWXUUXX&_~~<+++1llzz<::~(0><<<<11lll===????=lltr
+HkqkHSwrrvrrrrrtz<```  `` `._~<11111<<<<~(+?==l=z<<<:~~(XI:(~_. ?1zzll=1???==lll
+XXXuzvrrrrrrtrOv! `` ``  ````___~~:<;:(+1=lllzz<<~~~:(<dI<~_~_.``.zOwXXwwwwwwwwt
+rrrrrvvrrrtrttv_.```````    ```....~<<<?1lz1<<<:~~~:(<?dC<~~~~_...`(zwOOOOOOOwVOI
+rrttrrrrttttz>~~_`..-```.  `````.....~i+<<<~~~.~__(++v<~~..._.-_~ _(+1??????????
+uZZZZuuuzzrI<~~__``` _```.```````....._<7:::~~~~~~_~~.~~_..._____._ <+1?1zlzzzz1
+uuuuuuzzzrI<.~~._``.` _``.   `` ````...._::~~~~......~~~_...._<_~...`(1llttrrrttt
+uuuuuuuzwv<_.~~.~-`..`.```._.```````...~~~~~~........~~....._~__..``-+=lttttrrrw
+XXXXXzzwO!_~~.~~~.``.._`.....````````...~_~.........~.~.....((~..```((lltttttttt
+rrrrrrrO!~~~~~..~.``.._-.``...`.``.``...............~....`-_(~..``` _:1lltlllttr
+vvrrrttO1<~~~~.~....-__<.`...``..``..`.......`..........`.-~_...``.._<<=lltlltrr
+rrvrrrvZ?<:~~_.~~..`._<_.`.`.`.`.````..`...``.......~~_.`._~____....:<<1ltrrtrrr
+rrtrrrvZ?<:~~~~.~..`.._~......``..`````....`.``.`...._``.._:(~...~..~<;+llllllll
+rtOrrvvI?<:~~~.~~..``..(-....``.....````.```.```.....`....~:j+__~..~~:<>zttllltr
+rwuuuzzw?z<~:~~~....(Ju8_.~...```....````````.`..``.`....~~<(~~~~..~~:++ttll=lll
+rwzzuzvrz1;::~~~~._(+1O$>~~~...`.`....`.``.```...``......_::J<:~~..~~:<zrrrttrrt
+rrrrrrrrOz<::~.~~~~::<1><:~_..`.`......`.``..`.``..`....._::<<:~~~.~~:<ttrrrrrrt    
+-->
 </body>
 </html>
