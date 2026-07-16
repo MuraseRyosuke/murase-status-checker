@@ -199,8 +199,8 @@
         .tune-icon { 
             font-size: 1.5rem; 
             margin-bottom: 0.2em; 
-            display: inline-block; /* アニメーションのために必要 */
-            transform-origin: 70% 70%; /* 手首あたりを支点に */
+            display: inline-block; 
+            transform-origin: 70% 70%; 
         } 
         
         @keyframes wave-hand {
@@ -209,7 +209,6 @@
             75% { transform: rotate(-10deg); }
         }
 
-        /* ホバー時 または JavaScriptで is-waving クラスが付与された時に揺らす */
         .card-tune:hover .tune-icon,
         .card-tune.is-waving .tune-icon {
             animation: wave-hand 1.5s ease-in-out infinite;
@@ -889,7 +888,6 @@
             sendTune() {
                 if (this.els.btnTune.classList.contains('disabled')) return;
                 
-                // 🚨 押したときに手を振るクラスを追加し、3秒後に消す
                 this.els.btnTune.classList.add('is-waving');
                 setTimeout(() => {
                     this.els.btnTune.classList.remove('is-waving');
@@ -927,47 +925,47 @@
         });
     </script>
 <!--
-g@gg@HH0TWHgg@MMHHHHHHHHH#HH@mg@@@gqqkkbkkHWpppppbqmggmkkkbHMMMN##NNm&+(+gHHHHHH
-ggmmqH>__<Wqqqmg@@@@@HHH##HHgg@@@@@mqqkkm@@gmkbbpbqgg@ggHHyfHMNN#NMMMMMNM@MHHMHH
-kqqqkR<` (Xkkbkg@@gmg@HNN#H@@@@H@@@ggmkkg@@gmkbpppkmggggHWWWMNMNNNNMMMMMMgmg@qpp
-kkkHWS< `(dbppk@@@ggg@#NNNHHHHHMHH@@@Hmg@@@@gqHpfbqg@@@@HHqHMMMMMMMMMMMMMmqqmqbp
-bbpVyXo-(jWpfVWHHqqqgMMMMNNHMHfWMHHHH@@@@HMH9!~_?vWH@@@@@gkkHMMNMHgHMMMMMkbkqkpf
-pffVyZZZZZyVyyVppkqqmHMMMMMM@HHkHMMHHHHgHH0v<    (1ZWHHHHHbHHMMMMM@MMMMMMHppkbfV
-VVVyZZuuZZyyyWWWHmmmmg@@ggm@@@mqHHWWWkHmHkwz+-...gAwXWHkpyZXWWWpHkkHg@@HMmqkqHWW
-VVVyyyXXyVVfpppHHHbbkkqqHHHHggHHWXZXWHgmHWppWWQWHQWHHHHWWHkXvwXXWWWHHHHMHHkkHgmq
-WWWWkbpfVyffpfWWWWWkkHqHkkbkHHWyXXXWHHkWHqbWkHHMMHHHMHWWHMMNkuuuuZyWpbkqkkbbbkkb
-gmqqbpfyyVpkbbkmggmmqmmqHHWUVwXUUUWMMMMMHHHHqHHHHHpbkWqHMMMMHuXXXXWpppbbkkqmmqqk
-kkkbpfW0XXpbppbHHHHWWUUUVVOz?<1z<<<wMMMMMMMHpppHHXWHHMMMHMM@HXOlOwyyXZXXWWWWWWWp
-ppppVWC<<jXffVVWUVOwZI<<<1OOz<;>++jMMMMHM@HHHWHHCjbH@HMMMHMHNuOtwXpWuzvvwXXZZyyy
-pppfVWI~_jXppVyZZz>1tz<::+wvO?>>zwdMHMNMH@@MH@Hk+gHW@@M@HMMMMZIzOZ00XvrI11OwuXWf
-VVVyyXz:(zXWVVyXOz?zrI+::+wuOz?>?dMRXWHMH@MMNVXAwUMHHMMMMHMMMz?>?=ltttt=??=OwXpp
-yyyyyuI<+zuZyWpWXOzzuOz;;+wuwO1??dMKvW@gHHM9Cz<?1OUUWHMHH#MMM????=llz==??=lOuXpf
-ZZXuuuzrwzZyfpkHkwrwZwz<;+Ourtl=?+HN&dMM@HD<<((<:_?<j0UWHMMN8??????<<<<<+=twXWpW
-zvrrrrtttwXXUUWWWXzXyXOz<+zzvttz<:+HMNM#HHI<_~:<<<~.(OOwXWM#<::;;;<~_   (zOwXfW0
-wwwwwwwwwwrrtOZVVOOZU0ZI??zXuzrz<<~+dMMMHS=<;:~~_?TuAz1zXMB;::::;;:_   .(zvuypSZ
-UWWfWyWZZXwOll=?<<;<?????zwU0ZI!..(+MMNHSwl=z+j&-(+zrzzw91<<::::::~~~~_(1tvuyfkI
-vvzzvvrwXZuwwOOz?>;+??>>>??<<i(gM#YwMM#UXwOl=<<;<++dUXQROwwzzzz++<<:::(+zrzZypkI
-zzzzvrrrOOOOOtll??????;;;;>!.?M"~-<?M#VtOXuwOz;;++OzXUM#wXZZZZZuwOz?;;>1tvuZWpSI
-zzzvvrrttttllll=?>>??>>;;><<(= _`   JI=ltwuZykwOwwwQkZWX0wzuuuzrttl=?>+zwwXXWHkO
-vvvvrvvrrrrrttttll===??;;<:;>-.     !<?=truyWpWHNMMM8OOv1zzuuurrtll====zOVUUWHHy
-vrrvrrrttttttrtttll=1<<<~(++z1&+<((-..(?zOwZWHMMBSOOz<<:<zzOOOtlllll===???=lOOwX
-wwwwwwrttttrrtttlzz<!`     _?OUUXWXUUXX&_~~<+++1llzz<::~(0><<<<11lll===????=lltr
-HkqkHSwrrvrrrrrtz<```  `` `._~<11111<<<<~(+?==l=z<<<:~~(XI:(~_. ?1zzll=1???==lll
-XXXuzvrrrrrrtrOv! `` ``  ````___~~:<;:(+1=lllzz<<~~~:(<dI<~_~_.``.zOwXXwwwwwwwwt
-rrrrrvvrrrtrttv_.```````    ```....~<<<?1lz1<<<:~~~:(<?dC<~~~~_...`(zwOOOOOOOwVOI
-rrttrrrrttttz>~~_`..-```.  `````.....~i+<<<~~~.~__(++v<~~..._.-_~ _(+1??????????
-uZZZZuuuzzrI<~~__``` _```.```````....._<7:::~~~~~~_~~.~~_..._____._ <+1?1zlzzzz1
-uuuuuuzzzrI<.~~._``.` _``.   `` ````...._::~~~~......~~~_...._<_~...`(1llttrrrttt
-uuuuuuuzwv<_.~~.~-`..`.```._.```````...~~~~~~........~~....._~__..``-+=lttttrrrw
-XXXXXzzwO!_~~.~~~.``.._`.....````````...~_~.........~.~.....((~..```((lltttttttt
-rrrrrrrO!~~~~~..~.``.._-.``...`.``.``...............~....`-_(~..``` _:1lltlllttr
-vvrrrttO1<~~~~.~....-__<.`...``..``..`.......`..........`.-~_...``.._<<=lltlltrr
-rrvrrrvZ?<:~~_.~~..`._<_.`.`.`.`.````..`...``.......~~_.`._~____....:<<1ltrrtrrr
-rrtrrrvZ?<:~~~~.~..`.._~......``..`````....`.``.`...._``.._:(~...~..~<;+llllllll
-rtOrrvvI?<:~~~.~~..``..(-....``.....````.```.```.....`....~:j+__~..~~:<>zttllltr
-rwuuuzzw?z<~:~~~....(Ju8_.~...```....````````.`..``.`....~~<(~~~~..~~:++ttll=lll
-rwzzuzvrz1;::~~~~._(+1O$>~~~...`.`....`.``.```...``......_::J<:~~..~~:<zrrrttrrt
-rrrrrrrrOz<::~.~~~~::<1><:~_..`.`......`.``..`.``..`....._::<<:~~~.~~:<ttrrrrrrt    
+rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr????????????????????==?=========ll=lllll
+rrrrrrrrrrrrrrrrrrrOrrrrrrrrrrrrrrrrrrrr????????????????????=?========l==lllllll
+rrrrrrrrrrrrrrrrrrZ<+zCrrrrrrrrrrrrrrrrr??>???????????==?==?=??==?=====ll=l=ll=l
+rrrrrrrrrrrrrrrrrrI__~_.?COrrrrrrrrrrrrr????>??>????????=???==??=======l=l=lllll
+rrrrrrrrrrrrrrrrrO<_(:_(____<?Orrrrrrrrr?>???????????????????=?=?========ll=llll
+rrrrrrrrrrrrrrrrrv__(<(;;;<-_-.?rOrrrrrr>?????>???????=??=????=?=======ll=lll=ll
+rrrrrrrrrrrrrrrrrO_.(;<<;>><;<(+?+Orrrrr????????????????=??=?==?=?=====lll=lllll
+rrrrrrrrrrrrrrrrrI:__:;>>><>>>+??+;Orrrr=1=???????????????=??=?==========lllllll
+rrrrrrrrtrrrtrrrrI;;;;>>>><;>;<==zzOvz==HH@MHmax???????=?=?=?==?=======lllllllll
+rrrrrrrrrrrrrrrrOv<>>>>>>>>>>>+<?1<??11?HHHMMHHHNmz===??=?=?==?=======ll=ll=llll
+rrrrrrrrrrrrrrrrrrz>>>>;;:<<<~~~<::<:<<<@MMMHM@@H@HHx==?=?=?====?=====l=llllllll
+rrrrrtrrrrrrrrrrrOx_~<;;<`  ` -~_____<~_MMH@HHHMgH@@@Hx=?==?=?=======l=llllllltt
+rrrrrrrrrrrrrrrrrrOI_(+!      `      `  HHHMH@M@HH@@HHgmz==========l=llllllllllt
+rrrrrrrrrrtrrrrrrrrrCJ!      `   ``     HH@HMHHHMMHHH@@@R=========l===lllllltttl
+rrrrrrrrrrrrrrrrrrrrz!      .   .       HHH@@MHHHH@@HHHHHk========lllllllllttttt
+rrrrrrrrrrrrrrtrrrrr:          _-       ###HH##HHMMMHM@@HNz=====lllllllllttttttt
+rrrrrrtrrrrrrrrrrrrv -. _`._` .-.- -`   ##N#MHNM#M###MMH@HR===l=lllllllltttttttt
+rrrrrrrrrrrrrrrrrrr: .__._~.~_~.._~~..__MHMM#M#NMNM#N###MHKllllll=llllllttttttrr
+rrrrrrrrrrrtrrrrrrZ___~_~_<~_<_.._::(_~:HMMMMNMMMMMM#NN##H0lllllllllllttttttrttr
+rrrrrrrrrrrrrrrrrrI~((:<:(<;<!..`.::<;<:ZWHHWHMHkU0VWM#N#EOllllllllllttttttrrrrr
+rrrrrrrrrrrrrrrrrrI:((:<:;<<?BBBB9c;+;+><zzOSdM5vUI11d##MOtlllllllttlltttrrtrttr
+rrrrrtrrrrrrrrrrrrI:<<;<;>><_...__(>><<z_<;:<>>;;<:<<zM#Uttttttttttttttttrrrrrrr
+rrrrrrrrrrrrrrrrrrI;;;><>><<(((JJ,__<<_<__;;;;<::~:(<zHSOtttttltttttttttrrrrrrrr
+rrrrrrrrrtrrrtrrrrI>;<+?><+"^dNWNf=_.__.-_<>;:::::;+1d#Ottttttttttttttrrrtrrrrtr
+rrrrrrrrrrrrrrrrrrIz>+><<;d. ,MMMD _....___<;::~::<1zd0trrrtttttttttttttrrrrrrrr
+rrrrrrrrrrrrrrrrrrOrz>z><_<i..TYC!_..``.wXHI:::;;+1zOUZrrrrrrttttttrtrrrrrrrrrrr
+rrrrrrtrrrrrrrrrrrrrO><<>-. _~~_`````.` I1<<_::<?=ltrrrrrrrttrtrttrtrtrrrrrrrrrr
+rrrrrrrrrrrrrrrrrrrrrIi1<:.```````.`.`..+&&+zzz=zzOAstrtrrtrttrtrttrrrrrrrrrrrrr
+rrrrrrrrrrrtrrrrrrrrrrrOz<+..`.``.`.`...9UUUUSwOwwXMNNyrttrtrrttrtrttrrrrrrrrrrr
+rrrrrrrrrrrrrrrtrrrrrrrrrI+1.``.````.`.`wXXwttwXyXMMMMNMNmgsOttrtrrrrrrrrrrrrrrr
+rrrrrrrrrrrrrrrrrrrrrrrrrrrrO<..`..`.__~11=ztrzXWMMMM#NMMMMMNMmytrttrrrrrvvvvvvv
+rrrrrtrrrrrrrrrrrrrrrrrrrrrrrI;<-.......zzzwwXWMHMMM#NNMMMMMMMMNNsrtrrrrrrvvvvrv
+rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrzo<~_~--..kkkHMMHHHMMNNNNNMMMNNMMMMNtrrrrrvvvvvvvv
+rrrrrrrrrtrrrrrrrrrrrrrrrrrrrrrQ[~~~~~_<MM####HHHNMNMMNNMH##NMNMMMOrrrvvzzzzzzzv
+rrrrrrrrrrrrrtrrrtrrrrrrrrrrrrd@m-~~~~~~#NNNNNMMMMNNMMMMHHN####N#Nyrvvzzzzuzuzzz
+rrrrrrrrrrrrrrrrrrrrrrrrrrrrwd@@@@MHmaJJMMMMMMMMMMMNNNNN#######MN##HNmXuuuuuuuuu
+rrrrrrtrrrrrrrrrrrrrrtrrrAQW@@@@@@H@@H@@MMMMMMMMN#NMMMM#####MMNNN######Mmkuuuuuu
+rrrrrrrrrrrrrrrrrrwAQQWHHHMH@@H@@HH@H@@@MMMMNNN#NMMNNM##MMMMMMMN####H#H###MmXuuu
+rrrrrrrrrrrwwAQQH@@MMHW@@@@@@@@HH@H@@H@@MMNNMNNMN#M##MMMMNNNNMMgHkXMMH######NkZZ
+ZW@@@@@@@@@@MHHWkQQkHH@@@H@@H@@@@@@H@@@@MNNNNNNNM@MMNNNNN#N#M@ggHHqmmWMN#N##NMRZ
+ZXHHHkkQQQQkHkkkkH@@H@@@H@@@@@@@@@@H@@H@NNMNNMNNMSN##NN####Mg@gH@@gmHMNNM##NMNMk
 -->
 </body>
 </html>
