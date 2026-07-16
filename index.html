@@ -143,6 +143,9 @@
         .anim-flash { animation: flashAnim 0.3s ease-out; } 
         @keyframes flashAnim { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1); } }
 
+        /* ✨ スクランブル用のダミーテキスト（薄くする） */
+        .dud { color: var(--text-sub); opacity: 0.8; }
+
         .label { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; color: var(--text-sub); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4em; width: 100%; }
         .value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; } 
         .unit { font-size: 0.9rem; font-weight: 500; color: var(--text-sub); margin-left: 0.2em; } 
@@ -243,13 +246,11 @@
             white-space: nowrap;
         }
         
-        /* 🚨 左から右へ流れるように修正: -50% から 0 へ移動 */
         @keyframes marquee-scroll {
             0% { transform: translateX(-50%); }
             100% { transform: translateX(0); } 
         }
 
-        /* 左から右へテープを引いて貼るアニメーション */
         @keyframes applyTape {
             0% { 
                 clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); 
@@ -285,25 +286,20 @@
             body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; } 
             body.dark-mode .footer-info { order: 5; }
             
-            /* スマホ時のテープ位置微調整 */
             .marquee-wrapper { top: 20%; }
         }
     </style>
 </head>
 <body class="light-mode">
 
-    <!-- 🩺 Background ECG Canvas -->
     <canvas id="ecg-canvas"></canvas>
 
-    <!-- 🚨 KEEP OUT Tape Component (Fixed outside grid for full-screen coverage) -->
     <div class="marquee-wrapper" id="marquee-tape">
         <div class="marquee-track">
-            <!-- Set 1 -->
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
-            <!-- Set 2 (To enable seamless 50% scroll looping) -->
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
@@ -311,7 +307,6 @@
         </div>
     </div>
 
-    <!-- 💡 Help Modal -->
     <div id="help-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-close" id="btn-close-modal">×</div>
@@ -432,7 +427,75 @@
         };
 
         // ============================================================================
-        // 🩺 2. ECG MONITOR ENGINE
+        // ✨ 2. TEXT SCRAMBLE ENGINE (THA LTD. Style)
+        // ============================================================================
+        class TextScramble {
+            constructor(el) {
+                this.el = el;
+                // ハッカー感のある英数字と記号のランダム文字
+                this.chars = '!<>-_\\/[]{}—=+*^?#ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                this.update = this.update.bind(this);
+            }
+            
+            setText(newText) {
+                const oldText = this.el.innerText || '';
+                const oldChars = Array.from(oldText); // 絵文字対応のためArray.fromで分割
+                const newChars = Array.from(newText);
+                const length = Math.max(oldChars.length, newChars.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                
+                this.queue = [];
+                for (let i = 0; i < length; i++) {
+                    const from = oldChars[i] || '';
+                    const to = newChars[i] || '';
+                    // 💡 先頭から波のように順に確定していくための時間差ロジック
+                    const start = Math.floor(Math.random() * 5) + i * 2;
+                    const end = start + Math.floor(Math.random() * 10) + 10;
+                    this.queue.push({ from, to, start, end });
+                }
+                
+                cancelAnimationFrame(this.frameRequest);
+                this.frame = 0;
+                this.update();
+                return promise;
+            }
+            
+            update() {
+                let output = '';
+                let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    
+                    if (this.frame >= end) {
+                        complete++;
+                        output += to;
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = this.randomChar();
+                            this.queue[i].char = char;
+                        }
+                        output += `<span class="dud">${char}</span>`;
+                    } else {
+                        output += from;
+                    }
+                }
+                
+                this.el.innerHTML = output;
+                if (complete === this.queue.length) {
+                    this.resolve();
+                } else {
+                    this.frameRequest = requestAnimationFrame(this.update);
+                    this.frame++;
+                }
+            }
+            
+            randomChar() {
+                return this.chars[Math.floor(Math.random() * this.chars.length)];
+            }
+        }
+
+        // ============================================================================
+        // 🩺 3. ECG MONITOR ENGINE
         // ============================================================================
         class ECGMonitor {
             constructor(canvasId) { 
@@ -503,7 +566,7 @@
         }
 
         // ============================================================================
-        // 📊 3. DASHBOARD CONTROLLER (Data Fetch & UI Management)
+        // 📊 4. DASHBOARD CONTROLLER (Data Fetch & UI Management)
         // ============================================================================
         class HealthDashboard {
             constructor(ecgEngine) {
@@ -511,6 +574,7 @@
                 this.speedUnitIdx = 0;
                 this.globalSpeedKmh = 0;
                 this.els = this.getElements();
+                this.initScramblers();
                 this.bindEvents();
             }
 
@@ -547,6 +611,25 @@
                 };
             }
 
+            initScramblers() {
+                // 🚀 初回ロード時のスクランブル効果を各要素にバインド
+                this.scramblers = {
+                    msg: new TextScramble(this.els.msg),
+                    hr: new TextScramble(this.els.hr),
+                    steps: new TextScramble(this.els.steps),
+                    cal: new TextScramble(this.els.cal),
+                    speedVal: new TextScramble(this.els.speedVal),
+                    asym: new TextScramble(this.els.asym),
+                    stand: new TextScramble(this.els.stand),
+                    flights: new TextScramble(this.els.flights),
+                    cond: new TextScramble(this.els.cond),
+                    sndVal: new TextScramble(this.els.sndVal),
+                    loc: new TextScramble(this.els.loc),
+                    batVal: new TextScramble(this.els.batVal)
+                };
+                this.isInitialLoad = true;
+            }
+
             bindEvents() {
                 this.els.cardSpeed.addEventListener('click', () => this.toggleSpeedUnit());
                 this.els.btnTune.addEventListener('click', () => this.sendTune());
@@ -556,15 +639,15 @@
                     if (e.target === this.els.modal) this.closeModal();
                 });
                 
-                // 🚨 テープをクリックした時の処理（滑らかに消えて元の表示に戻る）
                 this.els.marqueeTape.addEventListener('click', () => {
                     this.els.marqueeTape.style.opacity = '0';
                     this.els.marqueeTape.style.pointerEvents = 'none';
-                    this.els.marqueeTape.classList.add('hidden-by-user'); // ユーザーが消した状態を記録
-                    this.els.msg.style.opacity = '1'; // 背面のテキストを100%の濃さに戻す
+                    this.els.marqueeTape.classList.add('hidden-by-user'); 
+                    this.els.msg.style.opacity = '1'; 
                 });
             }
 
+            // Utilities
             safeParseInt(val) { return (!val || val === "") ? 0 : parseInt(val, 10); }
             safeParseFloat(val) { return (!val || val === "") ? 0 : parseFloat(val); }
             getRelativeTime(date) { 
@@ -575,6 +658,22 @@
                 return diffHours < 24 ? `${diffHours}時間前` : `${Math.floor(diffHours/24)}日前`; 
             }
 
+            // 🚀 テキスト設定ヘルパー（初回のみスクランブル発動）
+            setTextData(key, text) {
+                const textStr = String(text);
+                if (this.isInitialLoad && this.scramblers[key]) {
+                    // ダミーの「---」などが最初から入っていると演出が崩れるので一度空にする
+                    if (this.els[key].dataset.scrambled !== "true") {
+                        this.els[key].textContent = '';
+                        this.scramblers[key].setText(textStr);
+                        this.els[key].dataset.scrambled = "true";
+                    }
+                } else {
+                    this.els[key].textContent = textStr;
+                }
+            }
+
+            // Data Fetch
             async updateStatus() {
                 try { 
                     const res = await fetch(`https://api.github.com/gists/${AppConfig.gistId}?t=${Date.now()}`); 
@@ -585,28 +684,26 @@
                     const last = new Date(d.last_updated);
                     const alive = (new Date() - last) / 36e5 <= AppConfig.thresholdHours; 
                     
-                    // 🚨 Liveness State handling
+                    // Liveness State handling
                     if(alive){ 
                         this.els.body.className = 'light-mode'; 
-                        this.els.msg.textContent = '村瀨亮介は生きています。';
+                        this.setTextData('msg', '村瀨亮介は生きています。');
                         this.els.msg.style.opacity = '1';
                         this.els.sub.textContent = ''; 
                         this.els.marqueeTape.style.display = 'none'; 
                         this.els.marqueeTape.classList.remove('apply-anim');
-                        this.els.marqueeTape.classList.remove('hidden-by-user'); // リセット
+                        this.els.marqueeTape.classList.remove('hidden-by-user'); 
                     } else { 
                         this.els.body.className = 'dark-mode'; 
                         
-                        this.els.msg.textContent = '村瀨亮介からの応答がありません。'; 
+                        this.setTextData('msg', '村瀨亮介からの応答がありません。'); 
                         this.els.sub.innerHTML = `安否確認は <a href="${AppConfig.links.twitter}" target="_blank">X</a> または <a href="${AppConfig.links.dosei}" target="_blank">動静</a> へ`; 
                         
-                        // ユーザーがまだテープを消していなければ、アニメーション付きでテープを表示
                         if (!this.els.marqueeTape.classList.contains('hidden-by-user')) {
                             if (this.els.marqueeTape.style.display !== 'block') {
                                 this.els.marqueeTape.style.display = 'block'; 
                                 this.els.marqueeTape.style.opacity = '1';
                                 this.els.marqueeTape.style.pointerEvents = 'auto';
-                                // 強制リフローさせてアニメーションを確実に行う
                                 void this.els.marqueeTape.offsetWidth;
                                 this.els.marqueeTape.classList.add('apply-anim');
                             }
@@ -618,59 +715,62 @@
                     
                     const hr = this.safeParseInt(d.health.heart_rate); 
                     this.ecgEngine.setStatus(hr, alive); 
-                    this.els.hr.textContent = hr || '---'; 
+                    this.setTextData('hr', hr || '---'); 
                     this.els.hrSub.textContent = this.getRelativeTime(last); 
                     this.els.rHr.textContent = this.safeParseInt(d.health.resting_heart_rate) || '--'; 
                     
                     const steps = this.safeParseInt(d.health.steps); 
-                    this.els.steps.textContent = steps.toLocaleString(); 
+                    this.setTextData('steps', steps.toLocaleString()); 
                     this.els.steps.style.color = steps >= 8000 ? 'var(--color-gold)' : 'inherit'; 
-                    this.els.cal.textContent = Math.round(this.safeParseInt(d.health.active_calories)).toLocaleString(); 
+                    this.setTextData('cal', Math.round(this.safeParseInt(d.health.active_calories)).toLocaleString()); 
                     
                     this.globalSpeedKmh = this.safeParseFloat(d.health.walking_speed); 
                     this.renderSpeed(); 
                     
                     const asym = this.safeParseFloat(d.health.walking_asymmetry); 
                     if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") { 
-                        this.els.asym.textContent = (asym * 100).toFixed(0); 
+                        this.setTextData('asym', (asym * 100).toFixed(0)); 
                         this.updateLevel(asym); 
                     } else { 
-                        this.els.asym.textContent = '--'; 
+                        this.setTextData('asym', '--'); 
                         this.updateLevel(null); 
                     } 
                     
-                    this.els.stand.textContent = this.safeParseInt(d.health.stand_hours) || '0'; 
-                    this.els.flights.textContent = this.safeParseInt(d.health.flights_climbed) || '0'; 
+                    this.setTextData('stand', this.safeParseInt(d.health.stand_hours) || '0'); 
+                    this.setTextData('flights', this.safeParseInt(d.health.flights_climbed) || '0'); 
                     
                     const hrv = this.safeParseFloat(d.health.condition_hrv); 
                     if (hrv >= 40) { 
-                        this.els.cond.textContent = '絶好調✨'; 
+                        this.setTextData('cond', '絶好調✨'); 
                         this.els.cond.style.color = 'var(--color-good)'; 
                     } else if (hrv >= 20) { 
-                        this.els.cond.textContent = '安定🌱'; 
+                        this.setTextData('cond', '安定🌱'); 
                         this.els.cond.style.color = 'var(--color-ok)'; 
                     } else if (hrv > 0) { 
-                        this.els.cond.textContent = '疲労気味💤'; 
+                        this.setTextData('cond', '疲労気味💤'); 
                         this.els.cond.style.color = 'var(--color-bad)'; 
                     } else { 
-                        this.els.cond.textContent = '---'; 
+                        this.setTextData('cond', '---'); 
                         this.els.cond.style.color = 'inherit'; 
                     } 
                     
                     const db = this.safeParseFloat(d.environment && d.environment.sound_level_db); 
                     if (db > 0) { 
-                        this.els.sndVal.textContent = Math.round(db); 
+                        this.setTextData('sndVal', Math.round(db)); 
                         this.els.sndLbl.textContent = (db < 40 ? '(静寂)' : db < 70 ? '(普通)' : '(騒音)'); 
                         this.els.sndLbl.style.color = db < 40 ? 'var(--color-good)' : db < 70 ? 'var(--color-avg)' : 'var(--color-bad)'; 
                     } else { 
-                        this.els.sndVal.textContent = '---'; 
+                        this.setTextData('sndVal', '---'); 
                         this.els.sndLbl.textContent = ''; 
                     } 
                     
-                    this.els.batVal.textContent = d.device.battery; 
+                    this.setTextData('batVal', d.device.battery); 
                     this.els.batIcon.textContent = (d.device.is_charging === 'Yes' || d.device.is_charging === true) ? '⚡️' : ''; 
                     this.els.upd.textContent = last.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }); 
-                    this.els.loc.textContent = d.location.city || '---'; 
+                    this.setTextData('loc', d.location.city || '---'); 
+                    
+                    // 🚀 初回ロード完了フラグを下ろす（以降は通常切り替えになる）
+                    this.isInitialLoad = false;
                 } catch (e) { 
                     console.error(e);
                     this.els.msg.textContent = '読み込み失敗'; 
@@ -686,15 +786,15 @@
             }
             
             renderSpeed() { 
-                if (!this.globalSpeedKmh) { this.els.speedVal.textContent = '--'; return; } 
+                if (!this.globalSpeedKmh) { this.setTextData('speedVal', '--'); return; } 
                 if (this.speedUnitIdx === 0) { 
-                    this.els.speedVal.textContent = this.globalSpeedKmh.toFixed(1); 
+                    this.setTextData('speedVal', this.globalSpeedKmh.toFixed(1)); 
                     this.els.speedUnit.textContent = 'km/h'; 
                 } else if (this.speedUnitIdx === 1) { 
-                    this.els.speedVal.textContent = (this.globalSpeedKmh * 16.6667).toFixed(0); 
+                    this.setTextData('speedVal', (this.globalSpeedKmh * 16.6667).toFixed(0)); 
                     this.els.speedUnit.textContent = 'm/min'; 
                 } else { 
-                    this.els.speedVal.textContent = (this.globalSpeedKmh / 3.6).toFixed(2); 
+                    this.setTextData('speedVal', (this.globalSpeedKmh / 3.6).toFixed(2)); 
                     this.els.speedUnit.textContent = 'm/s'; 
                 } 
             }
@@ -781,7 +881,7 @@
         }
 
         // ============================================================================
-        // 🚀 4. INITIALIZATION
+        // 🚀 6. INITIALIZATION
         // ============================================================================
         document.addEventListener('DOMContentLoaded', () => {
             const ecgEngine = new ECGMonitor('ecg-canvas');
@@ -792,48 +892,5 @@
             dashboard.checkCooldown();
         });
     </script>
-<!--
-g@gg@HH0TWHgg@MMHHHHHHHHH#HH@mg@@@gqqkkbkkHWpppppbqmggmkkkbHMMMN##NNm&+(+gHHHHHH
-ggmmqH>__<Wqqqmg@@@@@HHH##HHgg@@@@@mqqkkm@@gmkbbpbqgg@ggHHyfHMNN#NMMMMMNM@MHHMHH
-kqqqkR<` (Xkkbkg@@gmg@HNN#H@@@@H@@@ggmkkg@@gmkbpppkmggggHWWWMNMNNNNMMMMMMgmg@qpp
-kkkHWS< `(dbppk@@@ggg@#NNNHHHHHMHH@@@Hmg@@@@gqHpfbqg@@@@HHqHMMMMMMMMMMMMMmqqmqbp
-bbpVyXo-(jWpfVWHHqqqgMMMMNNHMHfWMHHHH@@@@HMH9!~_?vWH@@@@@gkkHMMNMHgHMMMMMkbkqkpf
-pffVyZZZZZyVyyVppkqqmHMMMMMM@HHkHMMHHHHgHH0v<    (1ZWHHHHHbHHMMMMM@MMMMMMHppkbfV
-VVVyZZuuZZyyyWWWHmmmmg@@ggm@@@mqHHWWWkHmHkwz+-...gAwXWHkpyZXWWWpHkkHg@@HMmqkqHWW
-VVVyyyXXyVVfpppHHHbbkkqqHHHHggHHWXZXWHgmHWppWWQWHQWHHHHWWHkXvwXXWWWHHHHMHHkkHgmq
-WWWWkbpfVyffpfWWWWWkkHqHkkbkHHWyXXXWHHkWHqbWkHHMMHHHMHWWHMMNkuuuuZyWpbkqkkbbbkkb
-gmqqbpfyyVpkbbkmggmmqmmqHHWUVwXUUUWMMMMMHHHHqHHHHHpbkWqHMMMMHuXXXXWpppbbkkqmmqqk
-kkkbpfW0XXpbppbHHHHWWUUUVVOz?<1z<<<wMMMMMMMHpppHHXWHHMMMHMM@HXOlOwyyXZXXWWWWWWWp
-ppppVWC<<jXffVVWUVOwZI<<<1OOz<;>++jMMMMHM@HHHWHHCjbH@HMMMHMHNuOtwXpWuzvvwXXZZyyy
-pppfVWI~_jXppVyZZz>1tz<::+wvO?>>zwdMHMNMH@@MH@Hk+gHW@@M@HMMMMZIzOZ00XvrI11OwuXWf
-VVVyyXz:(zXWVVyXOz?zrI+::+wuOz?>?dMRXWHMH@MMNVXAwUMHHMMMMHMMMz?>?=ltttt=??=OwXpp
-yyyyyuI<+zuZyWpWXOzzuOz;;+wuwO1??dMKvW@gHHM9Cz<?1OUUWHMHH#MMM????=llz==??=lOuXpf
-ZZXuuuzrwzZyfpkHkwrwZwz<;+Ourtl=?+HN&dMM@HD<<((<:_?<j0UWHMMN8??????<<<<<+=twXWpW
-zvrrrrtttwXXUUWWWXzXyXOz<+zzvttz<:+HMNM#HHI<_~:<<<~.(OOwXWM#<::;;;<~_   (zOwXfW0
-wwwwwwwwwwrrtOZVVOOZU0ZI??zXuzrz<<~+dMMMHS=<;:~~_?TuAz1zXMB;::::;;:_   .(zvuypSZ
-UWWfWyWZZXwOll=?<<;<?????zwU0ZI!..(+MMNHSwl=z+j&-(+zrzzw91<<::::::~~~~_(1tvuyfkI
-vvzzvvrwXZuwwOOz?>;+??>>>??<<i(gM#YwMM#UXwOl=<<;<++dUXQROwwzzzz++<<:::(+zrzZypkI
-zzzzvrrrOOOOOtll??????;;;;>!.?M"~-<?M#VtOXuwOz;;++OzXUM#wXZZZZZuwOz?;;>1tvuZWpSI
-zzzvvrrttttllll=?>>??>>;;><<(= _`   JI=ltwuZykwOwwwQkZWX0wzuuuzrttl=?>+zwwXXWHkO
-vvvvrvvrrrrrttttll===??;;<:;>-.     !<?=truyWpWHNMMM8OOv1zzuuurrtll====zOVUUWHHy
-vrrvrrrttttttrtttll=1<<<~(++z1&+<((-..(?zOwZWHMMBSOOz<<:<zzOOOtlllll===???=lOOwX
-wwwwwwrttttrrtttlzz<!`     _?OUUXWXUUXX&_~~<+++1llzz<::~(0><<<<11lll===????=lltr
-HkqkHSwrrvrrrrrtz<```  `` `._~<11111<<<<~(+?==l=z<<<:~~(XI:(~_. ?1zzll=1???==lll
-XXXuzvrrrrrrtrOv! `` ``  ````___~~:<;:(+1=lllzz<<~~~:(<dI<~_~_.``.zOwXXwwwwwwwwt
-rrrrrvvrrrtrttv_.```````    ```....~<<<?1lz1<<<:~~~:(<?dC<~~~~_...`(zwOOOOOOOwVOI
-rrttrrrrttttz>~~_`..-```.  `````.....~i+<<<~~~.~__(++v<~~..._.-_~ _(+1??????????
-uZZZZuuuzzrI<~~__``` _```.```````....._<7:::~~~~~~_~~.~~_..._____._ <+1?1zlzzzz1
-uuuuuuzzzrI<.~~._``.` _``.   `` ````...._::~~~~......~~~_...._<_~...`(1llttrrrttt
-uuuuuuuzwv<_.~~.~-`..`.```._.```````...~~~~~~........~~....._~__..``-+=lttttrrrw
-XXXXXzzwO!_~~.~~~.``.._`.....````````...~_~.........~.~.....((~..```((lltttttttt
-rrrrrrrO!~~~~~..~.``.._-.``...`.``.``...............~....`-_(~..``` _:1lltlllttr
-vvrrrttO1<~~~~.~....-__<.`...``..``..`.......`..........`.-~_...``.._<<=lltlltrr
-rrvrrrvZ?<:~~_.~~..`._<_.`.`.`.`.````..`...``.......~~_.`._~____....:<<1ltrrtrrr
-rrtrrrvZ?<:~~~~.~..`.._~......``..`````....`.``.`...._``.._:(~...~..~<;+llllllll
-rtOrrvvI?<:~~~.~~..``..(-....``.....````.```.```.....`....~:j+__~..~~:<>zttllltr
-rwuuuzzw?z<~:~~~....(Ju8_.~...```....````````.`..``.`....~~<(~~~~..~~:++ttll=lll
-rwzzuzvrz1;::~~~~._(+1O$>~~~...`.`....`.``.```...``......_::J<:~~..~~:<zrrrttrrt
-rrrrrrrrOz<::~.~~~~::<1><:~_..`.`......`.``..`.``..`....._::<<:~~~.~~:<ttrrrrrrt    
--->
 </body>
 </html>
