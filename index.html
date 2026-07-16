@@ -145,6 +145,8 @@
 
         /* ✨ スクランブル用のダミーテキスト（薄くする） */
         .dud { color: var(--text-sub); opacity: 0.8; }
+        /* テープ上のダミーテキストは黒のままにする */
+        .marquee-text .dud { color: #000; opacity: 0.8; }
 
         .label { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; color: var(--text-sub); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4em; width: 100%; }
         .value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; } 
@@ -292,14 +294,18 @@
 </head>
 <body class="light-mode">
 
+    <!-- 🩺 Background ECG Canvas -->
     <canvas id="ecg-canvas"></canvas>
 
+    <!-- 🚨 KEEP OUT Tape Component -->
     <div class="marquee-wrapper" id="marquee-tape">
         <div class="marquee-track">
+            <!-- Set 1 -->
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+            <!-- Set 2 -->
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
@@ -307,6 +313,7 @@
         </div>
     </div>
 
+    <!-- 💡 Help Modal -->
     <div id="help-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-close" id="btn-close-modal">×</div>
@@ -439,7 +446,7 @@
             
             setText(newText) {
                 const oldText = this.el.innerText || '';
-                const oldChars = Array.from(oldText); // 絵文字対応のためArray.fromで分割
+                const oldChars = Array.from(oldText); 
                 const newChars = Array.from(newText);
                 const length = Math.max(oldChars.length, newChars.length);
                 const promise = new Promise((resolve) => this.resolve = resolve);
@@ -627,7 +634,12 @@
                     loc: new TextScramble(this.els.loc),
                     batVal: new TextScramble(this.els.batVal)
                 };
+                
+                // 🚨 テープ内の文字群もスクランブルの対象にする
+                this.tapeScramblers = Array.from(document.querySelectorAll('.marquee-text')).map(el => new TextScramble(el));
+                
                 this.isInitialLoad = true;
+                this.isTapeScrambled = false; // テープが一度でもスクランブルされたか
             }
 
             bindEvents() {
@@ -647,7 +659,6 @@
                 });
             }
 
-            // Utilities
             safeParseInt(val) { return (!val || val === "") ? 0 : parseInt(val, 10); }
             safeParseFloat(val) { return (!val || val === "") ? 0 : parseFloat(val); }
             getRelativeTime(date) { 
@@ -658,11 +669,9 @@
                 return diffHours < 24 ? `${diffHours}時間前` : `${Math.floor(diffHours/24)}日前`; 
             }
 
-            // 🚀 テキスト設定ヘルパー（初回のみスクランブル発動）
             setTextData(key, text) {
                 const textStr = String(text);
                 if (this.isInitialLoad && this.scramblers[key]) {
-                    // ダミーの「---」などが最初から入っていると演出が崩れるので一度空にする
                     if (this.els[key].dataset.scrambled !== "true") {
                         this.els[key].textContent = '';
                         this.scramblers[key].setText(textStr);
@@ -673,7 +682,6 @@
                 }
             }
 
-            // Data Fetch
             async updateStatus() {
                 try { 
                     const res = await fetch(`https://api.github.com/gists/${AppConfig.gistId}?t=${Date.now()}`); 
@@ -684,7 +692,6 @@
                     const last = new Date(d.last_updated);
                     const alive = (new Date() - last) / 36e5 <= AppConfig.thresholdHours; 
                     
-                    // Liveness State handling
                     if(alive){ 
                         this.els.body.className = 'light-mode'; 
                         this.setTextData('msg', '村瀨亮介は生きています。');
@@ -699,6 +706,15 @@
                         this.setTextData('msg', '村瀨亮介からの応答がありません。'); 
                         this.els.sub.innerHTML = `安否確認は <a href="${AppConfig.links.twitter}" target="_blank">X</a> または <a href="${AppConfig.links.dosei}" target="_blank">動静</a> へ`; 
                         
+                        // 🚨 テープの初回表示時に一斉スクランブルエフェクトを適用
+                        if (!this.isTapeScrambled) {
+                            this.tapeScramblers.forEach(sc => {
+                                sc.el.textContent = ''; // 既存の文字を消す
+                                sc.setText('村瀨亮介からの応答がありません。 ⚠');
+                            });
+                            this.isTapeScrambled = true;
+                        }
+
                         if (!this.els.marqueeTape.classList.contains('hidden-by-user')) {
                             if (this.els.marqueeTape.style.display !== 'block') {
                                 this.els.marqueeTape.style.display = 'block'; 
@@ -769,7 +785,6 @@
                     this.els.upd.textContent = last.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }); 
                     this.setTextData('loc', d.location.city || '---'); 
                     
-                    // 🚀 初回ロード完了フラグを下ろす（以降は通常切り替えになる）
                     this.isInitialLoad = false;
                 } catch (e) { 
                     console.error(e);
@@ -892,5 +907,48 @@
             dashboard.checkCooldown();
         });
     </script>
+<!--
+g@gg@HH0TWHgg@MMHHHHHHHHH#HH@mg@@@gqqkkbkkHWpppppbqmggmkkkbHMMMN##NNm&+(+gHHHHHH
+ggmmqH>__<Wqqqmg@@@@@HHH##HHgg@@@@@mqqkkm@@gmkbbpbqgg@ggHHyfHMNN#NMMMMMNM@MHHMHH
+kqqqkR<` (Xkkbkg@@gmg@HNN#H@@@@H@@@ggmkkg@@gmkbpppkmggggHWWWMNMNNNNMMMMMMgmg@qpp
+kkkHWS< `(dbppk@@@ggg@#NNNHHHHHMHH@@@Hmg@@@@gqHpfbqg@@@@HHqHMMMMMMMMMMMMMmqqmqbp
+bbpVyXo-(jWpfVWHHqqqgMMMMNNHMHfWMHHHH@@@@HMH9!~_?vWH@@@@@gkkHMMNMHgHMMMMMkbkqkpf
+pffVyZZZZZyVyyVppkqqmHMMMMMM@HHkHMMHHHHgHH0v<    (1ZWHHHHHbHHMMMMM@MMMMMMHppkbfV
+VVVyZZuuZZyyyWWWHmmmmg@@ggm@@@mqHHWWWkHmHkwz+-...gAwXWHkpyZXWWWpHkkHg@@HMmqkqHWW
+VVVyyyXXyVVfpppHHHbbkkqqHHHHggHHWXZXWHgmHWppWWQWHQWHHHHWWHkXvwXXWWWHHHHMHHkkHgmq
+WWWWkbpfVyffpfWWWWWkkHqHkkbkHHWyXXXWHHkWHqbWkHHMMHHHMHWWHMMNkuuuuZyWpbkqkkbbbkkb
+gmqqbpfyyVpkbbkmggmmqmmqHHWUVwXUUUWMMMMMHHHHqHHHHHpbkWqHMMMMHuXXXXWpppbbkkqmmqqk
+kkkbpfW0XXpbppbHHHHWWUUUVVOz?<1z<<<wMMMMMMMHpppHHXWHHMMMHMM@HXOlOwyyXZXXWWWWWWWp
+ppppVWC<<jXffVVWUVOwZI<<<1OOz<;>++jMMMMHM@HHHWHHCjbH@HMMMHMHNuOtwXpWuzvvwXXZZyyy
+pppfVWI~_jXppVyZZz>1tz<::+wvO?>>zwdMHMNMH@@MH@Hk+gHW@@M@HMMMMZIzOZ00XvrI11OwuXWf
+VVVyyXz:(zXWVVyXOz?zrI+::+wuOz?>?dMRXWHMH@MMNVXAwUMHHMMMMHMMMz?>?=ltttt=??=OwXpp
+yyyyyuI<+zuZyWpWXOzzuOz;;+wuwO1??dMKvW@gHHM9Cz<?1OUUWHMHH#MMM????=llz==??=lOuXpf
+ZZXuuuzrwzZyfpkHkwrwZwz<;+Ourtl=?+HN&dMM@HD<<((<:_?<j0UWHMMN8??????<<<<<+=twXWpW
+zvrrrrtttwXXUUWWWXzXyXOz<+zzvttz<:+HMNM#HHI<_~:<<<~.(OOwXWM#<::;;;<~_   (zOwXfW0
+wwwwwwwwwwrrtOZVVOOZU0ZI??zXuzrz<<~+dMMMHS=<;:~~_?TuAz1zXMB;::::;;:_   .(zvuypSZ
+UWWfWyWZZXwOll=?<<;<?????zwU0ZI!..(+MMNHSwl=z+j&-(+zrzzw91<<::::::~~~~_(1tvuyfkI
+vvzzvvrwXZuwwOOz?>;+??>>>??<<i(gM#YwMM#UXwOl=<<;<++dUXQROwwzzzz++<<:::(+zrzZypkI
+zzzzvrrrOOOOOtll??????;;;;>!.?M"~-<?M#VtOXuwOz;;++OzXUM#wXZZZZZuwOz?;;>1tvuZWpSI
+zzzvvrrttttllll=?>>??>>;;><<(= _`   JI=ltwuZykwOwwwQkZWX0wzuuuzrttl=?>+zwwXXWHkO
+vvvvrvvrrrrrttttll===??;;<:;>-.     !<?=truyWpWHNMMM8OOv1zzuuurrtll====zOVUUWHHy
+vrrvrrrttttttrtttll=1<<<~(++z1&+<((-..(?zOwZWHMMBSOOz<<:<zzOOOtlllll===???=lOOwX
+wwwwwwrttttrrtttlzz<!`     _?OUUXWXUUXX&_~~<+++1llzz<::~(0><<<<11lll===????=lltr
+HkqkHSwrrvrrrrrtz<```  `` `._~<11111<<<<~(+?==l=z<<<:~~(XI:(~_. ?1zzll=1???==lll
+XXXuzvrrrrrrtrOv! `` ``  ````___~~:<;:(+1=lllzz<<~~~:(<dI<~_~_.``.zOwXXwwwwwwwwt
+rrrrrvvrrrtrttv_.```````    ```....~<<<?1lz1<<<:~~~:(<?dC<~~~~_...`(zwOOOOOOOwVOI
+rrttrrrrttttz>~~_`..-```.  `````.....~i+<<<~~~.~__(++v<~~..._.-_~ _(+1??????????
+uZZZZuuuzzrI<~~__``` _```.```````....._<7:::~~~~~~_~~.~~_..._____._ <+1?1zlzzzz1
+uuuuuuzzzrI<.~~._``.` _``.   `` ````...._::~~~~......~~~_...._<_~...`(1llttrrrttt
+uuuuuuuzwv<_.~~.~-`..`.```._.```````...~~~~~~........~~....._~__..``-+=lttttrrrw
+XXXXXzzwO!_~~.~~~.``.._`.....````````...~_~.........~.~.....((~..```((lltttttttt
+rrrrrrrO!~~~~~..~.``.._-.``...`.``.``...............~....`-_(~..``` _:1lltlllttr
+vvrrrttO1<~~~~.~....-__<.`...``..``..`.......`..........`.-~_...``.._<<=lltlltrr
+rrvrrrvZ?<:~~_.~~..`._<_.`.`.`.`.````..`...``.......~~_.`._~____....:<<1ltrrtrrr
+rrtrrrvZ?<:~~~~.~..`.._~......``..`````....`.``.`...._``.._:(~...~..~<;+llllllll
+rtOrrvvI?<:~~~.~~..``..(-....``.....````.```.```.....`....~:j+__~..~~:<>zttllltr
+rwuuuzzw?z<~:~~~....(Ju8_.~...```....````````.`..``.`....~~<(~~~~..~~:++ttll=lll
+rwzzuzvrz1;::~~~~._(+1O$>~~~...`.`....`.``.```...``......_::J<:~~..~~:<zrrrttrrt
+rrrrrrrrOz<::~.~~~~::<1><:~_..`.`......`.``..`.``..`....._::<<:~~~.~~:<ttrrrrrrt    
+-->
 </body>
 </html>
