@@ -212,44 +212,43 @@
         /* ==================================================================
            5. KEEP OUT Tape (428 Respect & Seamless Marquee)
            ================================================================== */
-        /* コンテナは画面全体に固定し、回転させて配置 */
+        /* コンテナの位置を上部（応答がありませんの付近）に固定 */
         .marquee-wrapper {
             display: none; 
             position: fixed; 
-            top: 50%;
+            /* top: 50% から 15% に変更し、上部に配置 */
+            top: 15%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(-5deg);
-            width: 150vw; /* 画面端が見えないよう十分に幅広にする */
+            width: 150vw; 
             background: #ffee00;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            z-index: 1000; /* カードより前面に */
+            z-index: 1000; 
             cursor: pointer;
             transition: opacity 0.5s ease;
-            overflow: hidden; /* ここで左右にはみ出た文字を隠す */
+            overflow: hidden; 
         }
 
-        /* アニメーションするトラック（2倍の幅で中身を繰り返す） */
         .marquee-track {
             display: flex;
             width: max-content;
-            animation: marquee-scroll 10s linear infinite;
+            /* アニメーション時間を遅くして読みやすく (10s -> 20s) */
+            animation: marquee-scroll 20s linear infinite;
         }
 
-        /* 隙間なく連続させるためのテキストブロック */
         .marquee-text {
             font-weight: 900;
             font-size: clamp(2rem, 6vw, 3.5rem);
-            padding: 0.2em 0.5em; /* 上下のテープ幅と左右の隙間を調整 */
+            padding: 0.2em 0.5em; 
             line-height: 1.1;
-            color: #000; /* 透過なしの黒 */
+            color: #000; 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
             white-space: nowrap;
         }
         
-        /* 完璧なシームレスループアニメーション */
+        /* 🚨 流れる方向を逆（右から左）に修正するため、translateX(0) から translateX(-50%) へ移動 */
         @keyframes marquee-scroll {
             0% { transform: translateX(0); }
-            /* 全体幅の半分(50%)移動した時点で0%と同じ見た目になるようにDOMを2セット配置する */
             100% { transform: translateX(-50%); } 
         }
 
@@ -288,6 +287,9 @@
             body.dark-mode .help-trigger { order: 3; margin-top: 0; margin-bottom: 1rem; } 
             body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; } 
             body.dark-mode .footer-info { order: 5; }
+            
+            /* スマホ時のテープ位置微調整 */
+            .marquee-wrapper { top: 20%; }
         }
     </style>
 </head>
@@ -556,12 +558,11 @@
                 this.els.marqueeTape.addEventListener('click', () => {
                     this.els.marqueeTape.style.opacity = '0';
                     this.els.marqueeTape.style.pointerEvents = 'none';
-                    this.els.marqueeTape.classList.add('hidden-by-user'); // ユーザーが消した状態を記録
-                    this.els.msg.style.opacity = '1'; // 背面のテキストを100%の濃さに戻す
+                    this.els.marqueeTape.classList.add('hidden-by-user'); 
+                    this.els.msg.style.opacity = '1'; 
                 });
             }
 
-            // Utilities
             safeParseInt(val) { return (!val || val === "") ? 0 : parseInt(val, 10); }
             safeParseFloat(val) { return (!val || val === "") ? 0 : parseFloat(val); }
             getRelativeTime(date) { 
@@ -572,7 +573,6 @@
                 return diffHours < 24 ? `${diffHours}時間前` : `${Math.floor(diffHours/24)}日前`; 
             }
 
-            // Data Fetch
             async updateStatus() {
                 try { 
                     const res = await fetch(`https://api.github.com/gists/${AppConfig.gistId}?t=${Date.now()}`); 
@@ -608,7 +608,7 @@
                                 void this.els.marqueeTape.offsetWidth;
                                 this.els.marqueeTape.classList.add('apply-anim');
                             }
-                            this.els.msg.style.opacity = '0.4'; 
+                            this.els.msg.style.opacity = '0.4'; // 背面テキストを少し薄く
                         } else {
                             this.els.msg.style.opacity = '1';
                         }
@@ -675,12 +675,11 @@
                 } 
             }
 
-            // Interactions
             toggleSpeedUnit() { 
                 this.speedUnitIdx = (this.speedUnitIdx + 1) % 3; 
                 this.renderSpeed(); 
                 this.els.cardSpeed.classList.remove('anim-flash'); 
-                void this.els.cardSpeed.offsetWidth; // trigger reflow
+                void this.els.cardSpeed.offsetWidth; 
                 this.els.cardSpeed.classList.add('anim-flash'); 
             }
             
