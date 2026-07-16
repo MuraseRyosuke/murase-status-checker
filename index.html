@@ -145,7 +145,6 @@
 
         /* ✨ スクランブル用のダミーテキスト（薄くする） */
         .dud { color: var(--text-sub); opacity: 0.8; }
-        /* テープ上のダミーテキストは黒のままにする */
         .marquee-text .dud { color: #000; opacity: 0.8; }
 
         .label { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; color: var(--text-sub); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4em; width: 100%; }
@@ -196,7 +195,26 @@
         .tune-toast { position: fixed; bottom: 30px; left: 50%; background: rgba(20, 20, 20, 0.9); color: #fff; padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; z-index: 9999; white-space: nowrap; pointer-events: none; animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards; } 
         @keyframes toastSlideUp { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
         
-        .tune-icon { font-size: 1.5rem; margin-bottom: 0.2em; } 
+        /* 🚨 👋 アニメーション設定 */
+        .tune-icon { 
+            font-size: 1.5rem; 
+            margin-bottom: 0.2em; 
+            display: inline-block; /* アニメーションのために必要 */
+            transform-origin: 70% 70%; /* 手首あたりを支点に */
+        } 
+        
+        @keyframes wave-hand {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(15deg); }
+            75% { transform: rotate(-10deg); }
+        }
+
+        /* ホバー時 または JavaScriptで is-waving クラスが付与された時に揺らす */
+        .card-tune:hover .tune-icon,
+        .card-tune.is-waving .tune-icon {
+            animation: wave-hand 1.5s ease-in-out infinite;
+        }
+
         .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
 
         .help-trigger { grid-column: span 4; text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8; } 
@@ -235,7 +253,6 @@
         .marquee-track {
             display: flex;
             width: max-content;
-            /* 🚨 スクロール速度を 20s から 40s に遅く変更 */
             animation: marquee-scroll 40s linear infinite;
         }
 
@@ -440,7 +457,6 @@
         class TextScramble {
             constructor(el) {
                 this.el = el;
-                // ハッカー感のある英数字と記号のランダム文字
                 this.chars = '!<>-_\\/[]{}—=+*^?#ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
                 this.update = this.update.bind(this);
             }
@@ -456,7 +472,6 @@
                 for (let i = 0; i < length; i++) {
                     const from = oldChars[i] || '';
                     const to = newChars[i] || '';
-                    // 💡 先頭から波のように順に確定していくための時間差ロジック
                     const start = Math.floor(Math.random() * 5) + i * 2;
                     const end = start + Math.floor(Math.random() * 10) + 10;
                     this.queue.push({ from, to, start, end });
@@ -620,7 +635,6 @@
             }
 
             initScramblers() {
-                // 🚀 初回ロード時のスクランブル効果を各要素にバインド
                 this.scramblers = {
                     msg: new TextScramble(this.els.msg),
                     hr: new TextScramble(this.els.hr),
@@ -636,11 +650,10 @@
                     batVal: new TextScramble(this.els.batVal)
                 };
                 
-                // 🚨 テープ内の文字群もスクランブルの対象にする
                 this.tapeScramblers = Array.from(document.querySelectorAll('.marquee-text')).map(el => new TextScramble(el));
                 
                 this.isInitialLoad = true;
-                this.isTapeScrambled = false; // テープが一度でもスクランブルされたか
+                this.isTapeScrambled = false; 
             }
 
             bindEvents() {
@@ -707,10 +720,9 @@
                         this.setTextData('msg', '村瀨亮介からの応答がありません。'); 
                         this.els.sub.innerHTML = `安否確認は <a href="${AppConfig.links.twitter}" target="_blank">X</a> または <a href="${AppConfig.links.dosei}" target="_blank">動静</a> へ`; 
                         
-                        // 🚨 テープの初回表示時に一斉スクランブルエフェクトを適用
                         if (!this.isTapeScrambled) {
                             this.tapeScramblers.forEach(sc => {
-                                sc.el.textContent = ''; // 既存の文字を消す
+                                sc.el.textContent = ''; 
                                 sc.setText('村瀨亮介からの応答がありません。 ⚠');
                             });
                             this.isTapeScrambled = true;
@@ -877,6 +889,12 @@
             sendTune() {
                 if (this.els.btnTune.classList.contains('disabled')) return;
                 
+                // 🚨 押したときに手を振るクラスを追加し、3秒後に消す
+                this.els.btnTune.classList.add('is-waving');
+                setTimeout(() => {
+                    this.els.btnTune.classList.remove('is-waving');
+                }, 3000);
+
                 this.showTuneReaction();
                 this.els.tuneText.textContent = 'Tuning...'; 
                 this.els.btnTune.classList.add('disabled'); 
