@@ -239,7 +239,9 @@
             position: fixed; 
             top: 15%;
             left: 50%;
-            transform: translate(-50%, -50%) rotate(-5deg);
+            /* 🚨 iOSSafari対策: translateZ(0) を付与しGPUレンダリングを強制 */
+            -webkit-transform: translate(-50%, -50%) rotate(-5deg) translateZ(0);
+            transform: translate(-50%, -50%) rotate(-5deg) translateZ(0);
             width: 150vw; 
             background: #ffee00;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
@@ -247,12 +249,20 @@
             cursor: pointer;
             transition: opacity 0.5s ease;
             overflow: hidden; 
+            /* 🚨 iOSSafari対策: バックフェイスとwill-changeを指定 */
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            will-change: transform, opacity;
         }
 
         .marquee-track {
             display: flex;
             width: max-content;
             animation: marquee-scroll 40s linear infinite;
+            /* 🚨 iOSSafari対策 */
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            will-change: transform;
         }
 
         .marquee-text {
@@ -263,11 +273,20 @@
             color: #000; 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
             white-space: nowrap;
+            /* 🚨 iOSSafari対策: DOMの高速書き換えによるレンダリングサボりを防ぐ */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
         }
         
         @keyframes marquee-scroll {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(0); } 
+            0% { 
+                -webkit-transform: translateX(-50%);
+                transform: translateX(-50%); 
+            }
+            100% { 
+                -webkit-transform: translateX(0);
+                transform: translateX(0); 
+            } 
         }
 
         @keyframes applyTape {
