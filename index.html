@@ -81,6 +81,7 @@
             --color-ok:   #20b2aa;
             --color-avg:  #d97706;
             --color-bad:  #dc2626;
+            --color-liquid: #c5e010; 
 
             --color-ecg-alive: rgba(46, 204, 113, 0.6);
             --color-ecg-lost:  rgba(48, 209, 201, 0.6);
@@ -143,7 +144,7 @@
         .anim-flash { animation: flashAnim 0.3s ease-out; } 
         @keyframes flashAnim { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1); } }
 
-        /* ✨ スクランブル用のダミーテキスト（薄くする） */
+        /* ✨ Dummy text for scramble effect */
         .dud { color: var(--text-sub); opacity: 0.8; }
         .marquee-text .dud { color: #000; opacity: 0.8; }
 
@@ -171,12 +172,50 @@
         .card-tune-container { grid-column: span 2; }
         .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
 
-        /* Background ECG */
+        /* Background ECG Canvas */
         #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
 
-        /* Spirit Level */
-        .spirit-level-container { width: 100%; height: 10px; background: rgba(0, 0, 0, 0.08); border-radius: 99px; margin-top: 10px; position: relative; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
-        .spirit-bubble { width: 24px; height: 100%; background: var(--color-good); border-radius: 99px; position: absolute; left: 50%; top: 0; transform: translateX(-50%); transition: background-color 0.5s, opacity 0.3s; box-shadow: 0 0 6px rgba(255,255,255,0.8) inset; }
+        /* 💡 Spirit Level (Realistic Vial Design) */
+        .spirit-level-container { 
+            width: 100%; 
+            height: 18px; 
+            background: var(--color-liquid); 
+            border-radius: 9px; 
+            margin-top: 10px; 
+            position: relative; 
+            overflow: hidden; 
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.5), inset 0 -1px 2px rgba(255,255,255,0.4); 
+            border: 1px solid rgba(0,0,0,0.8);
+            transition: background-color 0.5s ease;
+        }
+        /* Target indicator lines */
+        .spirit-level-container::before, .spirit-level-container::after { 
+            content: ''; 
+            position: absolute; 
+            top: 0; bottom: 0; 
+            width: 1.5px; 
+            background: rgba(0,0,0,0.7); 
+            z-index: 2; 
+        }
+        .spirit-level-container::before { left: calc(50% - 12px); }
+        .spirit-level-container::after { left: calc(50% + 10px); }
+
+        .spirit-bubble { 
+            width: 20px; 
+            height: 12px; 
+            margin-top: 2px;
+            background: rgba(255, 255, 255, 0.7); 
+            border-radius: 10px; 
+            position: absolute; 
+            left: 50%; 
+            top: 0; 
+            transform: translateX(-50%); 
+            transition: opacity 0.3s; 
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.9), inset 0 -2px 4px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.3); 
+            z-index: 1; 
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        
         .wobble { animation: wobbleAnim 2.5s ease-in-out infinite; } 
         @keyframes wobbleAnim { 0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); } 50% { transform: translateX(calc(-50% + var(--wobble-amp))); } }
 
@@ -195,7 +234,7 @@
         .tune-toast { position: fixed; bottom: 30px; left: 50%; background: rgba(20, 20, 20, 0.9); color: #fff; padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; z-index: 9999; white-space: nowrap; pointer-events: none; animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards; } 
         @keyframes toastSlideUp { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
         
-        /* 🚨 👋 アニメーション設定 */
+        /* 👋 Hand wave animation for Tune button */
         .tune-icon { 
             font-size: 1.5rem; 
             margin-bottom: 0.2em; 
@@ -232,14 +271,14 @@
         .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
 
         /* ==================================================================
-           5. KEEP OUT Tape (428 Respect & Seamless Marquee)
+           5. Blockade Tape (Shibuya 10:00AM Sound Novel Style Marquee)
            ================================================================== */
         .marquee-wrapper {
             display: none; 
             position: fixed; 
             top: 15%;
             left: 50%;
-            /* 🚨 iOSSafari対策: translateZ(0) を付与しGPUレンダリングを強制 */
+            /* 🚨 iOS Safari Hack: Force GPU rendering to prevent flickering */
             -webkit-transform: translate(-50%, -50%) rotate(-5deg) translateZ(0);
             transform: translate(-50%, -50%) rotate(-5deg) translateZ(0);
             width: 150vw; 
@@ -249,7 +288,7 @@
             cursor: pointer;
             transition: opacity 0.5s ease;
             overflow: hidden; 
-            /* 🚨 iOSSafari対策: バックフェイスとwill-changeを指定 */
+            /* 🚨 iOS Safari Hack: Optimize rendering pipeline */
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             will-change: transform, opacity;
@@ -259,7 +298,6 @@
             display: flex;
             width: max-content;
             animation: marquee-scroll 40s linear infinite;
-            /* 🚨 iOSSafari対策 */
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             will-change: transform;
@@ -273,7 +311,7 @@
             color: #000; 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
             white-space: nowrap;
-            /* 🚨 iOSSafari対策: DOMの高速書き換えによるレンダリングサボりを防ぐ */
+            /* 🚨 iOS Safari Hack: Prevent frame drop during high-speed DOM updates */
             -webkit-transform: translateZ(0);
             transform: translateZ(0);
         }
@@ -333,7 +371,7 @@
     <!-- 🩺 Background ECG Canvas -->
     <canvas id="ecg-canvas"></canvas>
 
-    <!-- 🚨 KEEP OUT Tape Component -->
+    <!-- 🚨 Blockade Tape Component -->
     <div class="marquee-wrapper" id="marquee-tape">
         <div class="marquee-track">
             <!-- Set 1 -->
@@ -470,7 +508,7 @@
         };
 
         // ============================================================================
-        // ✨ 2. TEXT SCRAMBLE ENGINE (THA LTD. Style)
+        // ✨ 2. TEXT SCRAMBLE ENGINE (00s Web Design Homage)
         // ============================================================================
         class TextScramble {
             constructor(el) {
@@ -774,10 +812,13 @@
                     this.globalSpeedKmh = this.safeParseFloat(d.health.walking_speed); 
                     this.renderSpeed(); 
                     
-                    const asym = this.safeParseFloat(d.health.walking_asymmetry); 
+                    // 🚨 Data Normalization: Fix double percentage bug
+                    const asymRaw = this.safeParseFloat(d.health.walking_asymmetry); 
                     if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") { 
-                        this.setTextData('asym', (asym * 100).toFixed(0)); 
-                        this.updateLevel(asym); 
+                        // Display raw percentage value directly (e.g. 4.0)
+                        this.setTextData('asym', asymRaw.toFixed(0)); 
+                        // Convert back to decimal for level animation logic
+                        this.updateLevel(asymRaw / 100); 
                     } else { 
                         this.setTextData('asym', '--'); 
                         this.updateLevel(null); 
@@ -846,9 +887,13 @@
             }
             
             updateLevel(val) { 
-                if (val === null || isNaN(val)) { this.els.bubble.style.opacity='0'; return; } 
-                this.els.bubble.style.opacity='1'; 
-                this.els.bubble.style.backgroundColor = val === 0 ? 'var(--color-good)' : (val < 0.05 ? 'var(--color-ok)' : 'var(--color-bad)'); 
+                const container = this.els.bubble.parentElement;
+                if (val === null || isNaN(val)) { container.style.opacity='0'; return; } 
+                container.style.opacity='1'; 
+                
+                // 💡 Visually indicate anomaly by changing the liquid color (container background)
+                container.style.backgroundColor = val === 0 ? 'var(--color-liquid)' : (val < 0.05 ? 'var(--color-ok)' : 'var(--color-bad)'); 
+                
                 if(val > 0) { 
                     this.els.bubble.style.setProperty('--wobble-amp', `${Math.min(val*400, 45)}%`); 
                     this.els.bubble.classList.add('wobble'); 
@@ -932,7 +977,7 @@
         }
 
         // ============================================================================
-        // 🚀 6. INITIALIZATION
+        // 🚀 5. INITIALIZATION
         // ============================================================================
         document.addEventListener('DOMContentLoaded', () => {
             const ecgEngine = new ECGMonitor('ecg-canvas');
@@ -988,3 +1033,4 @@ ZXHHHkkQQQQkHkkkkH@@H@@@H@@@@@@@@@@H@@H@NNMNNMNNMSN##NN####Mg@gH@@gmHMNNM##NMNMk
 -->
 </body>
 </html>
+
