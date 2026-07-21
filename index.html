@@ -178,10 +178,10 @@
         /* 💡 Spirit Level (Realistic Vial Design) */
         .spirit-level-container { 
             width: 100%; 
-            height: 8px; /* カードの高さを揃えるために細くスリム化 */
+            height: 8px; /* スリム化 */
             background: var(--color-liquid); 
             border-radius: 4px; 
-            margin-top: 6px; /* 余白を縮小して他のカードと高さを統一 */
+            margin-top: 6px; 
             position: relative; 
             overflow: hidden; 
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), inset 0 -1px 1px rgba(255,255,255,0.4); 
@@ -202,7 +202,7 @@
 
         .spirit-bubble { 
             width: 14px; 
-            height: 4px; /* 気泡も細く */
+            height: 4px; 
             margin-top: 1px;
             background: rgba(255, 255, 255, 0.7); 
             border-radius: 2px; 
@@ -278,9 +278,9 @@
             position: fixed; 
             top: 15%;
             left: 50%;
-            /* 🚨 iOS Safari Hack: Force GPU rendering to prevent flickering */
-            -webkit-transform: translate(-50%, -50%) rotate(-5deg) translateZ(0);
-            transform: translate(-50%, -50%) rotate(-5deg) translateZ(0);
+            /* 🚨 3D変形に統一し、GPUを強力に促す。 iOS Safariレンダリングレイヤー分離ハック */
+            -webkit-transform: translate3d(-50%, -50%, 0) rotate(-5deg);
+            transform: translate3d(-50%, -50%, 0) rotate(-5deg);
             width: 150vw; 
             background: #ffee00;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
@@ -288,16 +288,19 @@
             cursor: pointer;
             transition: opacity 0.5s ease;
             overflow: hidden; 
-            /* 🚨 iOS Safari Hack: Optimize rendering pipeline */
+            /* 🚨iOSレンダリング分離ハック。他DOM更新の影響を防ぐ */
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
+            -webkit-perspective: 1000;
+            perspective: 1000;
+            contain: layout paint style; 
             will-change: transform, opacity;
         }
 
         .marquee-track {
             display: flex;
             width: max-content;
-            animation: marquee-scroll 40s linear infinite;
+            /* 🚨インラインCSSでWebkitアニメーションを強制適用させるため、ここでは定義しない */
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             will-change: transform;
@@ -311,34 +314,33 @@
             color: #000; 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
             white-space: nowrap;
-            /* 🚨 iOS Safari Hack: Prevent frame drop during high-speed DOM updates */
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
+            /* 🚨 DOM書き換えの影響を物理的に分離 */
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
         }
         
+        /* 🚨 iOS Safariハック： translate3dに変更 */
+        @-webkit-keyframes marquee-scroll-webkit {
+            0% { -webkit-transform: translate3d(-50%, 0, 0); }
+            100% { -webkit-transform: translate3d(0, 0, 0); } 
+        }
         @keyframes marquee-scroll {
-            0% { 
-                -webkit-transform: translateX(-50%);
-                transform: translateX(-50%); 
-            }
-            100% { 
-                -webkit-transform: translateX(0);
-                transform: translateX(0); 
-            } 
+            0% { transform: translate3d(-50%, 0, 0); }
+            100% { transform: translate3d(0, 0, 0); } 
         }
 
+        @-webkit-keyframes applyTape-webkit {
+            0% { -webkit-clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+            100% { -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+        }
         @keyframes applyTape {
-            0% { 
-                clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); 
-                -webkit-clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-            }
-            100% { 
-                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); 
-                -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-            }
+            0% { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+            100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
         }
 
+        /* アニメーション適用クラス (JSで付与) */
         .marquee-wrapper.apply-anim {
+            -webkit-animation: applyTape-webkit 0.6s cubic-bezier(0.77, 0, 0.17, 1) forwards;
             animation: applyTape 0.6s cubic-bezier(0.77, 0, 0.17, 1) forwards;
         }
 
@@ -373,7 +375,8 @@
 
     <!-- 🚨 Blockade Tape Component -->
     <div class="marquee-wrapper" id="marquee-tape">
-        <div class="marquee-track">
+        <!-- 🚨 iOS Safariバグ対策：アニメーションをインラインCSSで強制適用 -->
+        <div class="marquee-track" id="marquee-track" style="-webkit-animation: marquee-scroll-webkit 40s linear infinite; animation: marquee-scroll 40s linear infinite;">
             <!-- Set 1 -->
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
             <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
@@ -757,7 +760,7 @@
                     const res = await fetch(`https://api.github.com/gists/${AppConfig.gistId}?t=${Date.now()}`); 
                     if (!res.ok) throw new Error(); 
                     
-                    const json = await res.json();
+                    const json = res.json();
                     const d = JSON.parse(json.files[AppConfig.gistFileName].content);
                     const last = new Date(d.last_updated);
                     const alive = (new Date() - last) / 36e5 <= AppConfig.thresholdHours; 
@@ -789,6 +792,7 @@
                                 this.els.marqueeTape.style.display = 'block'; 
                                 this.els.marqueeTape.style.opacity = '1';
                                 this.els.marqueeTape.style.pointerEvents = 'auto';
+                                // 🚨 リフロー強制
                                 void this.els.marqueeTape.offsetWidth;
                                 this.els.marqueeTape.classList.add('apply-anim');
                             }
