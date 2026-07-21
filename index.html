@@ -760,7 +760,7 @@
                     const res = await fetch(`https://api.github.com/gists/${AppConfig.gistId}?t=${Date.now()}`); 
                     if (!res.ok) throw new Error(); 
                     
-                    const json = res.json();
+                    const json = await res.json(); 
                     const d = JSON.parse(json.files[AppConfig.gistFileName].content);
                     const last = new Date(d.last_updated);
                     const alive = (new Date() - last) / 36e5 <= AppConfig.thresholdHours; 
