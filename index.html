@@ -73,7 +73,6 @@
            1. CSS Variables & Theme Configuration
            ================================================================== */
         :root {
-            /* 🚨 Android軽量化: Blurを10pxに軽減しGPU負荷を抑制 */
             --glass-blur: 10px;
             --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
             --radius-card: 24px;
@@ -174,7 +173,6 @@
         .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
 
         /* Background ECG Canvas */
-        /* 🚨 Android軽量化: キャンバスを独立したレイヤーに分離して合成負荷を下げる */
         #ecg-canvas { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             z-index: -1; opacity: 0.4; pointer-events: none; 
@@ -185,7 +183,7 @@
         /* 💡 Spirit Level (Realistic Vial Design) */
         .spirit-level-container { 
             width: 100%; 
-            height: 8px; /* スリム化 */
+            height: 8px; 
             background: var(--color-liquid); 
             border-radius: 4px; 
             margin-top: 6px; 
@@ -195,7 +193,6 @@
             border: 1px solid rgba(0,0,0,0.8);
             transition: background-color 0.5s ease;
         }
-        /* Target indicator lines */
         .spirit-level-container::before, .spirit-level-container::after { 
             content: ''; 
             position: absolute; 
@@ -241,7 +238,6 @@
         .tune-toast { position: fixed; bottom: 30px; left: 50%; background: rgba(20, 20, 20, 0.9); color: #fff; padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; z-index: 9999; white-space: nowrap; pointer-events: none; animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards; } 
         @keyframes toastSlideUp { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
         
-        /* 👋 Hand wave animation for Tune button */
         .tune-icon { 
             font-size: 1.5rem; 
             margin-bottom: 0.2em; 
@@ -281,18 +277,21 @@
            5. Blockade Tape (Shibuya 10:00AM Sound Novel Style Marquee)
            ================================================================== */
         .marquee-wrapper {
-            display: none; 
+            /* 🚨 iOS/WebKit Rendering Bug Fix: display:none ではなく visibility で制御する */
+            visibility: hidden; 
+            opacity: 0;
+            pointer-events: none;
+            
             position: fixed; 
             top: 20%;
-            left: -10vw; /* 画面外からスタートさせる */
-            width: 120vw; /* 長さを最適化 */
-            transform: rotate(-5deg); /* GPUフレンドリーな単純回転に変更 */
+            left: -10vw; 
+            width: 120vw; 
+            transform: rotate(-5deg); 
             z-index: 1000; 
             cursor: pointer;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
 
-        /* 🚨 iOS/Androidバグ対策: clip-pathを廃止し、横幅拡張マスクに変更 */
         .marquee-mask {
             width: 0%;
             overflow: hidden;
@@ -303,7 +302,10 @@
         .marquee-track {
             display: flex;
             width: max-content;
-            /* 🚨 iOS同期バグ対策: 最初はアニメーションを当てない */
+            /* iOSのGPUレイヤーを安定させるための指定 */
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            will-change: transform;
         }
 
         .marquee-text {
@@ -316,12 +318,11 @@
             white-space: nowrap;
         }
         
-        /* アニメーション用のクラス（JavaScriptでテープ表示時に付与される） */
+        /* 🚨 JSで .apply-anim が付与されたタイミングでアニメーションを開始する */
         .marquee-wrapper.apply-anim .marquee-mask {
             animation: applyTape 0.6s cubic-bezier(0.77, 0, 0.17, 1) forwards;
         }
         
-        /* 🚨 iOSバグ対策: .apply-anim が付いた時"のみ"ループアニメーションを適用し直す */
         .marquee-wrapper.apply-anim .marquee-track {
             animation: marquee-scroll 20s linear infinite; 
         }
@@ -332,7 +333,7 @@
         }
 
         @keyframes marquee-scroll {
-            0% { transform: translate3d(-50%, 0, 0); } /* 3D変形でGPUを強制 */
+            0% { transform: translate3d(-50%, 0, 0); } 
             100% { transform: translate3d(0, 0, 0); } 
         }
 
@@ -719,6 +720,7 @@
                 
                 this.els.marqueeTape.addEventListener('click', () => {
                     this.els.marqueeTape.style.opacity = '0';
+                    this.els.marqueeTape.style.visibility = 'hidden';
                     this.els.marqueeTape.style.pointerEvents = 'none';
                     this.els.marqueeTape.classList.add('hidden-by-user'); 
                     this.els.msg.style.opacity = '1'; 
@@ -763,7 +765,11 @@
                         this.setTextData('msg', '村瀨亮介は生きています。');
                         this.els.msg.style.opacity = '1';
                         this.els.sub.textContent = ''; 
-                        this.els.marqueeTape.style.display = 'none'; 
+                        
+                        // 生存時はテープを非表示にしてリセット
+                        this.els.marqueeTape.style.visibility = 'hidden'; 
+                        this.els.marqueeTape.style.opacity = '0';
+                        this.els.marqueeTape.style.pointerEvents = 'none';
                         this.els.marqueeTape.classList.remove('apply-anim');
                         this.els.marqueeTape.classList.remove('hidden-by-user'); 
                     } else { 
@@ -781,13 +787,18 @@
                         }
 
                         if (!this.els.marqueeTape.classList.contains('hidden-by-user')) {
-                            if (this.els.marqueeTape.style.display !== 'block') {
-                                this.els.marqueeTape.style.display = 'block'; 
+                            if (this.els.marqueeTape.style.visibility !== 'visible') {
+                                this.els.marqueeTape.style.visibility = 'visible'; 
                                 this.els.marqueeTape.style.opacity = '1';
                                 this.els.marqueeTape.style.pointerEvents = 'auto';
-                                // 🚨 リフロー強制でiOSのアニメーションタイムラインをリセット
-                                void this.els.marqueeTape.offsetWidth;
-                                this.els.marqueeTape.classList.add('apply-anim');
+                                
+                                // 🚨 iOS Safari レンダリングバグ対策:
+                                // display:noneを廃止し、テクスチャがGPUに転送されるのを2フレーム待機してからアニメーションを開始
+                                requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                        this.els.marqueeTape.classList.add('apply-anim');
+                                    });
+                                });
                             }
                             this.els.msg.style.opacity = '0.4'; 
                         } else {
@@ -809,12 +820,9 @@
                     this.globalSpeedKmh = this.safeParseFloat(d.health.walking_speed); 
                     this.renderSpeed(); 
                     
-                    // 🚨 Data Normalization: Fix double percentage bug
                     const asymRaw = this.safeParseFloat(d.health.walking_asymmetry); 
                     if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") { 
-                        // Display raw percentage value directly (e.g. 4.0)
                         this.setTextData('asym', asymRaw.toFixed(0)); 
-                        // Convert back to decimal for level animation logic
                         this.updateLevel(asymRaw / 100); 
                     } else { 
                         this.setTextData('asym', '--'); 
@@ -888,7 +896,6 @@
                 if (val === null || isNaN(val)) { container.style.opacity='0'; return; } 
                 container.style.opacity='1'; 
                 
-                // 💡 Visually indicate anomaly by changing the liquid color (container background)
                 container.style.backgroundColor = val === 0 ? 'var(--color-liquid)' : (val < 0.05 ? 'var(--color-ok)' : 'var(--color-bad)'); 
                 
                 if(val > 0) { 
