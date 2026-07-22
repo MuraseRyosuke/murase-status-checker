@@ -73,7 +73,8 @@
            1. CSS Variables & Theme Configuration
            ================================================================== */
         :root {
-            --glass-blur: 20px;
+            /* 🚨 Android軽量化: Blurを10pxに軽減しGPU負荷を抑制 */
+            --glass-blur: 10px;
             --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
             --radius-card: 24px;
 
@@ -173,7 +174,13 @@
         .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
 
         /* Background ECG Canvas */
-        #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; }
+        /* 🚨 Android軽量化: キャンバスを独立したレイヤーに分離して合成負荷を下げる */
+        #ecg-canvas { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: -1; opacity: 0.4; pointer-events: none; 
+            transform: translateZ(0); 
+            will-change: transform; 
+        }
 
         /* 💡 Spirit Level (Realistic Vial Design) */
         .spirit-level-container { 
@@ -276,34 +283,27 @@
         .marquee-wrapper {
             display: none; 
             position: fixed; 
-            top: 15%;
-            left: 50%;
-            /* 🚨 3D変形に統一し、GPUを強力に促す。 iOS Safariレンダリングレイヤー分離ハック */
-            -webkit-transform: translate3d(-50%, -50%, 0) rotate(-5deg);
-            transform: translate3d(-50%, -50%, 0) rotate(-5deg);
-            width: 150vw; 
-            background: #ffee00;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            top: 20%;
+            left: -10vw; /* 画面外からスタートさせる */
+            width: 120vw; /* 長さを最適化 */
+            transform: rotate(-5deg); /* GPUフレンドリーな単純回転に変更 */
             z-index: 1000; 
             cursor: pointer;
             transition: opacity 0.5s ease;
-            overflow: hidden; 
-            /* 🚨iOSレンダリング分離ハック。他DOM更新の影響を防ぐ */
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            -webkit-perspective: 1000;
-            perspective: 1000;
-            contain: layout paint style; 
-            will-change: transform, opacity;
+        }
+
+        /* 🚨 iOS/Androidバグ対策: clip-pathを廃止し、横幅拡張マスクに変更 */
+        .marquee-mask {
+            width: 0%;
+            overflow: hidden;
+            background: #ffee00;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
 
         .marquee-track {
             display: flex;
             width: max-content;
-            /* 🚨インラインCSSでWebkitアニメーションを強制適用させるため、ここでは定義しない */
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            will-change: transform;
+            /* 🚨 iOS同期バグ対策: 最初はアニメーションを当てない */
         }
 
         .marquee-text {
@@ -314,34 +314,26 @@
             color: #000; 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
             white-space: nowrap;
-            /* 🚨 DOM書き換えの影響を物理的に分離 */
-            -webkit-transform: translate3d(0, 0, 0);
-            transform: translate3d(0, 0, 0);
         }
         
-        /* 🚨 iOS Safariハック： translate3dに変更 */
-        @-webkit-keyframes marquee-scroll-webkit {
-            0% { -webkit-transform: translate3d(-50%, 0, 0); }
-            100% { -webkit-transform: translate3d(0, 0, 0); } 
-        }
-        @keyframes marquee-scroll {
-            0% { transform: translate3d(-50%, 0, 0); }
-            100% { transform: translate3d(0, 0, 0); } 
-        }
-
-        @-webkit-keyframes applyTape-webkit {
-            0% { -webkit-clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
-            100% { -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
-        }
-        @keyframes applyTape {
-            0% { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
-            100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
-        }
-
-        /* アニメーション適用クラス (JSで付与) */
-        .marquee-wrapper.apply-anim {
-            -webkit-animation: applyTape-webkit 0.6s cubic-bezier(0.77, 0, 0.17, 1) forwards;
+        /* アニメーション用のクラス（JavaScriptでテープ表示時に付与される） */
+        .marquee-wrapper.apply-anim .marquee-mask {
             animation: applyTape 0.6s cubic-bezier(0.77, 0, 0.17, 1) forwards;
+        }
+        
+        /* 🚨 iOSバグ対策: .apply-anim が付いた時"のみ"ループアニメーションを適用し直す */
+        .marquee-wrapper.apply-anim .marquee-track {
+            animation: marquee-scroll 20s linear infinite; 
+        }
+
+        @keyframes applyTape {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes marquee-scroll {
+            0% { transform: translate3d(-50%, 0, 0); } /* 3D変形でGPUを強制 */
+            100% { transform: translate3d(0, 0, 0); } 
         }
 
         /* ==================================================================
@@ -364,7 +356,7 @@
             body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; } 
             body.dark-mode .footer-info { order: 5; }
             
-            .marquee-wrapper { top: 20%; }
+            .marquee-wrapper { top: 25%; }
         }
     </style>
 </head>
@@ -375,18 +367,19 @@
 
     <!-- 🚨 Blockade Tape Component -->
     <div class="marquee-wrapper" id="marquee-tape">
-        <!-- 🚨 iOS Safariバグ対策：アニメーションをインラインCSSで強制適用 -->
-        <div class="marquee-track" id="marquee-track" style="-webkit-animation: marquee-scroll-webkit 40s linear infinite; animation: marquee-scroll 40s linear infinite;">
-            <!-- Set 1 -->
-            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
-            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
-            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
-            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
-            <!-- Set 2 -->
-            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
-            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
-            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
-            <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+        <div class="marquee-mask">
+            <div class="marquee-track" id="marquee-track">
+                <!-- Set 1 -->
+                <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+                <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+                <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+                <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+                <!-- Set 2 -->
+                <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+                <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+                <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+                <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
+            </div>
         </div>
     </div>
 
@@ -792,7 +785,7 @@
                                 this.els.marqueeTape.style.display = 'block'; 
                                 this.els.marqueeTape.style.opacity = '1';
                                 this.els.marqueeTape.style.pointerEvents = 'auto';
-                                // 🚨 リフロー強制
+                                // 🚨 リフロー強制でiOSのアニメーションタイムラインをリセット
                                 void this.els.marqueeTape.offsetWidth;
                                 this.els.marqueeTape.classList.add('apply-anim');
                             }
