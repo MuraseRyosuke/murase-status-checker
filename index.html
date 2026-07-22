@@ -144,7 +144,6 @@
         .anim-flash { animation: flashAnim 0.3s ease-out; } 
         @keyframes flashAnim { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1); } }
 
-        /* ✨ Dummy text for scramble effect */
         .dud { color: var(--text-sub); opacity: 0.8; }
         .marquee-text .dud { color: #000; opacity: 0.8; }
 
@@ -153,7 +152,6 @@
         .unit { font-size: 0.9rem; font-weight: 500; color: var(--text-sub); margin-left: 0.2em; } 
         .sub-value { font-size: 0.85rem; color: var(--text-sub); margin-top: 0.2em; }
         
-        /* Status Card */
         .card-status { grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1rem; min-height: 160px; position: relative; }
         #liveness-message { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; position: relative; z-index: 1; transition: opacity 0.5s ease; } 
         #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.8rem; position: relative; z-index: 1; } 
@@ -172,7 +170,6 @@
         .card-tune-container { grid-column: span 2; }
         .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
 
-        /* Background ECG Canvas */
         #ecg-canvas { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             z-index: -1; opacity: 0.4; pointer-events: none; 
@@ -180,51 +177,31 @@
             will-change: transform; 
         }
 
-        /* 💡 Spirit Level (Realistic Vial Design) */
+        /* 💡 Spirit Level */
         .spirit-level-container { 
-            width: 100%; 
-            height: 8px; 
-            background: var(--color-liquid); 
-            border-radius: 4px; 
-            margin-top: 6px; 
-            position: relative; 
-            overflow: hidden; 
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), inset 0 -1px 1px rgba(255,255,255,0.4); 
-            border: 1px solid rgba(0,0,0,0.8);
-            transition: background-color 0.5s ease;
+            width: 100%; height: 8px; background: var(--color-liquid); 
+            border-radius: 4px; margin-top: 6px; position: relative; 
+            overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), inset 0 -1px 1px rgba(255,255,255,0.4); 
+            border: 1px solid rgba(0,0,0,0.8); transition: background-color 0.5s ease;
         }
         .spirit-level-container::before, .spirit-level-container::after { 
-            content: ''; 
-            position: absolute; 
-            top: 0; bottom: 0; 
-            width: 1px; 
-            background: rgba(0,0,0,0.7); 
-            z-index: 2; 
+            content: ''; position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0,0,0,0.7); z-index: 2; 
         }
         .spirit-level-container::before { left: calc(50% - 8px); }
         .spirit-level-container::after { left: calc(50% + 7px); }
 
         .spirit-bubble { 
-            width: 14px; 
-            height: 4px; 
-            margin-top: 1px;
-            background: rgba(255, 255, 255, 0.7); 
-            border-radius: 2px; 
-            position: absolute; 
-            left: 50%; 
-            top: 0; 
-            transform: translateX(-50%); 
-            transition: opacity 0.3s; 
-            box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 1px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.3); 
-            z-index: 1; 
-            border: 1px solid rgba(255,255,255,0.5);
+            width: 14px; height: 4px; margin-top: 1px;
+            background: rgba(255, 255, 255, 0.7); border-radius: 2px; 
+            position: absolute; left: 50%; top: 0; transform: translateX(-50%); 
+            transition: opacity 0.3s; box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 1px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.3); 
+            z-index: 1; border: 1px solid rgba(255,255,255,0.5);
         }
-        
         .wobble { animation: wobbleAnim 2.5s ease-in-out infinite; } 
         @keyframes wobbleAnim { 0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); } 50% { transform: translateX(calc(-50% + var(--wobble-amp))); } }
 
         /* ==================================================================
-           4. Interactive Elements (Tune Button, Toasts, Modals)
+           4. Interactive Elements
            ================================================================== */
         .card-tune { background: var(--color-tune-bg) !important; border: 1px solid var(--color-tune-border) !important; color: var(--color-tune-text) !important; cursor: pointer; align-items: center; justify-content: center; position: relative; z-index: 10; }
         .card-tune:active { transform: scale(0.96); opacity: 0.8; } 
@@ -238,24 +215,9 @@
         .tune-toast { position: fixed; bottom: 30px; left: 50%; background: rgba(20, 20, 20, 0.9); color: #fff; padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; z-index: 9999; white-space: nowrap; pointer-events: none; animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards; } 
         @keyframes toastSlideUp { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
         
-        .tune-icon { 
-            font-size: 1.5rem; 
-            margin-bottom: 0.2em; 
-            display: inline-block; 
-            transform-origin: 70% 70%; 
-        } 
-        
-        @keyframes wave-hand {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(15deg); }
-            75% { transform: rotate(-10deg); }
-        }
-
-        .card-tune:hover .tune-icon,
-        .card-tune.is-waving .tune-icon {
-            animation: wave-hand 1.5s ease-in-out infinite;
-        }
-
+        .tune-icon { font-size: 1.5rem; margin-bottom: 0.2em; display: inline-block; transform-origin: 70% 70%; } 
+        @keyframes wave-hand { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 75% { transform: rotate(-10deg); } }
+        .card-tune:hover .tune-icon, .card-tune.is-waving .tune-icon { animation: wave-hand 1.5s ease-in-out infinite; }
         .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
 
         .help-trigger { grid-column: span 4; text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8; } 
@@ -274,38 +236,48 @@
         .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
 
         /* ==================================================================
-           5. Blockade Tape (Shibuya 10:00AM Sound Novel Style Marquee)
+           5. Blockade Tape (iOS Safari Rendering Bug Fix Version)
            ================================================================== */
         .marquee-wrapper {
-            /* 🚨 iOS/WebKit Rendering Bug Fix: display:none ではなく visibility で制御する */
-            visibility: hidden; 
-            opacity: 0;
-            pointer-events: none;
-            
             position: fixed; 
-            top: 20%;
+            top: 25%;
             left: -10vw; 
             width: 120vw; 
             transform: rotate(-5deg); 
             z-index: 1000; 
             cursor: pointer;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            
+            /* 🚨 iOS対策: display:none や visibility は使わず、opacity のみで隠す */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
         }
 
         .marquee-mask {
-            width: 0%;
+            width: 100%;
             overflow: hidden;
             background: #ffee00;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            
+            /* 🚨 iOS対策: widthアニメーションではなく、GPUが処理しやすい scaleX に変更 */
+            transform-origin: left center;
+            transform: scaleX(0);
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.17, 1);
         }
 
         .marquee-track {
             display: flex;
             width: max-content;
-            /* iOSのGPUレイヤーを安定させるための指定 */
-            -webkit-backface-visibility: hidden;
+            
+            /* 🚨 iOS対策: クラス付与時ではなく、常に裏でアニメーションを回し続ける */
+            /* これにより「表示された瞬間にアニメーションを開始してバグる」のを防ぐ */
+            animation: marquee-scroll 20s linear infinite; 
+            
+            /* 強制GPUレンダリング */
+            transform: translateZ(0);
+            -webkit-transform: translate3d(0,0,0);
             backface-visibility: hidden;
-            will-change: transform;
+            -webkit-backface-visibility: hidden;
         }
 
         .marquee-text {
@@ -318,18 +290,13 @@
             white-space: nowrap;
         }
         
-        /* 🚨 JSで .apply-anim が付与されたタイミングでアニメーションを開始する */
+        /* 🚨 テープ表示時の状態（JSでクラス付与） */
+        .marquee-wrapper.apply-anim {
+            opacity: 1;
+            pointer-events: auto;
+        }
         .marquee-wrapper.apply-anim .marquee-mask {
-            animation: applyTape 0.6s cubic-bezier(0.77, 0, 0.17, 1) forwards;
-        }
-        
-        .marquee-wrapper.apply-anim .marquee-track {
-            animation: marquee-scroll 20s linear infinite; 
-        }
-
-        @keyframes applyTape {
-            0% { width: 0%; }
-            100% { width: 100%; }
+            transform: scaleX(1);
         }
 
         @keyframes marquee-scroll {
@@ -356,8 +323,6 @@
             body.dark-mode .help-trigger { order: 3; margin-top: 0; margin-bottom: 1rem; } 
             body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; } 
             body.dark-mode .footer-info { order: 5; }
-            
-            .marquee-wrapper { top: 25%; }
         }
     </style>
 </head>
@@ -369,7 +334,8 @@
     <!-- 🚨 Blockade Tape Component -->
     <div class="marquee-wrapper" id="marquee-tape">
         <div class="marquee-mask">
-            <div class="marquee-track" id="marquee-track">
+            <!-- 常に裏でスクロールし続けるコンテナ -->
+            <div class="marquee-track">
                 <!-- Set 1 -->
                 <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
                 <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
@@ -719,9 +685,7 @@
                 });
                 
                 this.els.marqueeTape.addEventListener('click', () => {
-                    this.els.marqueeTape.style.opacity = '0';
-                    this.els.marqueeTape.style.visibility = 'hidden';
-                    this.els.marqueeTape.style.pointerEvents = 'none';
+                    this.els.marqueeTape.classList.remove('apply-anim'); 
                     this.els.marqueeTape.classList.add('hidden-by-user'); 
                     this.els.msg.style.opacity = '1'; 
                 });
@@ -766,10 +730,7 @@
                         this.els.msg.style.opacity = '1';
                         this.els.sub.textContent = ''; 
                         
-                        // 生存時はテープを非表示にしてリセット
-                        this.els.marqueeTape.style.visibility = 'hidden'; 
-                        this.els.marqueeTape.style.opacity = '0';
-                        this.els.marqueeTape.style.pointerEvents = 'none';
+                        // 生存時はテープを引っ込める
                         this.els.marqueeTape.classList.remove('apply-anim');
                         this.els.marqueeTape.classList.remove('hidden-by-user'); 
                     } else { 
@@ -787,19 +748,8 @@
                         }
 
                         if (!this.els.marqueeTape.classList.contains('hidden-by-user')) {
-                            if (this.els.marqueeTape.style.visibility !== 'visible') {
-                                this.els.marqueeTape.style.visibility = 'visible'; 
-                                this.els.marqueeTape.style.opacity = '1';
-                                this.els.marqueeTape.style.pointerEvents = 'auto';
-                                
-                                // 🚨 iOS Safari レンダリングバグ対策:
-                                // display:noneを廃止し、テクスチャがGPUに転送されるのを2フレーム待機してからアニメーションを開始
-                                requestAnimationFrame(() => {
-                                    requestAnimationFrame(() => {
-                                        this.els.marqueeTape.classList.add('apply-anim');
-                                    });
-                                });
-                            }
+                            // 🚨 iOS対策: 要素自体の透明度を上げ、scaleXでアニメーションさせる
+                            this.els.marqueeTape.classList.add('apply-anim');
                             this.els.msg.style.opacity = '0.4'; 
                         } else {
                             this.els.msg.style.opacity = '1';
