@@ -236,7 +236,7 @@
         .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
 
         /* ==================================================================
-           5. Blockade Tape (iOS Safari Rendering Bug Fix Version)
+           5. Blockade Tape
            ================================================================== */
         .marquee-wrapper {
             position: fixed; 
@@ -246,8 +246,6 @@
             transform: rotate(-5deg); 
             z-index: 1000; 
             cursor: pointer;
-            
-            /* 🚨 iOS対策: display:none や visibility は使わず、opacity のみで隠す */
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.4s ease;
@@ -258,8 +256,6 @@
             overflow: hidden;
             background: #ffee00;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            
-            /* 🚨 iOS対策: widthアニメーションではなく、GPUが処理しやすい scaleX に変更 */
             transform-origin: left center;
             transform: scaleX(0);
             transition: transform 0.6s cubic-bezier(0.77, 0, 0.17, 1);
@@ -268,12 +264,7 @@
         .marquee-track {
             display: flex;
             width: max-content;
-            
-            /* 🚨 iOS対策: クラス付与時ではなく、常に裏でアニメーションを回し続ける */
-            /* これにより「表示された瞬間にアニメーションを開始してバグる」のを防ぐ */
             animation: marquee-scroll 20s linear infinite; 
-            
-            /* 強制GPUレンダリング */
             transform: translateZ(0);
             -webkit-transform: translate3d(0,0,0);
             backface-visibility: hidden;
@@ -290,7 +281,6 @@
             white-space: nowrap;
         }
         
-        /* 🚨 テープ表示時の状態（JSでクラス付与） */
         .marquee-wrapper.apply-anim {
             opacity: 1;
             pointer-events: auto;
@@ -305,7 +295,61 @@
         }
 
         /* ==================================================================
-           6. Responsive Media Queries
+           🌟🌟 6. EASTER EGG: GOD MODE (HEYYEYAAEYAAAEYAEYAA / Star State) 🌟🌟
+           ================================================================== */
+        body.god-mode-active {
+            /* HEYYEYAAEYAAAEYAEYAA style fast-flashing pastel trippy background */
+            animation: heyyeyaa-bg 0.4s steps(2, end) infinite;
+            color: #1d1d1f; 
+        }
+        
+        @keyframes heyyeyaa-bg {
+            0% { background-color: #ff99ff; }
+            25% { background-color: #99ffff; }
+            50% { background-color: #ffff99; }
+            75% { background-color: #ff9999; }
+            100% { background-color: #ff99ff; }
+        }
+
+        /* Star State (Invincibility) for the Profile Image */
+        body.god-mode-active .profile-img {
+            animation: star-power 0.2s linear infinite !important;
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.8));
+        }
+
+        @keyframes star-power {
+            0% { filter: hue-rotate(0deg) saturate(500%) contrast(150%); transform: scale(1.05); }
+            50% { filter: hue-rotate(180deg) saturate(500%) contrast(150%); transform: scale(1.1); }
+            100% { filter: hue-rotate(360deg) saturate(500%) contrast(150%); transform: scale(1.05); }
+        }
+
+        /* Gaming Rainbow Cards */
+        body.god-mode-active .card {
+            background: rgba(255, 255, 255, 0.8) !important; /* Make text readable over trippy background */
+            animation: rainbow-border 0.5s linear infinite !important;
+            border: 3px solid #ff0000;
+        }
+
+        @keyframes rainbow-border {
+            0% { border-color: #ff0000; box-shadow: 0 0 20px #ff0000, inset 0 0 10px #ff0000; }
+            25% { border-color: #ffff00; box-shadow: 0 0 20px #ffff00, inset 0 0 10px #ffff00; }
+            50% { border-color: #00ff00; box-shadow: 0 0 20px #00ff00, inset 0 0 10px #00ff00; }
+            75% { border-color: #00ffff; box-shadow: 0 0 20px #00ffff, inset 0 0 10px #00ffff; }
+            100% { border-color: #ff0000; box-shadow: 0 0 20px #ff0000, inset 0 0 10px #ff0000; }
+        }
+
+        /* Crazy Wobble for Spirit Level */
+        body.god-mode-active .spirit-bubble {
+            animation: god-wobble 0.05s linear infinite !important;
+        }
+        @keyframes god-wobble {
+            0% { transform: translateX(calc(-50% - 30px)); background: #ff0000; }
+            50% { transform: translateX(calc(-50% + 30px)); background: #00ffff; }
+            100% { transform: translateX(calc(-50% - 30px)); background: #00ff00; }
+        }
+
+        /* ==================================================================
+           7. Responsive Media Queries
            ================================================================== */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; } 
@@ -334,7 +378,6 @@
     <!-- 🚨 Blockade Tape Component -->
     <div class="marquee-wrapper" id="marquee-tape">
         <div class="marquee-mask">
-            <!-- 常に裏でスクロールし続けるコンテナ -->
             <div class="marquee-track">
                 <!-- Set 1 -->
                 <span class="marquee-text">村瀨亮介からの応答がありません。 ⚠</span>
@@ -593,6 +636,7 @@
                 this.ctx.lineTo(this.x, this.y); 
                 
                 const isDarkMode = document.body.classList.contains('dark-mode');
+                // GOD MODE中は色をレインボーっぽく上書き（CSSフィルターで処理）
                 this.ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue(isDarkMode ? '--color-ecg-lost' : '--color-ecg-alive').trim(); 
                 this.ctx.lineWidth = 2; 
                 this.ctx.stroke(); 
@@ -615,6 +659,7 @@
                 this.ecgEngine = ecgEngine;
                 this.speedUnitIdx = 0;
                 this.globalSpeedKmh = 0;
+                this.isGodMode = false; // 🌟 GOD MODE フラグ
                 this.els = this.getElements();
                 this.initScramblers();
                 this.bindEvents();
@@ -714,7 +759,70 @@
                 }
             }
 
+            // 🌟 GOD MODE 起動関数
+            activateGodMode() {
+                if (this.isGodMode) return;
+                this.isGodMode = true;
+
+                // 既存のCSSモードを上書き
+                this.els.body.classList.remove('light-mode', 'dark-mode');
+                this.els.body.classList.add('god-mode-active');
+
+                // 死亡時のテープを強制非表示
+                this.els.marqueeTape.classList.remove('apply-anim');
+                this.els.marqueeTape.classList.add('hidden-by-user');
+
+                // ステータス無敵書き換え
+                this.setTextData('msg', 'ヘ ブ ン 状 態');
+                this.els.sub.textContent = 'HEYYEYAAEYAAAEYAEYAA';
+                this.els.sub.style.display = 'block';
+                this.els.sub.style.fontWeight = 'bold';
+                this.els.msg.style.opacity = '1';
+
+                this.ecgEngine.setStatus(777, true);
+                this.setTextData('hr', '777');
+                this.els.rHr.textContent = 'MAX';
+                this.els.hrSub.textContent = '限界突破';
+
+                this.setTextData('steps', '99,999,999');
+                this.setTextData('cal', '99,999');
+
+                this.setTextData('speedVal', 'マッハ11');
+                this.els.speedUnit.textContent = ''; // 単位を隠す
+
+                this.setTextData('asym', '0');
+                this.els.bubble.parentElement.style.animation = 'heyyeyaa-bg 0.1s infinite';
+                this.els.bubble.parentElement.style.opacity = '1';
+
+                this.setTextData('stand', '999');
+                this.setTextData('flights', '9999');
+
+                this.setTextData('cond', 'GOD👼🌈');
+                this.els.cond.style.color = 'inherit';
+
+                this.setTextData('sndVal', '999');
+                this.els.sndLbl.textContent = '(ビッグバン)';
+                this.els.sndLbl.style.color = 'inherit';
+
+                this.setTextData('loc', '天空');
+                this.setTextData('batVal', '∞');
+                this.els.batIcon.textContent = '🌟';
+
+                // ド派手なトースト通知
+                const t = document.createElement('div');
+                t.className = 'tune-toast';
+                t.style.background = 'linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff)';
+                t.style.color = '#fff';
+                t.style.fontWeight = '900';
+                t.style.textShadow = '1px 1px 2px #000';
+                t.style.border = '2px solid #fff';
+                t.innerHTML = `<span>🌟 GOD MODE ACTIVATED 🌟</span>`;
+                document.body.appendChild(t);
+            }
+
             async updateStatus() {
+                if (this.isGodMode) return; // 🌟 GOD MODE中は通常のデータ更新をブロック
+
                 try { 
                     const res = await fetch(`https://api.github.com/gists/${AppConfig.gistId}?t=${Date.now()}`); 
                     if (!res.ok) throw new Error(); 
@@ -730,7 +838,6 @@
                         this.els.msg.style.opacity = '1';
                         this.els.sub.textContent = ''; 
                         
-                        // 生存時はテープを引っ込める
                         this.els.marqueeTape.classList.remove('apply-anim');
                         this.els.marqueeTape.classList.remove('hidden-by-user'); 
                     } else { 
@@ -748,7 +855,6 @@
                         }
 
                         if (!this.els.marqueeTape.classList.contains('hidden-by-user')) {
-                            // 🚨 iOS対策: 要素自体の透明度を上げ、scaleXでアニメーションさせる
                             this.els.marqueeTape.classList.add('apply-anim');
                             this.els.msg.style.opacity = '0.4'; 
                         } else {
@@ -820,6 +926,8 @@
             }
 
             toggleSpeedUnit() { 
+                if (this.isGodMode) return; // 🌟 マッハ11を上書きしないようにブロック
+                
                 this.speedUnitIdx = (this.speedUnitIdx + 1) % 3; 
                 this.renderSpeed(); 
                 this.els.cardSpeed.classList.remove('anim-flash'); 
@@ -931,7 +1039,7 @@
         }
 
         // ============================================================================
-        // 🚀 5. INITIALIZATION
+        // 🚀 5. INITIALIZATION & EASTER EGGS
         // ============================================================================
         document.addEventListener('DOMContentLoaded', () => {
             const ecgEngine = new ECGMonitor('ecg-canvas');
@@ -940,6 +1048,22 @@
             ecgEngine.start(); 
             dashboard.updateStatus(); 
             dashboard.checkCooldown();
+
+            // 🎮 コナミコマンドのリスナー (Vanilla JS)
+            const konamiCode = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+            let konamiIndex = 0;
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key.toLowerCase() === konamiCode[konamiIndex]) {
+                    konamiIndex++;
+                    if (konamiIndex === konamiCode.length) {
+                        dashboard.activateGodMode();
+                        konamiIndex = 0;
+                    }
+                } else {
+                    konamiIndex = 0; // 入力ミスでリセット
+                }
+            });
         });
     </script>
 <!--
