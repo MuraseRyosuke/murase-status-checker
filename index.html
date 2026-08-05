@@ -295,7 +295,7 @@
         #puchun-layer {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: #000; z-index: 9999998;
-            opacity: 0; /* JSで不透明度を制御 */
+            opacity: 0; /* JSで不透明度とtransitionを制御 */
         }
         #puchun-flash {
             position: fixed; top: 50%; left: 50%; width: 100vw; height: 100vh;
@@ -344,55 +344,54 @@
         }
         @keyframes heaven-flare { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.1); } }
 
-        /* 🌟 写真の親カード自体を拡縮させる（ネオンフチと同期させるため） */
+        /* 🌟 写真カードから枠と背景を完全に消し去る（同期ズレ防止） */
         body.god-mode-active .card-profile {
-            animation: god-glow-scale 0.8s ease-in-out infinite alternate !important;
-        }
-        @keyframes god-glow-scale {
-            0% { transform: scale(1.02); }
-            100% { transform: scale(1.08); }
-        }
-
-        /* 🌟 完全に光り輝く無敵スター状態の写真 */
-        body.god-mode-active .profile-img {
-            filter: drop-shadow(0 0 20px #fff) drop-shadow(0 0 40px #fffc00) brightness(1.2) contrast(1.1) !important;
-            animation: god-glow-filter 0.8s ease-in-out infinite alternate !important;
-            border: 2px solid rgba(255, 255, 255, 0.9);
-        }
-        @keyframes god-glow-filter {
-            0% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #fffc00) brightness(1.1) contrast(1.1); }
-            100% { filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #fffc00) brightness(1.4) contrast(1.2); }
-        }
-
-        /* 🌈 背景色はそのままに、フチだけネオンが流れるカード */
-        body.god-mode-active .card {
-            border-color: transparent !important; 
-            position: relative; z-index: 1;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4) !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
             animation: none !important;
         }
-        /* Mask機能を使ってカード内部をくり抜き、外枠だけにグラデーションを表示 */
-        body.god-mode-active .card::after {
+        body.god-mode-active .card-profile::after {
+            display: none !important; /* ネオンの枠線を写真からは除去 */
+        }
+
+        /* 🌟 写真自体を単体で無敵スター状態に拡縮・発光させる */
+        body.god-mode-active .profile-img {
+            border: 4px solid rgba(255, 255, 255, 0.9);
+            transform-origin: center center;
+            animation: god-glow-photo 0.8s ease-in-out infinite alternate !important;
+        }
+        @keyframes god-glow-photo {
+            0% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #fffc00) brightness(1.1) contrast(1.1); transform: scale(1); }
+            100% { filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #fffc00) brightness(1.4) contrast(1.2); transform: scale(1.15); }
+        }
+
+        /* 🌈 背景色はそのまま維持し、フチだけ超リッチなネオンが流れるカード */
+        body.god-mode-active .card:not(.card-profile) {
+            border-color: transparent !important; 
+            position: relative; z-index: 1;
+            /* 背景のすりガラスや色は通常時のクラスから継承されるため、ここでの上書きは不要 */
+            animation: none !important;
+        }
+        /* CSSマスクを使い、強烈な発光（ドロップシャドウ）を伴って縁だけを流れるネオン */
+        body.god-mode-active .card:not(.card-profile)::after {
             content: '';
             position: absolute;
-            inset: -3px; /* ネオンの太さ */
-            border-radius: 27px; /* var(--radius-card) + 3 */
-            padding: 3px; /* くり抜く幅 */
-            background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
-            background-size: 300% 100%;
+            inset: -4px; /* ネオンの太さ分だけ外側へ */
+            border-radius: 28px; /* var(--radius-card) + 4 */
+            padding: 4px; /* くり抜くフチの幅 */
+            background: linear-gradient(115deg, #ff0000, #ff00c8, #7a00ff, #002bff, #00ffd5, #48ff00, #fffb00, #ff7300, #ff0000);
+            background-size: 300% 300%;
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: destination-out;
             mask-composite: exclude;
-            animation: neonFlow 1.5s linear infinite;
+            animation: richNeonFlow 1.5s linear infinite;
             z-index: 10;
             pointer-events: none;
+            /* ネオンのライン自体に強力なブルーム効果（発光）を付与 */
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
         }
-        @keyframes neonFlow { 0% { background-position: 0% 0; } 100% { background-position: -300% 0; } }
-
-        /* ⚖️ 平行機のアニメーション（色はオリジナルのまま） */
-        body.god-mode-active .spirit-bubble {
-            animation: none !important; /* JSで滑らかに制御するためCSSアニメは切る */
-        }
+        @keyframes richNeonFlow { 0% { background-position: 0% 50%; } 100% { background-position: -300% 50%; } }
 
         /* 🛡 モーダル画面の背景透過修正 */
         body.god-mode-active .modal-overlay { background: rgba(0, 0, 0, 0.85); }
@@ -830,7 +829,7 @@
 
                 // 2. ブラックアウトの暗闇の中でDOMをGOD MODE用に書き換え
                 setTimeout(() => {
-                    // light-mode / dark-mode のクラスは残すことで通常時と同じ背景色を維持する
+                    // クラスを追加。背景透過維持のため、既存のlight-mode等は削除しない
                     this.els.body.classList.add('god-mode-active');
 
                     // 死亡時のテープを強制非表示
@@ -876,8 +875,19 @@
                     this.els.batVal.textContent = '340282366920938463463374607431768211455';
                     this.els.batIcon.textContent = '🌟';
 
-                    // ⚖️ 物理的に隠れていた水平器を強制表示し、滑らかに暴走させる
-                    this.els.bubble.parentElement.style.opacity = '1';
+                    // ド派手なトースト通知
+                    const t = document.createElement('div');
+                    t.className = 'tune-toast';
+                    t.style.background = 'linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff)';
+                    t.style.color = '#fff';
+                    t.style.fontWeight = '900';
+                    t.style.textShadow = '1px 1px 2px #000';
+                    t.style.border = '2px solid #fff';
+                    t.innerHTML = `<span>🌟 GOD MODE ACTIVATED 🌟</span>`;
+                    document.body.appendChild(t);
+
+                    // ⚖️ 滑らかに暴走する水平器数値のアニメーション
+                    // ユーザーの要望通り、無理やりopacity:1にはせず、元の仕様を維持したまま値だけ暴走させる
                     let asymFrame = 0;
                     const animateGodAsym = () => {
                         if(!this.isGodMode) return;
