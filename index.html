@@ -197,8 +197,6 @@
             transition: opacity 0.3s; box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 1px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.3); 
             z-index: 1; border: 1px solid rgba(255,255,255,0.5);
         }
-        .wobble { animation: wobbleAnim 2.5s ease-in-out infinite; } 
-        @keyframes wobbleAnim { 0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); } 50% { transform: translateX(calc(-50% + var(--wobble-amp))); } }
 
         /* ==================================================================
            4. Interactive Elements
@@ -318,7 +316,6 @@
            🌟🌟 8. EASTER EGG: GOD MODE (ヘブン状態！！ / 無敵スター) 🌟🌟
            ================================================================== */
         body.god-mode-active {
-            /* 背景色のベースを保持したまま、擬似要素でグラデーションを追加 */
             color: #1d1d1f; 
         }
         
@@ -347,15 +344,24 @@
         }
         @keyframes heaven-flare { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.1); } }
 
+        /* 🌟 写真の親カード自体を拡縮させる（ネオンフチと同期させるため） */
+        body.god-mode-active .card-profile {
+            animation: god-glow-scale 0.8s ease-in-out infinite alternate !important;
+        }
+        @keyframes god-glow-scale {
+            0% { transform: scale(1.02); }
+            100% { transform: scale(1.08); }
+        }
+
         /* 🌟 完全に光り輝く無敵スター状態の写真 */
         body.god-mode-active .profile-img {
             filter: drop-shadow(0 0 20px #fff) drop-shadow(0 0 40px #fffc00) brightness(1.2) contrast(1.1) !important;
-            animation: god-glow 0.8s ease-in-out infinite alternate !important;
+            animation: god-glow-filter 0.8s ease-in-out infinite alternate !important;
             border: 2px solid rgba(255, 255, 255, 0.9);
         }
-        @keyframes god-glow {
-            0% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #fffc00) brightness(1.1) contrast(1.1); transform: scale(1.02); }
-            100% { filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #fffc00) brightness(1.4) contrast(1.2); transform: scale(1.08); }
+        @keyframes god-glow-filter {
+            0% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #fffc00) brightness(1.1) contrast(1.1); }
+            100% { filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #fffc00) brightness(1.4) contrast(1.2); }
         }
 
         /* 🌈 背景色はそのままに、フチだけネオンが流れるカード */
@@ -824,7 +830,7 @@
 
                 // 2. ブラックアウトの暗闇の中でDOMをGOD MODE用に書き換え
                 setTimeout(() => {
-                    this.els.body.classList.remove('light-mode', 'dark-mode');
+                    // light-mode / dark-mode のクラスは残すことで通常時と同じ背景色を維持する
                     this.els.body.classList.add('god-mode-active');
 
                     // 死亡時のテープを強制非表示
