@@ -197,6 +197,8 @@
             transition: opacity 0.3s; box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 1px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.3); 
             z-index: 1; border: 1px solid rgba(255,255,255,0.5);
         }
+        .wobble { animation: wobbleAnim 2.5s ease-in-out infinite; } 
+        @keyframes wobbleAnim { 0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); } 50% { transform: translateX(calc(-50% + var(--wobble-amp))); } }
 
         /* ==================================================================
            4. Interactive Elements
@@ -218,7 +220,6 @@
         .card-tune:hover .tune-icon, .card-tune.is-waving .tune-icon { animation: wave-hand 1.5s ease-in-out infinite; }
         .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
 
-        /* 🚨 当たり判定の最適化 */
         .help-trigger-container { grid-column: span 4; text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem; }
         .help-trigger { display: inline-block; padding: 0.5rem 1rem; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8; } 
         .help-trigger:hover { opacity: 1; color: var(--link-color); }
@@ -269,18 +270,40 @@
         @keyframes marquee-scroll { 0% { transform: translate3d(-50%, 0, 0); } 100% { transform: translate3d(0, 0, 0); } }
 
         /* ==================================================================
-           🌟🌟 6. EASTER EGG: ミリオンゴッド プチュン演出 🌟🌟
+           🌟🌟 6. EASTER EGG: 格ゲー風コマンド入力UI 🌟🌟
+           ================================================================== */
+        #konami-display {
+            position: fixed; bottom: 5%; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 10px; z-index: 999999;
+            opacity: 0; transition: opacity 0.5s ease-out; pointer-events: none;
+        }
+        .konami-icon {
+            width: 44px; height: 44px; background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255,255,255,0.4); border-radius: 8px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; color: #fff; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* ==================================================================
+           🌟🌟 7. EASTER EGG: ミリオンゴッド プチュン演出 🌟🌟
            ================================================================== */
         #puchun-wrap { pointer-events: none; }
         #puchun-layer {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #000; z-index: 9999998; display: none;
+            background: #000; z-index: 9999998;
+            opacity: 0; /* JSで不透明度を制御 */
         }
         #puchun-flash {
             position: fixed; top: 50%; left: 50%; width: 100vw; height: 100vh;
             background: #fff; z-index: 9999999; transform: translate(-50%, -50%); display: none;
         }
-        .puchun-active #puchun-layer { display: block; }
+        .puchun-active #puchun-layer { opacity: 1; pointer-events: auto; }
         .puchun-active #puchun-flash {
             display: block;
             animation: puchunAnim 0.3s cubic-bezier(0.8, 0, 0.2, 1) forwards;
@@ -292,21 +315,27 @@
         }
 
         /* ==================================================================
-           🌟🌟 7. EASTER EGG: GOD MODE (ヘブン状態！！ / 無敵スター) 🌟🌟
+           🌟🌟 8. EASTER EGG: GOD MODE (ヘブン状態！！ / 無敵スター) 🌟🌟
            ================================================================== */
         body.god-mode-active {
-            /* 暖色の神々しいグラデーション背景 */
+            /* 背景色のベースを保持したまま、擬似要素でグラデーションを追加 */
+            color: #1d1d1f; 
+        }
+        
+        /* 暖色の神々しいグラデーション背景（最背面レイヤー） */
+        body.god-mode-active::after {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: linear-gradient(135deg, #ff7e5f, #feb47b, #fffc00, #ffb347);
             background-size: 300% 300%;
             animation: heaven-bg-shift 3s ease infinite;
-            color: #1d1d1f; 
+            z-index: -3; /* ecg-canvasの下 */
         }
         @keyframes heaven-bg-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         /* 👼 光のフレア（十字のキラキラ）オーバーレイ */
         body.god-mode-active::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: 0;
+            pointer-events: none; z-index: -2;
             background-image: 
                 radial-gradient(circle at 15% 25%, #ffffff 0px, transparent 15vmin),
                 radial-gradient(circle at 85% 15%, #ffffff 0px, transparent 20vmin),
@@ -329,35 +358,34 @@
             100% { filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #fffc00) brightness(1.4) contrast(1.2); transform: scale(1.08); }
         }
 
-        /* 🌈 ネオンが縁を流れるカード */
+        /* 🌈 背景色はそのままに、フチだけネオンが流れるカード */
         body.god-mode-active .card {
-            background: rgba(255, 255, 255, 0.85) !important; /* 背景のヘブン感を透かしつつ文字を保護 */
-            border: 2px solid transparent !important; 
+            border-color: transparent !important; 
             position: relative; z-index: 1;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6) !important;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4) !important;
             animation: none !important;
         }
-        body.god-mode-active .card::before {
-            content: ''; position: absolute;
-            inset: -4px; /* ネオンの太さ */
-            border-radius: 28px; /* var(--radius-card) + 4 */
+        /* Mask機能を使ってカード内部をくり抜き、外枠だけにグラデーションを表示 */
+        body.god-mode-active .card::after {
+            content: '';
+            position: absolute;
+            inset: -3px; /* ネオンの太さ */
+            border-radius: 27px; /* var(--radius-card) + 3 */
+            padding: 3px; /* くり抜く幅 */
             background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
             background-size: 300% 100%;
-            z-index: -1;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
             animation: neonFlow 1.5s linear infinite;
+            z-index: 10;
+            pointer-events: none;
         }
         @keyframes neonFlow { 0% { background-position: 0% 0; } 100% { background-position: -300% 0; } }
 
-        /* ⚖️ 超絶可視化された滑らか大暴走水平器 */
-        body.god-mode-active .spirit-level-container {
-            background: rgba(0, 0, 0, 0.8) !important;
-            border: 1px solid rgba(255,255,255,0.5);
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-        }
+        /* ⚖️ 平行機のアニメーション（色はオリジナルのまま） */
         body.god-mode-active .spirit-bubble {
             animation: none !important; /* JSで滑らかに制御するためCSSアニメは切る */
-            background: #00ffff !important; 
-            box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff !important;
         }
 
         /* 🛡 モーダル画面の背景透過修正 */
@@ -366,7 +394,7 @@
         body.god-mode-active .modal-note { background: rgba(255, 255, 255, 0.1); color: #ccc; }
 
         /* ==================================================================
-           8. Responsive Media Queries
+           9. Responsive Media Queries
            ================================================================== */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; } 
@@ -388,6 +416,9 @@
     </style>
 </head>
 <body class="light-mode">
+
+    <!-- 🎮 格ゲー風 コマンド入力UI -->
+    <div id="konami-display"></div>
 
     <!-- ⚡️ プチュン演出用レイヤー -->
     <div id="puchun-wrap">
@@ -783,15 +814,15 @@
                 }
             }
 
-            // 🌟 GOD MODE 起動関数 (プチュン演出付き)
+            // 🌟 GOD MODE 起動関数 (プチュン演出 ＆ 3秒フェードイン付き)
             activateGodMode() {
                 if (this.isGodMode) return;
                 this.isGodMode = true;
 
-                // 📺 1. プチュン！発動 (画面が暗転)
+                // 📺 1. プチュン！発動 (一瞬白フラッシュ後、画面が暗転)
                 document.body.classList.add('puchun-active');
 
-                // 2. ブラックアウト中に裏側でDOMをGOD MODE用に書き換え
+                // 2. ブラックアウトの暗闇の中でDOMをGOD MODE用に書き換え
                 setTimeout(() => {
                     this.els.body.classList.remove('light-mode', 'dark-mode');
                     this.els.body.classList.add('god-mode-active');
@@ -839,7 +870,8 @@
                     this.els.batVal.textContent = '340282366920938463463374607431768211455';
                     this.els.batIcon.textContent = '🌟';
 
-                    // ⚖️ 滑らかに暴走する水平器数値のアニメーション
+                    // ⚖️ 物理的に隠れていた水平器を強制表示し、滑らかに暴走させる
+                    this.els.bubble.parentElement.style.opacity = '1';
                     let asymFrame = 0;
                     const animateGodAsym = () => {
                         if(!this.isGodMode) return;
@@ -852,15 +884,16 @@
                     };
                     requestAnimationFrame(animateGodAsym);
 
-                    // 🌅 3. 約3.5秒間のフリーズを経て、ブラックアウト解除（神降臨）
+                    // 🌅 3. 3.5秒間のフリーズを経て、3秒かけてゆっくりと神降臨（フェードイン）
                     setTimeout(() => {
                         const layer = document.getElementById('puchun-layer');
-                        layer.style.transition = 'opacity 0.2s ease-out';
+                        layer.style.transition = 'opacity 3s ease-in-out';
                         layer.style.opacity = '0';
                         setTimeout(() => {
                             document.body.classList.remove('puchun-active');
-                            layer.style.opacity = '1'; // 状態リセット
-                        }, 200);
+                            layer.style.transition = ''; // 状態リセット
+                            layer.style.opacity = ''; 
+                        }, 3000);
                     }, 3500);
 
                 }, 400); // プチュンのアニメーション（0.3s）直後に書き換え実行
@@ -1095,19 +1128,56 @@
             dashboard.updateStatus(); 
             dashboard.checkCooldown();
 
-            // 🎮 コナミコマンドのリスナー (Vanilla JS)
+            // 🎮 コナミコマンドのリスナー & 格ゲー風UI (Vanilla JS)
             const konamiCode = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+            const konamiIcons = { 'arrowup': '⬆️', 'arrowdown': '⬇️', 'arrowleft': '⬅️', 'arrowright': '➡️', 'b': '🅱️', 'a': '🅰️' };
             let konamiIndex = 0;
             
+            const displayEl = document.getElementById('konami-display');
+            
             document.addEventListener('keydown', (e) => {
-                if (e.key.toLowerCase() === konamiCode[konamiIndex]) {
+                if (dashboard.isGodMode) return; // 既に発動済なら無視
+                
+                const key = e.key.toLowerCase();
+                
+                if (key === konamiCode[konamiIndex]) {
+                    // 正解のキー入力時
+                    if (konamiIndex === 0) {
+                        displayEl.innerHTML = ''; // 最初の入力でリセット
+                        displayEl.style.opacity = '1';
+                    }
+                    
+                    const icon = document.createElement('div');
+                    icon.className = 'konami-icon';
+                    icon.textContent = konamiIcons[key] || key.toUpperCase();
+                    displayEl.appendChild(icon);
+
                     konamiIndex++;
+                    
                     if (konamiIndex === konamiCode.length) {
                         dashboard.activateGodMode();
+                        // 1秒後にUIを隠す
+                        setTimeout(() => { displayEl.style.opacity = '0'; }, 1000);
                         konamiIndex = 0;
                     }
                 } else {
-                    konamiIndex = 0; // 入力ミスでリセット
+                    // 間違えた場合（フェードアウトして消える）
+                    if (konamiIndex > 0) {
+                        displayEl.style.opacity = '0';
+                        setTimeout(() => { displayEl.innerHTML = ''; }, 500);
+                    }
+                    konamiIndex = 0;
+                    
+                    // ただし、間違えたキーが「上（最初のキー）」だった場合はそこからやり直し
+                    if (key === konamiCode[0]) {
+                        displayEl.innerHTML = '';
+                        displayEl.style.opacity = '1';
+                        const icon = document.createElement('div');
+                        icon.className = 'konami-icon';
+                        icon.textContent = konamiIcons[key];
+                        displayEl.appendChild(icon);
+                        konamiIndex = 1;
+                    }
                 }
             });
         });
