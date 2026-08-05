@@ -51,6 +51,9 @@
       });
     </script>
 
+    <!-- Spotify IFrame API -->
+    <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+
     <style>
         /* ==================================================================
            1. CSS Variables & Theme Configuration
@@ -144,14 +147,42 @@
         .profile-img { width: 100%; height: 100%; aspect-ratio: 1/1; border-radius: 24px; object-fit: cover; box-shadow: var(--shadow-card); transition: filter 0.5s; } 
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
         
-        .card-heart { grid-column: span 3; position: relative; align-items: center; } 
+        .card-heart { grid-column: span 3; position: relative; align-items: center; justify-content: center; display: flex; flex-direction: column; gap: 0.5rem;} 
         .heart-value-container { text-align: center; width: 100%; } 
         .card-heart .value { font-size: 4rem; letter-spacing: -0.05em; }
+
+        /* 🎧 Spotify Player Container */
+        #spotify-player-wrapper {
+            width: 100%;
+            height: 80px; /* Mini Player height */
+            border-radius: 12px;
+            overflow: hidden;
+            transition: opacity 0.3s ease, height 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         
-        .card-small { grid-column: span 1; } 
-        .card-device-location { grid-column: span 1; } 
-        .card-tune-container { grid-column: span 2; }
-        .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
+        #spotify-player-wrapper.hidden {
+            opacity: 0;
+            height: 0;
+            pointer-events: none;
+        }
+
+        #spotify-no-signal {
+            display: none;
+            width: 100%;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--color-bad);
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            padding: 10px 0;
+        }
+        
+        #spotify-no-signal.visible {
+            display: block;
+        }
 
         #ecg-canvas { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -472,8 +503,15 @@
         </div>
 
         <div class="card card-heart">
-            <div class="label">❤️心拍数</div>
+            <div class="label" style="justify-content: center;">❤️心拍数</div>
             <div class="heart-value-container"><span id="heart_rate" class="value">---</span><span class="unit">BPM</span></div>
+            
+            <!-- 🎵 Spotify Player UI -->
+            <div id="spotify-player-wrapper" class="hidden">
+                <div id="embed-iframe"></div>
+            </div>
+            <div id="spotify-no-signal">NO VITAL SIGNAL</div>
+
             <div class="sub-value" style="text-align: center; width: 100%;">
                 <span id="heart_sub">---</span><span style="margin: 0 4px; opacity: 0.3;">|</span><span>安静時: <span id="resting_hr">---</span> BPM</span>
             </div>
@@ -559,6 +597,56 @@
             links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' },
             ntfyTopic: 'murase_status_tune',
             tuneCooldownMs: 30 * 60 * 1000
+        };
+
+        // 🎵 BPM to Spotify Track Mapping
+        const bpmTracks = {
+            60: "7xWKGIFGLxBJAyGSus7BOJ", 63: "1AVhV3FVQw7WykJ0gLc5kP", 64: "0vsE2zwuBPjs87l1H1CVy9",
+            65: "5ZkHkXPHrIM8K5twCe78i9", 66: "2k1vN7Jk3OlZ9N8iKAbvMl", 67: "3VYGe2iv4Ja4KcgsKGhTZg",
+            68: "7rSLSZWOvx67HWeUOBqze8", 69: "2p8ji4NXTvYvAIRnK2d1kH", 70: "5edIhOs0VDrLQ2OJpm073N",
+            71: "3AjWkkSzfXscmHM36bLvcB", 73: "6ddKElUUHo1Hz7oQIeuYee", 74: "4WIgHH6A1NfPjIDTAoyvx9",
+            75: "0W7YTggTm2uArhg6NkSM4O", 76: "0pZKKLXXpnZw6C9FOJZT5G", 77: "2GMokQSuvlqqKwwW2VcbsH",
+            78: "3QQcmb87X6e10gdEXDx1ep", 80: "2ZWZSHeia0Hjc7jWyk2Yar", 81: "4NEeoX3J0fDr07btXPbcJj",
+            82: "33Wlhcdz98rvYxIM7Kb1Lu", 83: "6FLwmdmW77N1Pxb1aWsZmO", 84: "1Vmkwb04H9XcrDYnILqQkl",
+            85: "4Cn9b8yMxuumbGn3xGzc4R", 86: "5wWLNNwMAehpj83FU4Lz0m", 87: "1IAz8bEBFsOoosLueY1BPk",
+            88: "1YcrPcT05eI3ojtTpJO8cE", 89: "5axQcjuKcmhb8HLROC33Ic", 90: "3wwZjzgtS8cusMd9W3wS5t",
+            91: "6Dmxt4rbi97c7sjoWRrJoj", 92: "4WZmHR7ZQKFAZS13A1GQuq", 93: "6FOHbQlxKvuINhu8lj7Y3X",
+            94: "7vrOA8bQcuH4LSXSTBoPfr", 95: "4kNxrOArNWlJ07Ab5DEFLv", 96: "7vUOkb5Mw6S1VxOuC8mmUx",
+            97: "66hblHI9wl1Nim70ZYLb6D", 98: "4dZmEDSl0FydEizlksVXKa", 99: "5j3nCRdIUOMUhzT16OySHK",
+            100: "6EaJ8O1qh3ycQxLkKUWLR8", 101: "0IByNT868RxZwmcj1rQgno", 102: "19ZdaOPHXZRN96iplaqtq7",
+            103: "6BFutHoFlckBLAkphyS1Fz", 104: "3cc1ThSEvvpnEHIDuKSJOQ", 105: "2uFiFCwhttnQv32n3nUFsp",
+            106: "2awri5rPS65gXBN982s4Gt", 107: "5OzgSsv5LcsNxrEWNqyk0P", 108: "14VESw2gqZanvfhCoAWizB",
+            109: "4niqa7E9MKusXkFMUaqoGq", 110: "3Aj0zsny1zlTLevRxfEEKc", 111: "52UchVYXQRUsIgGptAA9Wa",
+            112: "3iB91ISmSGHImu3SN5V5SI", 113: "2Veb4OI5wheLPHuJEs5JqH", 114: "6FN5CD2GeJllQpn3IhkPol",
+            115: "45uzEq3hAOy8uayrvDLY2C", 116: "2Pl3yzkcEhuJVnCr168QRr", 117: "3L7ISJTvKx56uhsF28aJ4p",
+            118: "4bM39Z3rhnPdYrgpG9VuCb", 119: "7wnIzkN2sJx9NvA2BeWNkw", 120: "0hUBKCiXqaDM1RkMKO1kpW",
+            121: "7EdmqWWP6TcLDMIaGQUYcL", 122: "3Cnz255gSbMsQEnr9BvD29", 123: "6XM8jnSqbjaDF9q5h9LN0p",
+            124: "5dH4asCl80Mvbsoz6zJVyZ", 125: "6VywhctCSuTZLG6dqtwdHZ", 126: "4X6jKZPHkKLbrcEZu13VXK",
+            127: "1JCFR7eCPOjT4yPrkHrCxm", 128: "5nWlvJzdhT2qiN82DR9zVP", 129: "2Ryp3TatqoqZqZdaexoQ49",
+            130: "0RQNobEInSRsTwpjrgcGcH", 131: "73In1YO2CihWOOsT1widqT", 132: "3pUCQHDsQnbZjyN4sRIuQl",
+            133: "4w5sEO6WghNci3JMsgzkJK", 134: "0f3Ce9xjHymExIpEyHUC8D", 135: "3Qw3mGrStjl4JC5BUMfu6m",
+            136: "3JCu8RlBuAPYCJHyPFB3QC", 137: "0lWLvBmmKyS421MIJqy5u3", 138: "3KoRusjVOMNalhsSGLn5p6",
+            139: "6E972B8mg76Pexq14YQ8Aq", 140: "5VTmAV2CWq0RuYulmNuVeI", 142: "5Snmyurx2SgwT1BvUswGwg",
+            143: "1EsNUlWprxAMInqFY7Y2Xv", 144: "6maQNKBx5JU2DWSKBgJBU2", 145: "4sd5YjI03rQCkqMDKJ1JxB",
+            146: "1CCQ9EyjXTuZPMa8TLQ9Ib", 147: "0U9p7kMcU6DzOe1tLeT0xj", 148: "4CkDqV2LJaBQrxjo03YyTq",
+            149: "0vDqNzQqEhl7boeRS3Joli", 150: "2wdHnWbgLUS1GGyTjU2rJt", 151: "2uX0vNGL15tmFiwXljVvSI",
+            152: "3aMfSGcXhB6Omt3NLVrqlo", 153: "0TZLpKwnbHQKbz6QqvdgdX", 154: "7tIRL8nInt4GaLqwKewdTq",
+            155: "0AppFJk1BDKDhOaYEgCpKW", 156: "4ICPyPdG8Dk6QMdnIennSJ", 157: "6ODZT1FGTE2q4two05giS1",
+            158: "3uOcB2EJiiaur8BM6WkYbx", 159: "2iQY6uYD9UA2MXhLYODYVs", 160: "5jYQci7fS2BntSie9LoYwh",
+            161: "4uCKn6FPZSCTCgM6kuj0XW", 162: "7fQYzYZBTWTybPSRFSdaHA", 163: "0vsMJ9kZyVD3poXSisGZW7",
+            164: "34SJ7qqVo7ccnhjpJynnAg", 165: "1Cdr2Eo0IqNcHEFeigpDcA", 167: "3g77vEeCmTCUOt9Mobz6Od",
+            168: "5Mr3LASuPgcv05F0nVjbMt", 169: "71wDBaqiuoKmCJX70SBMCk", 170: "52gj6bdUoPYu90VS3jBCZU",
+            171: "4PvRJcemaQHr9Sbo9wdCIg", 172: "7ae5VPwHosJeO5tZjJDpvt", 174: "0x2IkEx6uaT6mTe3kUutDT",
+            175: "3NxvisUhys0XjAIjSmiMAs", 176: "6ospm0piuzthdAunYS2YxL", 177: "1kfoA7cWu2JD4EO0GzNn4t",
+            178: "3l8RXsbWW77c5aY0VGEiwp", 179: "1sjRNTEKVCDy9nFN8KTSIa", 180: "6lk9HTCI3eCXERqBNIxWbm",
+            183: "0ds9lct1rZPJ0dbsXBR6d1", 185: "6e6s8Yq80zk5bVlqBby724", 187: "4tIVOQdwt7kxCISuXNF2S4",
+            188: "7h1qIQD9bQ5lavHoRf2Kf0", 189: "1waNDHnJwmYAfRfH96lvA1", 190: "2ZEA14B61B2AoVrMQzPiwd",
+            192: "1iQ2JAQrhk1rnClrcv6jhW", 194: "2ox5d6LnfcxzHHI2zvFON2", 197: "7vhlCliwQ0Et1CcUsp4fpR",
+            198: "0puZUrjhNhWl98RdE7YfNM", 200: "3quy9zQGrnCDNWh4ilIckB", 202: "3D2xvTAmar3owBYBdJOYrv",
+            204: "2gamr8Kb8nWLLkojBlJ1Xz", 205: "3O4vZKO7NuMJTxaaI7pBVm", 208: "77OHQbdbuBFGUXeGfvjgCp",
+            210: "1M7mAUTaNmLiive7uioXK4", 217: "5vDXcAAqMz9Gd0QkcwZFLW",
+            // GOD MODE
+            777: "3BySmpzh50isAMQTvhQBOt", 4000: "3BySmpzh50isAMQTvhQBOt" 
         };
 
         // ============================================================================
@@ -699,11 +787,80 @@
         }
 
         // ============================================================================
+        // 🎧 Spotify Player Controller
+        // ============================================================================
+        class SpotifyController {
+            constructor() {
+                this.embedController = null;
+                this.isReady = false;
+                this.currentTrackId = null;
+                this.wrapper = document.getElementById('spotify-player-wrapper');
+                this.noSignal = document.getElementById('spotify-no-signal');
+            }
+
+            init(IFrameAPI) {
+                const element = document.getElementById('embed-iframe');
+                const options = {
+                    width: '100%',
+                    height: '80', // Mini player size
+                    uri: 'spotify:track:7xWKGIFGLxBJAyGSus7BOJ' // Default
+                };
+                
+                const callback = (EmbedController) => {
+                    this.embedController = EmbedController;
+                    this.isReady = true;
+                };
+                
+                IFrameAPI.createController(element, options, callback);
+            }
+
+            getTrackIdByBpm(currentBpm) {
+                if (!currentBpm || currentBpm <= 0) return null;
+                
+                if (bpmTracks[currentBpm]) {
+                    return bpmTracks[currentBpm];
+                }
+                
+                // Find closest BPM
+                const availableBpms = Object.keys(bpmTracks).map(Number);
+                const closestBpm = availableBpms.reduce((prev, curr) => 
+                    Math.abs(curr - currentBpm) < Math.abs(prev - currentBpm) ? curr : prev
+                );
+                
+                return bpmTracks[closestBpm];
+            }
+
+            updatePlayer(bpm, isAlive) {
+                if (!this.isReady) return;
+
+                if (!isAlive) {
+                    this.wrapper.classList.add('hidden');
+                    this.noSignal.classList.add('visible');
+                    // Stop playback if it was playing
+                    this.embedController.loadUri(''); 
+                    this.currentTrackId = null;
+                    return;
+                }
+
+                this.wrapper.classList.remove('hidden');
+                this.noSignal.classList.remove('visible');
+
+                const targetTrackId = this.getTrackIdByBpm(bpm);
+                
+                if (targetTrackId && targetTrackId !== this.currentTrackId) {
+                    this.embedController.loadUri(`spotify:track:${targetTrackId}`);
+                    this.currentTrackId = targetTrackId;
+                }
+            }
+        }
+
+        // ============================================================================
         // 📊 4. DASHBOARD CONTROLLER (Data Fetch & UI Management)
         // ============================================================================
         class HealthDashboard {
-            constructor(ecgEngine) {
+            constructor(ecgEngine, spotifyController) {
                 this.ecgEngine = ecgEngine;
+                this.spotifyController = spotifyController;
                 this.speedUnitIdx = 0;
                 this.globalSpeedKmh = 0;
                 this.isGodMode = false; // 🌟 GOD MODE フラグ
@@ -835,6 +992,9 @@
                     this.els.rHr.textContent = '777';
                     this.els.hrSub.textContent = '限界突破';
 
+                    // 🎵 Spotify を GOD の曲 (4000) にアップデート
+                    this.spotifyController.updatePlayer(4000, true);
+
                     this.setTextData('steps', '57,250,000');
                     this.setTextData('cal', '36,268');
 
@@ -953,6 +1113,9 @@
                     this.setTextData('hr', hr || '---'); 
                     this.els.hrSub.textContent = this.getRelativeTime(last); 
                     this.els.rHr.textContent = this.safeParseInt(d.health.resting_heart_rate) || '--'; 
+
+                    // 🎵 Update Spotify Player based on current BPM and Liveness
+                    this.spotifyController.updatePlayer(hr, alive);
                     
                     const steps = this.safeParseInt(d.health.steps); 
                     this.setTextData('steps', steps.toLocaleString()); 
@@ -1127,9 +1290,17 @@
         // ============================================================================
         // 🚀 5. INITIALIZATION & EASTER EGGS
         // ============================================================================
+        
+        let spotifyControllerInstance = new SpotifyController();
+
+        // Initialize Spotify IFrame API
+        window.onSpotifyIframeApiReady = (IFrameAPI) => {
+            spotifyControllerInstance.init(IFrameAPI);
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             const ecgEngine = new ECGMonitor('ecg-canvas');
-            const dashboard = new HealthDashboard(ecgEngine);
+            const dashboard = new HealthDashboard(ecgEngine, spotifyControllerInstance);
 
             ecgEngine.start(); 
             dashboard.updateStatus(); 
