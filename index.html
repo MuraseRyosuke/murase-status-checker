@@ -197,8 +197,6 @@
             transition: opacity 0.3s; box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 1px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.3); 
             z-index: 1; border: 1px solid rgba(255,255,255,0.5);
         }
-        .wobble { animation: wobbleAnim 2.5s ease-in-out infinite; } 
-        @keyframes wobbleAnim { 0%, 100% { transform: translateX(calc(-50% - var(--wobble-amp))); } 50% { transform: translateX(calc(-50% + var(--wobble-amp))); } }
 
         /* ==================================================================
            4. Interactive Elements
@@ -220,7 +218,9 @@
         .card-tune:hover .tune-icon, .card-tune.is-waving .tune-icon { animation: wave-hand 1.5s ease-in-out infinite; }
         .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
 
-        .help-trigger { grid-column: span 4; text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8; } 
+        /* 🚨 当たり判定の最適化 */
+        .help-trigger-container { grid-column: span 4; text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem; }
+        .help-trigger { display: inline-block; padding: 0.5rem 1rem; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8; } 
         .help-trigger:hover { opacity: 1; color: var(--link-color); }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; } 
@@ -239,63 +239,60 @@
            5. Blockade Tape
            ================================================================== */
         .marquee-wrapper {
-            position: fixed; 
-            top: 25%;
-            left: -10vw; 
-            width: 120vw; 
-            transform: rotate(-5deg); 
-            z-index: 1000; 
-            cursor: pointer;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease;
+            position: fixed; top: 25%; left: -10vw; width: 120vw; 
+            transform: rotate(-5deg); z-index: 1000; cursor: pointer;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
         }
 
         .marquee-mask {
-            width: 100%;
-            overflow: hidden;
-            background: #ffee00;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            transform-origin: left center;
-            transform: scaleX(0);
-            transition: transform 0.6s cubic-bezier(0.77, 0, 0.17, 1);
+            width: 100%; overflow: hidden; background: #ffee00;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); transform-origin: left center;
+            transform: scaleX(0); transition: transform 0.6s cubic-bezier(0.77, 0, 0.17, 1);
         }
 
         .marquee-track {
-            display: flex;
-            width: max-content;
-            animation: marquee-scroll 20s linear infinite; 
-            transform: translateZ(0);
-            -webkit-transform: translate3d(0,0,0);
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
+            display: flex; width: max-content; animation: marquee-scroll 20s linear infinite; 
+            transform: translateZ(0); -webkit-transform: translate3d(0,0,0);
+            backface-visibility: hidden; -webkit-backface-visibility: hidden;
         }
 
         .marquee-text {
-            font-weight: 900;
-            font-size: clamp(2rem, 6vw, 3.5rem);
-            padding: 0.2em 0.5em; 
-            line-height: 1.1;
-            color: #000; 
+            font-weight: 900; font-size: clamp(2rem, 6vw, 3.5rem);
+            padding: 0.2em 0.5em; line-height: 1.1; color: #000; 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
             white-space: nowrap;
         }
         
-        .marquee-wrapper.apply-anim {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .marquee-wrapper.apply-anim .marquee-mask {
-            transform: scaleX(1);
-        }
+        .marquee-wrapper.apply-anim { opacity: 1; pointer-events: auto; }
+        .marquee-wrapper.apply-anim .marquee-mask { transform: scaleX(1); }
 
-        @keyframes marquee-scroll {
-            0% { transform: translate3d(-50%, 0, 0); } 
-            100% { transform: translate3d(0, 0, 0); } 
+        @keyframes marquee-scroll { 0% { transform: translate3d(-50%, 0, 0); } 100% { transform: translate3d(0, 0, 0); } }
+
+        /* ==================================================================
+           🌟🌟 6. EASTER EGG: ミリオンゴッド プチュン演出 🌟🌟
+           ================================================================== */
+        #puchun-wrap { pointer-events: none; }
+        #puchun-layer {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; z-index: 9999998; display: none;
+        }
+        #puchun-flash {
+            position: fixed; top: 50%; left: 50%; width: 100vw; height: 100vh;
+            background: #fff; z-index: 9999999; transform: translate(-50%, -50%); display: none;
+        }
+        .puchun-active #puchun-layer { display: block; }
+        .puchun-active #puchun-flash {
+            display: block;
+            animation: puchunAnim 0.3s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+        }
+        @keyframes puchunAnim {
+            0% { transform: translate(-50%, -50%) scale(1, 1); opacity: 1; background: #fff; }
+            40% { transform: translate(-50%, -50%) scale(1, 0.01); opacity: 1; background: #fff; }
+            100% { transform: translate(-50%, -50%) scale(0, 0); opacity: 1; background: #fff; }
         }
 
         /* ==================================================================
-           🌟🌟 6. EASTER EGG: GOD MODE (ヘブン状態！！ / 無敵スター) 🌟🌟
+           🌟🌟 7. EASTER EGG: GOD MODE (ヘブン状態！！ / 無敵スター) 🌟🌟
            ================================================================== */
         body.god-mode-active {
             /* 暖色の神々しいグラデーション背景 */
@@ -304,17 +301,11 @@
             animation: heaven-bg-shift 3s ease infinite;
             color: #1d1d1f; 
         }
-        
-        @keyframes heaven-bg-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        @keyframes heaven-bg-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         /* 👼 光のフレア（十字のキラキラ）オーバーレイ */
         body.god-mode-active::before {
-            content: '';
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             pointer-events: none; z-index: 0;
             background-image: 
                 radial-gradient(circle at 15% 25%, #ffffff 0px, transparent 15vmin),
@@ -325,11 +316,7 @@
             animation: heaven-flare 1.5s alternate infinite ease-in-out;
             mix-blend-mode: overlay;
         }
-
-        @keyframes heaven-flare {
-            0% { opacity: 0.3; transform: scale(0.9); }
-            100% { opacity: 1; transform: scale(1.1); }
-        }
+        @keyframes heaven-flare { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.1); } }
 
         /* 🌟 完全に光り輝く無敵スター状態の写真 */
         body.god-mode-active .profile-img {
@@ -337,41 +324,49 @@
             animation: god-glow 0.8s ease-in-out infinite alternate !important;
             border: 2px solid rgba(255, 255, 255, 0.9);
         }
-
         @keyframes god-glow {
             0% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #fffc00) brightness(1.1) contrast(1.1); transform: scale(1.02); }
             100% { filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #fffc00) brightness(1.4) contrast(1.2); transform: scale(1.08); }
         }
 
-        /* 🌈 ゲーミングレインボーのカード */
+        /* 🌈 ネオンが縁を流れるカード */
         body.god-mode-active .card {
-            background: rgba(255, 255, 255, 0.65) !important; /* 背景のヘブン感を透かす */
-            animation: rainbow-border 1.5s linear infinite !important;
-            border: 3px solid #ff0000;
+            background: rgba(255, 255, 255, 0.85) !important; /* 背景のヘブン感を透かしつつ文字を保護 */
+            border: 2px solid transparent !important; 
+            position: relative; z-index: 1;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6) !important;
+            animation: none !important;
         }
-
-        @keyframes rainbow-border {
-            0% { border-color: #ff0000; box-shadow: 0 0 20px #ff0000, inset 0 0 10px #ff0000; }
-            25% { border-color: #ffff00; box-shadow: 0 0 20px #ffff00, inset 0 0 10px #ffff00; }
-            50% { border-color: #00ff00; box-shadow: 0 0 20px #00ff00, inset 0 0 10px #00ff00; }
-            75% { border-color: #00ffff; box-shadow: 0 0 20px #00ffff, inset 0 0 10px #00ffff; }
-            100% { border-color: #ff0000; box-shadow: 0 0 20px #ff0000, inset 0 0 10px #ff0000; }
+        body.god-mode-active .card::before {
+            content: ''; position: absolute;
+            inset: -4px; /* ネオンの太さ */
+            border-radius: 28px; /* var(--radius-card) + 4 */
+            background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            background-size: 300% 100%;
+            z-index: -1;
+            animation: neonFlow 1.5s linear infinite;
         }
+        @keyframes neonFlow { 0% { background-position: 0% 0; } 100% { background-position: -300% 0; } }
 
-        /* ⚖️ 滑らかに暴走する水平器 */
+        /* ⚖️ 超絶可視化された滑らか大暴走水平器 */
+        body.god-mode-active .spirit-level-container {
+            background: rgba(0, 0, 0, 0.8) !important;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
         body.god-mode-active .spirit-bubble {
-            animation: god-wobble-smooth 0.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate !important;
-            background: #fff;
-            box-shadow: 0 0 10px #fff, 0 0 20px #fff;
+            animation: none !important; /* JSで滑らかに制御するためCSSアニメは切る */
+            background: #00ffff !important; 
+            box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff !important;
         }
-        
-        @keyframes god-wobble-smooth {
-            0% { transform: translateX(calc(-50% - 60px)); }
-            100% { transform: translateX(calc(-50% + 60px)); }
-        }
+
+        /* 🛡 モーダル画面の背景透過修正 */
+        body.god-mode-active .modal-overlay { background: rgba(0, 0, 0, 0.85); }
+        body.god-mode-active .modal-content { background: rgba(28, 28, 30, 0.98) !important; color: #fff !important; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        body.god-mode-active .modal-note { background: rgba(255, 255, 255, 0.1); color: #ccc; }
 
         /* ==================================================================
-           7. Responsive Media Queries
+           8. Responsive Media Queries
            ================================================================== */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; } 
@@ -386,13 +381,19 @@
             body.dark-mode .card-status { order: 1; } 
             body.dark-mode .card-heart  { order: 2; } 
             body.dark-mode .card-tune-container { order: 3; margin-bottom: 0.5rem; } 
-            body.dark-mode .help-trigger { order: 3; margin-top: 0; margin-bottom: 1rem; } 
+            body.dark-mode .help-trigger-container { order: 3; margin-top: 0; margin-bottom: 1rem; } 
             body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; } 
             body.dark-mode .footer-info { order: 5; }
         }
     </style>
 </head>
 <body class="light-mode">
+
+    <!-- ⚡️ プチュン演出用レイヤー -->
+    <div id="puchun-wrap">
+        <div id="puchun-layer"></div>
+        <div id="puchun-flash"></div>
+    </div>
 
     <!-- 🩺 Background ECG Canvas -->
     <canvas id="ecg-canvas"></canvas>
@@ -518,7 +519,9 @@
             </div>
         </div>
         
-        <div class="help-trigger" id="btn-open-modal">⚠️ Beaconが届かない場合はこちら</div>
+        <div class="help-trigger-container">
+            <span class="help-trigger" id="btn-open-modal">⚠️ Beaconが届かない場合はこちら</span>
+        </div>
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
 
@@ -780,80 +783,87 @@
                 }
             }
 
-            // 🌟 GOD MODE 起動関数
+            // 🌟 GOD MODE 起動関数 (プチュン演出付き)
             activateGodMode() {
                 if (this.isGodMode) return;
                 this.isGodMode = true;
 
-                // 既存のCSSモードを上書きし、完全なるヘブン状態へ
-                this.els.body.classList.remove('light-mode', 'dark-mode');
-                this.els.body.classList.add('god-mode-active');
+                // 📺 1. プチュン！発動 (画面が暗転)
+                document.body.classList.add('puchun-active');
 
-                // 死亡時のテープを強制非表示
-                this.els.marqueeTape.classList.remove('apply-anim');
-                this.els.marqueeTape.classList.add('hidden-by-user');
+                // 2. ブラックアウト中に裏側でDOMをGOD MODE用に書き換え
+                setTimeout(() => {
+                    this.els.body.classList.remove('light-mode', 'dark-mode');
+                    this.els.body.classList.add('god-mode-active');
 
-                // ステータス無敵書き換え
-                this.setTextData('msg', 'ヘブン状態！！');
-                this.els.sub.textContent = 'HEYYEYAAEYAAAEYAEYAA';
-                this.els.sub.style.display = 'block';
-                this.els.sub.style.fontWeight = 'bold';
-                this.els.msg.style.opacity = '1';
+                    // 死亡時のテープを強制非表示
+                    this.els.marqueeTape.classList.remove('apply-anim');
+                    this.els.marqueeTape.classList.add('hidden-by-user');
 
-                this.ecgEngine.setStatus(4000, true);
-                this.setTextData('hr', '4000');
-                this.els.rHr.textContent = '777';
-                this.els.hrSub.textContent = '限界突破';
+                    // ステータス無敵書き換え
+                    this.setTextData('msg', 'ヘブン状態！！');
+                    this.els.sub.textContent = 'HEYYEYAAEYAAAEYAEYAA';
+                    this.els.sub.style.display = 'block';
+                    this.els.sub.style.fontWeight = 'bold';
+                    this.els.msg.style.opacity = '1';
 
-                this.setTextData('steps', '57,250,000');
-                this.setTextData('cal', '36,268');
+                    this.ecgEngine.setStatus(4000, true);
+                    this.setTextData('hr', '4000');
+                    this.els.rHr.textContent = '777';
+                    this.els.hrSub.textContent = '限界突破';
 
-                this.setTextData('speedVal', 'マッハ11');
-                this.els.speedUnit.textContent = ''; // 単位を隠す
+                    this.setTextData('steps', '57,250,000');
+                    this.setTextData('cal', '36,268');
 
-                this.setTextData('stand', '15852');
-                this.setTextData('flights', '163');
+                    this.setTextData('speedVal', 'マッハ11');
+                    this.els.speedUnit.textContent = ''; // 単位を隠す
 
-                this.setTextData('cond', 'GOD👼🌈');
-                this.els.cond.style.color = 'inherit';
+                    this.setTextData('stand', '15852');
+                    this.setTextData('flights', '163');
 
-                this.setTextData('sndVal', '194');
-                this.els.sndLbl.textContent = '(ビッグバン)';
-                this.els.sndLbl.style.color = 'inherit';
+                    this.setTextData('cond', 'GOD👼🌈');
+                    this.els.cond.style.color = 'inherit';
 
-                this.setTextData('loc', 'The Matrix');
+                    this.setTextData('sndVal', '194');
+                    this.els.sndLbl.textContent = '(ビッグバン)';
+                    this.els.sndLbl.style.color = 'inherit';
 
-                // バッテリー表示のはみ出し防止（39桁の数値を縮小して折返し）
-                this.els.batVal.style.fontSize = 'clamp(0.4rem, 1.8vw, 0.75rem)';
-                this.els.batVal.style.lineHeight = '1';
-                this.els.batVal.style.wordBreak = 'break-all';
-                this.els.batVal.style.display = 'inline-block';
-                this.els.batVal.style.maxWidth = '100%';
-                this.els.batVal.textContent = '340282366920938463463374607431768211455';
-                this.els.batIcon.textContent = '🌟';
+                    this.setTextData('loc', 'The Matrix');
 
-                // ド派手なトースト通知
-                const t = document.createElement('div');
-                t.className = 'tune-toast';
-                t.style.background = 'linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff)';
-                t.style.color = '#fff';
-                t.style.fontWeight = '900';
-                t.style.textShadow = '1px 1px 2px #000';
-                t.style.border = '2px solid #fff';
-                t.innerHTML = `<span>🌟 GOD MODE ACTIVATED 🌟</span>`;
-                document.body.appendChild(t);
+                    // バッテリー表示のはみ出し防止
+                    this.els.batVal.style.fontSize = 'clamp(0.4rem, 1.8vw, 0.75rem)';
+                    this.els.batVal.style.lineHeight = '1';
+                    this.els.batVal.style.wordBreak = 'break-all';
+                    this.els.batVal.style.display = 'inline-block';
+                    this.els.batVal.style.maxWidth = '100%';
+                    this.els.batVal.textContent = '340282366920938463463374607431768211455';
+                    this.els.batIcon.textContent = '🌟';
 
-                // ⚖️ 滑らかに暴走する水平器数値のアニメーション
-                let asymFrame = 0;
-                const animateGodAsym = () => {
-                    if(!this.isGodMode) return;
-                    asymFrame += 0.15; // 速度
-                    const sineVal = Math.sin(asymFrame);
-                    // -100.0 から 100.0 を滑らかに行き来する
-                    this.els.asym.textContent = (sineVal * 100).toFixed(1);
+                    // ⚖️ 滑らかに暴走する水平器数値のアニメーション
+                    let asymFrame = 0;
+                    const animateGodAsym = () => {
+                        if(!this.isGodMode) return;
+                        asymFrame += 0.2; // 動きの速度
+                        const sineVal = Math.sin(asymFrame);
+                        // -100.0 から 100.0 を滑らかに行き来する
+                        this.els.asym.textContent = (sineVal * 100).toFixed(1);
+                        this.els.bubble.style.transform = `translateX(calc(-50% + ${sineVal * 60}px))`;
+                        requestAnimationFrame(animateGodAsym);
+                    };
                     requestAnimationFrame(animateGodAsym);
-                };
-                requestAnimationFrame(animateGodAsym);
+
+                    // 🌅 3. 約3.5秒間のフリーズを経て、ブラックアウト解除（神降臨）
+                    setTimeout(() => {
+                        const layer = document.getElementById('puchun-layer');
+                        layer.style.transition = 'opacity 0.2s ease-out';
+                        layer.style.opacity = '0';
+                        setTimeout(() => {
+                            document.body.classList.remove('puchun-active');
+                            layer.style.opacity = '1'; // 状態リセット
+                        }, 200);
+                    }, 3500);
+
+                }, 400); // プチュンのアニメーション（0.3s）直後に書き換え実行
             }
 
             async updateStatus() {
