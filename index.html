@@ -114,6 +114,10 @@
             gap: 1.25rem; width: 100%; max-width: 900px; position: relative; z-index: 1;
         }
 
+        .mobile-grid-2 { 
+            display: contents; 
+        }
+
         /* ==================================================================
            3. UI Components (Cards, Typography, ECG)
            ================================================================== */
@@ -147,42 +151,50 @@
         .profile-img { width: 100%; height: 100%; aspect-ratio: 1/1; border-radius: 24px; object-fit: cover; box-shadow: var(--shadow-card); transition: filter 0.5s; } 
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
         
-        .card-heart { grid-column: span 3; position: relative; align-items: center; justify-content: center; display: flex; flex-direction: column; gap: 0.5rem;} 
+        .card-heart { grid-column: span 3; position: relative; align-items: center; } 
         .heart-value-container { text-align: center; width: 100%; } 
         .card-heart .value { font-size: 4rem; letter-spacing: -0.05em; }
+        
+        .card-small { grid-column: span 1; } 
+        .card-device-location { grid-column: span 1; } 
+        
+        /* 🎧 Spotify Player Card */
+        .card-spotify {
+            grid-column: span 1;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
 
-        /* 🎧 Spotify Player Container */
         #spotify-player-wrapper {
             width: 100%;
             height: 80px; /* Mini Player height */
             border-radius: 12px;
             overflow: hidden;
-            transition: opacity 0.3s ease, height 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transition: opacity 0.3s ease;
         }
         
         #spotify-player-wrapper.hidden {
-            opacity: 0;
-            height: 0;
-            pointer-events: none;
+            display: none;
         }
 
         #spotify-no-signal {
             display: none;
             width: 100%;
             text-align: center;
-            font-size: 0.85rem;
-            color: var(--color-bad);
+            font-size: 0.8rem;
+            color: var(--text-sub);
             font-weight: 600;
-            letter-spacing: 0.1em;
-            padding: 10px 0;
+            letter-spacing: 0.05em;
         }
         
         #spotify-no-signal.visible {
             display: block;
         }
+
+        .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.5rem; }
 
         #ecg-canvas { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -215,6 +227,7 @@
         /* ==================================================================
            4. Interactive Elements
            ================================================================== */
+        .card-tune-container { grid-column: span 1; }
         .card-tune { background: var(--color-tune-bg) !important; border: 1px solid var(--color-tune-border) !important; color: var(--color-tune-text) !important; cursor: pointer; align-items: center; justify-content: center; position: relative; z-index: 10; }
         .card-tune:active { transform: scale(0.96); opacity: 0.8; } 
         .card-tune.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
@@ -378,7 +391,6 @@
 
         /* 🌈 背景色はそのまま維持し、フチに「拡散されたネオンガス」を表現するカード */
         body.god-mode-active .card:not(.card-profile) {
-            /* 白いガラス管のような淡い発光を持つコアの線 */
             border: 1px solid rgba(255, 255, 255, 0.8) !important; 
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.1) !important;
             position: relative; 
@@ -392,7 +404,6 @@
             inset: -5px; /* ネオンの拡散幅 */
             border-radius: 29px; /* var(--radius-card) + 5 */
             padding: 5px; /* くり抜くフチの幅 */
-            /* 毒々しい原色ではなく、ヘブン感のあるパステル系の夢かわカラー */
             background: linear-gradient(115deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb, #fbc2eb, #ff9a9e);
             background-size: 200% 200%;
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -401,7 +412,6 @@
             animation: dreamyNeon 4s linear infinite;
             z-index: -1;
             pointer-events: none;
-            /* 強くぼかすことで、ベタ塗り感を消し去り本物のネオンの光漏れを表現 */
             filter: blur(6px) opacity(0.9);
         }
         @keyframes dreamyNeon { 0% { background-position: 0% 50%; } 100% { background-position: -200% 50%; } }
@@ -426,15 +436,22 @@
             .card-profile { display: none !important; } 
             .card-heart { min-height: 150px; justify-content: center; } 
             .card-heart .value { font-size: 4rem; } 
-            .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+            
+            /* モバイル環境では2x2のグリッドにする */
+            .mobile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; }
             .card-tune::after { display: none; }
             
+            /* SpotifyとTuneは幅いっぱいに広げて押しやすく・見やすくする */
+            .card-spotify, .card-tune-container { grid-column: span 2; }
+            
+            /* ダークモード（死亡時）の順序付け */
             body.dark-mode .card-status { order: 1; } 
             body.dark-mode .card-heart  { order: 2; } 
-            body.dark-mode .card-tune-container { order: 3; margin-bottom: 0.5rem; } 
-            body.dark-mode .help-trigger-container { order: 3; margin-top: 0; margin-bottom: 1rem; } 
-            body.dark-mode .card-small, body.dark-mode .card-device-location { order: 4; } 
-            body.dark-mode .footer-info { order: 5; }
+            /* SpotifyとTuneが含まれるグループを心拍数のすぐ下に配置 */
+            body.dark-mode #loc-bat-tune-group { order: 3; margin-bottom: 0.5rem; } 
+            body.dark-mode .help-trigger-container { order: 4; margin-top: 0; margin-bottom: 1rem; } 
+            body.dark-mode .mobile-grid-2:not(#loc-bat-tune-group) { order: 5; } 
+            body.dark-mode .footer-info { order: 6; }
         }
     </style>
 </head>
@@ -503,21 +520,14 @@
         </div>
 
         <div class="card card-heart">
-            <div class="label" style="justify-content: center;">❤️心拍数</div>
+            <div class="label">❤️心拍数</div>
             <div class="heart-value-container"><span id="heart_rate" class="value">---</span><span class="unit">BPM</span></div>
-            
-            <!-- 🎵 Spotify Player UI -->
-            <div id="spotify-player-wrapper" class="hidden">
-                <div id="embed-iframe"></div>
-            </div>
-            <div id="spotify-no-signal">NO VITAL SIGNAL</div>
-
             <div class="sub-value" style="text-align: center; width: 100%;">
                 <span id="heart_sub">---</span><span style="margin: 0 4px; opacity: 0.3;">|</span><span>安静時: <span id="resting_hr">---</span> BPM</span>
             </div>
         </div>
 
-        <div class="mobile-grid-2" style="display: contents;">
+        <div class="mobile-grid-2">
             <div class="card card-small">
                 <div class="label">👟歩数</div>
                 <div><span id="steps" class="value">---</span><span class="unit">歩</span></div>
@@ -528,7 +538,7 @@
             </div>
         </div>
 
-        <div class="mobile-grid-2" style="display: contents;">
+        <div class="mobile-grid-2">
             <div class="card card-small card-interactive" id="card-speed">
                 <div class="label">🚶歩行速度</div>
                 <div><span id="walking_speed" class="value">---</span><span id="speed_unit" class="unit">km/h</span></div>
@@ -540,7 +550,7 @@
             </div>
         </div>
 
-        <div class="mobile-grid-2" style="display: contents;">
+        <div class="mobile-grid-2">
             <div class="card card-small">
                 <div class="label">🕴️スタンド時間</div>
                 <div><span id="stand_hours" class="value">---</span><span class="unit">分</span></div>
@@ -551,7 +561,7 @@
             </div>
         </div>
 
-        <div class="mobile-grid-2" style="display: contents;">
+        <div class="mobile-grid-2">
             <div class="card card-small">
                 <div class="label">🩺体調 (HRV)</div>
                 <div id="condition" class="value" style="font-size: 1.5rem;">---</div>
@@ -562,7 +572,8 @@
             </div>
         </div>
 
-        <div class="mobile-grid-2" style="display: contents;">
+        <!-- 📍🔋🎵👋 4 Cards combined for beautiful Desktop & Mobile UI -->
+        <div class="mobile-grid-2" id="loc-bat-tune-group">
             <div class="card card-device-location">
                 <div class="label">📍現在地</div>
                 <div id="location" class="value" style="font-size: 1.4rem;">---</div>
@@ -571,9 +582,15 @@
                 <div class="label">🔋バッテリー</div>
                 <div><span id="battery_val" class="value">---</span><span class="unit">%</span><span id="battery_icon" class="value" style="font-size: 1.4rem;"></span></div>
             </div>
-        </div>
-
-        <div class="mobile-grid-2" style="display: contents;">
+            
+            <!-- 🎵 Spotify Player UI -->
+            <div class="card card-spotify" id="card-spotify">
+                <div id="spotify-player-wrapper" class="hidden">
+                    <div id="embed-iframe"></div>
+                </div>
+                <div id="spotify-no-signal">NO VITAL SIGNAL</div>
+            </div>
+            
             <div class="card card-tune card-tune-container" id="btn-tune" data-tooltip="更新の合図を送る">
                 <div class="tune-icon" id="tune-icon">👋</div>
                 <div class="tune-label" id="tune-text">Tune</div>
@@ -836,7 +853,6 @@
                 if (!isAlive) {
                     this.wrapper.classList.add('hidden');
                     this.noSignal.classList.add('visible');
-                    // Stop playback if it was playing
                     this.embedController.loadUri(''); 
                     this.currentTrackId = null;
                     return;
