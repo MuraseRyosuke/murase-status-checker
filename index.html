@@ -154,7 +154,8 @@
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
         
         .card-heart { grid-column: span 3; position: relative; align-items: center; } 
-        .heart-value-container { text-align: center; width: 100%; } 
+        /* 🚨 テキスト選択を防ぎ、隠しリンククリック時のストレスを無くす */
+        .heart-value-container { text-align: center; width: 100%; user-select: none; cursor: default; } 
         .card-heart .value { font-size: 3.5rem; letter-spacing: -0.05em; } 
         
         .card-small { grid-column: span 1; } 
@@ -270,7 +271,7 @@
         .modal-overlay.open { display: flex; opacity: 1; } 
         .modal-content { background: var(--modal-bg); color: var(--modal-text); padding: 2rem; border-radius: 24px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); max-height: 90vh; overflow-y: auto; } 
         .modal-overlay.open .modal-content { transform: scale(1); } 
-        .modal-close { absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; opacity: 0.5; line-height: 1; } 
+        .modal-close { position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; opacity: 0.5; line-height: 1; } 
         .modal-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; text-align: center; } 
         .step-block { margin-bottom: 2rem; } 
         .step-title { font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5em; } 
@@ -605,12 +606,12 @@
                 <div><span id="battery_val" class="value">---</span><span class="unit">%</span><span id="battery_icon" class="value" style="font-size: 1.4rem;"></span></div>
             </div>
             
-            <!-- 🎵 Spotify Player UI -->
+            <!-- 🎵 Spotify Player UI (Card-like wrapper to match height perfectly) -->
             <div class="card card-spotify" id="card-spotify">
                 <div id="spotify-player-wrapper" class="hidden">
                     <div id="embed-iframe"></div>
                 </div>
-                <div id="spotify-no-signal">NO VITAL SIGNAL</div>
+                <div id="spotify-no-signal" class="card">NO VITAL SIGNAL</div>
             </div>
         </div>
         
@@ -842,7 +843,7 @@
                 const element = document.getElementById('embed-iframe');
                 const options = {
                     width: '100%',
-                    height: '100%', // CSSのグリッドに自動追従させるため100%
+                    height: '100%', 
                     uri: 'spotify:track:7xWKGIFGLxBJAyGSus7BOJ' // Default
                 };
                 
@@ -855,24 +856,20 @@
             }
 
             getTrackIdByBpm(currentBpm) {
-                // 万が一BPMが取得できていない時は、エラーを防ぐため仮に60として処理を続行
                 if (!currentBpm || currentBpm <= 0) currentBpm = 60;
                 
-                // 🚨【安全装置】中身が空っぽ（""）のBPMデータは無視してリストから除外する
                 const availableBpms = Object.keys(bpmTracks)
                     .filter(bpm => bpmTracks[bpm] && bpmTracks[bpm].trim() !== "")
                     .map(Number);
                 
                 if (availableBpms.length === 0) return null;
 
-                // 1. Double/Half Time Search Algorithm (倍速・半速の候補を自動生成)
                 const multipliers = [1, 2, 3, 1/2, 1/3]; 
                 const targetCandidates = multipliers.map(m => Math.round(currentBpm * m));
                 
                 let minDistance = Infinity;
                 let bestBpms = [];
 
-                // 2. 有効なBPMリストの中から、候補に最も近いものを探す
                 for (let availBpm of availableBpms) {
                     let distForThisBpm = Math.min(...targetCandidates.map(t => Math.abs(t - availBpm)));
 
@@ -884,7 +881,6 @@
                     }
                 }
 
-                // 3. 同着1位が複数ある場合はランダムに1曲選出
                 const selectedBpm = bestBpms[Math.floor(Math.random() * bestBpms.length)];
                 
                 return bpmTracks[selectedBpm];
@@ -1365,6 +1361,15 @@
             ecgEngine.start(); 
             dashboard.updateStatus(); 
             dashboard.checkCooldown();
+
+            // 🎵 イースターエッグ: 心拍数の数字をトリプルクリックでプレイリスト表示
+            const heartValueContainer = document.querySelector('.heart-value-container');
+            heartValueContainer.addEventListener('click', (e) => {
+                // e.detail には連続クリック回数が入ります
+                if (e.detail === 3) {
+                    window.open('https://open.spotify.com/playlist/1ggNzbODGwmefdRstCGQ8L?si=f94c2643fe90422a', '_blank');
+                }
+            });
 
             // 🎮 コナミコマンドのリスナー & 格ゲー風UI (Vanilla JS)
             const konamiCode = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
