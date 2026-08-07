@@ -811,6 +811,9 @@
             getTrackIdByBpm(currentBpm) {
                 if (!currentBpm || currentBpm <= 0) currentBpm = 60;
                 
+                // ⚠️ 外部ファイル (spotify_bpm_mapping.js) の bpmTracks を参照
+                if (typeof bpmTracks === 'undefined') return null;
+
                 const availableBpms = Object.keys(bpmTracks)
                     .filter(bpm => bpmTracks[bpm] && bpmTracks[bpm].trim() !== "")
                     .map(Number);
