@@ -480,6 +480,9 @@
 </head>
 <body class="light-mode">
 
+    <!-- 🎵 外部ファイル化したSpotifyのBPM曲リストを読み込む -->
+    <script src="spotify_bpm_mapping.js"></script>
+
     <!-- 🎮 格ゲー風 コマンド入力UI -->
     <div id="konami-display"></div>
 
@@ -638,56 +641,6 @@
             links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' },
             ntfyTopic: 'murase_status_tune',
             tuneCooldownMs: 30 * 60 * 1000
-        };
-
-        // 🎵 BPM to Spotify Track Mapping
-        const bpmTracks = {
-            60: "7xWKGIFGLxBJAyGSus7BOJ", 63: "1AVhV3FVQw7WykJ0gLc5kP", 64: "0vsE2zwuBPjs87l1H1CVy9",
-            65: "5ZkHkXPHrIM8K5twCe78i9", 66: "2k1vN7Jk3OlZ9N8iKAbvMl", 67: "3VYGe2iv4Ja4KcgsKGhTZg",
-            68: "7rSLSZWOvx67HWeUOBqze8", 69: "2p8ji4NXTvYvAIRnK2d1kH", 70: "5edIhOs0VDrLQ2OJpm073N",
-            71: "3AjWkkSzfXscmHM36bLvcB", 73: "6ddKElUUHo1Hz7oQIeuYee", 74: "4WIgHH6A1NfPjIDTAoyvx9",
-            75: "0W7YTggTm2uArhg6NkSM4O", 76: "0pZKKLXXpnZw6C9FOJZT5G", 77: "2GMokQSuvlqqKwwW2VcbsH",
-            78: "3QQcmb87X6e10gdEXDx1ep", 80: "2ZWZSHeia0Hjc7jWyk2Yar", 81: "4NEeoX3J0fDr07btXPbcJj",
-            82: "33Wlhcdz98rvYxIM7Kb1Lu", 83: "6FLwmdmW77N1Pxb1aWsZmO", 84: "1Vmkwb04H9XcrDYnILqQkl",
-            85: "4Cn9b8yMxuumbGn3xGzc4R", 86: "5wWLNNwMAehpj83FU4Lz0m", 87: "1IAz8bEBFsOoosLueY1BPk",
-            88: "1YcrPcT05eI3ojtTpJO8cE", 89: "5axQcjuKcmhb8HLROC33Ic", 90: "3wwZjzgtS8cusMd9W3wS5t",
-            91: "6Dmxt4rbi97c7sjoWRrJoj", 92: "4WZmHR7ZQKFAZS13A1GQuq", 93: "6FOHbQlxKvuINhu8lj7Y3X",
-            94: "7vrOA8bQcuH4LSXSTBoPfr", 95: "4kNxrOArNWlJ07Ab5DEFLv", 96: "7vUOkb5Mw6S1VxOuC8mmUx",
-            97: "66hblHI9wl1Nim70ZYLb6D", 98: "4dZmEDSl0FydEizlksVXKa", 99: "5j3nCRdIUOMUhzT16OySHK",
-            100: "6EaJ8O1qh3ycQxLkKUWLR8", 101: "0IByNT868RxZwmcj1rQgno", 102: "19ZdaOPHXZRN96iplaqtq7",
-            103: "6BFutHoFlckBLAkphyS1Fz", 104: "3cc1ThSEvvpnEHIDuKSJOQ", 105: "2uFiFCwhttnQv32n3nUFsp",
-            106: "2awri5rPS65gXBN982s4Gt", 107: "5OzgSsv5LcsNxrEWNqyk0P", 108: "14VESw2gqZanvfhCoAWizB",
-            109: "4niqa7E9MKusXkFMUaqoGq", 110: "3Aj0zsny1zlTLevRxfEEKc", 111: "52UchVYXQRUsIgGptAA9Wa",
-            112: "3iB91ISmSGHImu3SN5V5SI", 113: "2Veb4OI5wheLPHuJEs5JqH", 114: "6FN5CD2GeJllQpn3IhkPol",
-            115: "45uzEq3hAOy8uayrvDLY2C", 116: "2Pl3yzkcEhuJVnCr168QRr", 117: "3L7ISJTvKx56uhsF28aJ4p",
-            118: "4bM39Z3rhnPdYrgpG9VuCb", 119: "7wnIzkN2sJx9NvA2BeWNkw", 120: "0hUBKCiXqaDM1RkMKO1kpW",
-            121: "7EdmqWWP6TcLDMIaGQUYcL", 122: "3Cnz255gSbMsQEnr9BvD29", 123: "6XM8jnSqbjaDF9q5h9LN0p",
-            124: "5dH4asCl80Mvbsoz6zJVyZ", 125: "6VywhctCSuTZLG6dqtwdHZ", 126: "4X6jKZPHkKLbrcEZu13VXK",
-            127: "1JCFR7eCPOjT4yPrkHrCxm", 128: "5nWlvJzdhT2qiN82DR9zVP", 129: "2Ryp3TatqoqZqZdaexoQ49",
-            130: "0RQNobEInSRsTwpjrgcGcH", 131: "73In1YO2CihWOOsT1widqT", 132: "3pUCQHDsQnbZjyN4sRIuQl",
-            133: "4w5sEO6WghNci3JMsgzkJK", 134: "0f3Ce9xjHymExIpEyHUC8D", 135: "3Qw3mGrStjl4JC5BUMfu6m",
-            136: "3JCu8RlBuAPYCJHyPFB3QC", 137: "0lWLvBmmKyS421MIJqy5u3", 138: "3KoRusjVOMNalhsSGLn5p6",
-            139: "6E972B8mg76Pexq14YQ8Aq", 140: "5VTmAV2CWq0RuYulmNuVeI", 142: "5Snmyurx2SgwT1BvUswGwg",
-            143: "1EsNUlWprxAMInqFY7Y2Xv", 144: "6maQNKBx5JU2DWSKBgJBU2", 145: "4sd5YjI03rQCkqMDKJ1JxB",
-            146: "1CCQ9EyjXTuZPMa8TLQ9Ib", 147: "0U9p7kMcU6DzOe1tLeT0xj", 148: "4CkDqV2LJaBQrxjo03YyTq",
-            149: "0vDqNzQqEhl7boeRS3Joli", 150: "2wdHnWbgLUS1GGyTjU2rJt", 151: "2uX0vNGL15tmFiwXljVvSI",
-            152: "3aMfSGcXhB6Omt3NLVrqlo", 153: "0TZLpKwnbHQKbz6QqvdgdX", 154: "7tIRL8nInt4GaLqwKewdTq",
-            155: "0AppFJk1BDKDhOaYEgCpKW", 156: "4ICPyPdG8Dk6QMdnIennSJ", 157: "6ODZT1FGTE2q4two05giS1",
-            158: "3uOcB2EJiiaur8BM6WkYbx", 159: "2iQY6uYD9UA2MXhLYODYVs", 160: "5jYQci7fS2BntSie9LoYwh",
-            161: "4uCKn6FPZSCTCgM6kuj0XW", 162: "7fQYzYZBTWTybPSRFSdaHA", 163: "0vsMJ9kZyVD3poXSisGZW7",
-            164: "34SJ7qqVo7ccnhjpJynnAg", 165: "1Cdr2Eo0IqNcHEFeigpDcA", 167: "3g77vEeCmTCUOt9Mobz6Od",
-            168: "5Mr3LASuPgcv05F0nVjbMt", 169: "71wDBaqiuoKmCJX70SBMCk", 170: "52gj6bdUoPYu90VS3jBCZU",
-            171: "4PvRJcemaQHr9Sbo9wdCIg", 172: "7ae5VPwHosJeO5tZjJDpvt", 174: "0x2IkEx6uaT6mTe3kUutDT",
-            175: "3NxvisUhys0XjAIjSmiMAs", 176: "6ospm0piuzthdAunYS2YxL", 177: "1kfoA7cWu2JD4EO0GzNn4t",
-            178: "3l8RXsbWW77c5aY0VGEiwp", 179: "1sjRNTEKVCDy9nFN8KTSIa", 180: "6lk9HTCI3eCXERqBNIxWbm",
-            183: "0ds9lct1rZPJ0dbsXBR6d1", 185: "6e6s8Yq80zk5bVlqBby724", 187: "4tIVOQdwt7kxCISuXNF2S4",
-            188: "7h1qIQD9bQ5lavHoRf2Kf0", 189: "1waNDHnJwmYAfRfH96lvA1", 190: "2ZEA14B61B2AoVrMQzPiwd",
-            192: "1iQ2JAQrhk1rnClrcv6jhW", 194: "2ox5d6LnfcxzHHI2zvFON2", 197: "7vhlCliwQ0Et1CcUsp4fpR",
-            198: "0puZUrjhNhWl98RdE7YfNM", 200: "3quy9zQGrnCDNWh4ilIckB", 202: "3D2xvTAmar3owBYBdJOYrv",
-            204: "2gamr8Kb8nWLLkojBlJ1Xz", 205: "3O4vZKO7NuMJTxaaI7pBVm", 208: "77OHQbdbuBFGUXeGfvjgCp",
-            210: "1M7mAUTaNmLiive7uioXK4", 217: "5vDXcAAqMz9Gd0QkcwZFLW",
-            // GOD MODE
-            4000: "0tcjh3JEKmpEFunkf0ucdb" 
         };
 
         // ============================================================================
