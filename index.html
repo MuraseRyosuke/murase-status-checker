@@ -270,7 +270,7 @@
         .modal-overlay.open { display: flex; opacity: 1; } 
         .modal-content { background: var(--modal-bg); color: var(--modal-text); padding: 2rem; border-radius: 24px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); max-height: 90vh; overflow-y: auto; } 
         .modal-overlay.open .modal-content { transform: scale(1); } 
-        .modal-close { position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; opacity: 0.5; line-height: 1; } 
+        .modal-close { absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; opacity: 0.5; line-height: 1; } 
         .modal-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; text-align: center; } 
         .step-block { margin-bottom: 2rem; } 
         .step-title { font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5em; } 
@@ -420,7 +420,6 @@
 
         /* 🌈 背景色はそのまま維持し、フチに「拡散されたネオンガス」を表現するカード */
         body.god-mode-active .card:not(.card-profile) {
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.1) !important;
             position: relative; 
             z-index: 1;
             animation: none !important;
@@ -606,7 +605,7 @@
                 <div><span id="battery_val" class="value">---</span><span class="unit">%</span><span id="battery_icon" class="value" style="font-size: 1.4rem;"></span></div>
             </div>
             
-            <!-- 🎵 Spotify Player UI (正しく .card クラスを付与) -->
+            <!-- 🎵 Spotify Player UI -->
             <div class="card card-spotify" id="card-spotify">
                 <div id="spotify-player-wrapper" class="hidden">
                     <div id="embed-iframe"></div>
@@ -687,7 +686,7 @@
             204: "2gamr8Kb8nWLLkojBlJ1Xz", 205: "3O4vZKO7NuMJTxaaI7pBVm", 208: "77OHQbdbuBFGUXeGfvjgCp",
             210: "1M7mAUTaNmLiive7uioXK4", 217: "5vDXcAAqMz9Gd0QkcwZFLW",
             // GOD MODE
-            4000: "3BySmpzh50isAMQTvhQBOt" 
+            4000: "0tcjh3JEKmpEFunkf0ucdb" 
         };
 
         // ============================================================================
@@ -843,7 +842,7 @@
                 const element = document.getElementById('embed-iframe');
                 const options = {
                     width: '100%',
-                    height: '80', // Strict mini player height matching adjacent cards
+                    height: '100%', // CSSのグリッドに自動追従させるため100%
                     uri: 'spotify:track:7xWKGIFGLxBJAyGSus7BOJ' // Default
                 };
                 
