@@ -138,5 +138,5 @@ const bpmTracks = {
   217: "5vDXcAAqMz9Gd0QkcwZFLW", // □□□ - Good Morning!
 
   // 🌟 GOD MODE用 (BPM 4000の時などに流す特別な曲)
-  4000: "3BySmpzh50isAMQTvhQBOt", // Pia-no-jaC - 熊蜂の飛行
+  4000: "0tcjh3JEKmpEFunkf0ucdb", // Pia-no-jaC - 熊蜂の飛行
 };
