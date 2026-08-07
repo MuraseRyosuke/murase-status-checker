@@ -611,7 +611,7 @@
                 <div id="spotify-player-wrapper" class="hidden">
                     <div id="embed-iframe"></div>
                 </div>
-                <div id="spotify-no-signal">NO VITAL SIGNAL</div>
+                <div id="spotify-no-signal" class="card">NO VITAL SIGNAL</div>
             </div>
         </div>
         
@@ -843,7 +843,7 @@
                 const element = document.getElementById('embed-iframe');
                 const options = {
                     width: '100%',
-                    height: '80', // Strict mini player height matching adjacent cards
+                    height: '100%', // CSSのグリッドに自動追従させるため100%
                     uri: 'spotify:track:7xWKGIFGLxBJAyGSus7BOJ' // Default
                 };
                 
@@ -858,17 +858,31 @@
             getTrackIdByBpm(currentBpm) {
                 if (!currentBpm || currentBpm <= 0) return null;
                 
-                if (bpmTracks[currentBpm]) {
-                    return bpmTracks[currentBpm];
-                }
-                
-                // Find closest BPM
                 const availableBpms = Object.keys(bpmTracks).map(Number);
-                const closestBpm = availableBpms.reduce((prev, curr) => 
-                    Math.abs(curr - currentBpm) < Math.abs(prev - currentBpm) ? curr : prev
-                );
                 
-                return bpmTracks[closestBpm];
+                // 1. Double/Half Time Search Algorithm
+                const multipliers = [1, 2, 3, 1/2, 1/3]; 
+                const targetCandidates = multipliers.map(m => Math.round(currentBpm * m));
+                
+                let minDistance = Infinity;
+                let bestBpms = [];
+
+                // 2. Find the closest BPM among all candidates
+                for (let availBpm of availableBpms) {
+                    let distForThisBpm = Math.min(...targetCandidates.map(t => Math.abs(t - availBpm)));
+
+                    if (distForThisBpm < minDistance) {
+                        minDistance = distForThisBpm;
+                        bestBpms = [availBpm]; 
+                    } else if (distForThisBpm === minDistance) {
+                        bestBpms.push(availBpm); 
+                    }
+                }
+
+                // 3. Randomly select if there are multiple candidates with the same distance
+                const selectedBpm = bestBpms[Math.floor(Math.random() * bestBpms.length)];
+                
+                return bpmTracks[selectedBpm];
             }
 
             updatePlayer(bpm, isAlive) {
@@ -1074,7 +1088,7 @@
                     document.body.appendChild(t);
 
                     // ⚖️ 滑らかに暴走する水平器数値のアニメーション
-                    // 物理的に値が入っていない場合(opacity:0)の時は表示しないという本来の仕様を厳守
+                    // 値がない(opacity:0)時は表示しない本来の仕様を厳守
                     let asymFrame = 0;
                     const animateGodAsym = () => {
                         if(!this.isGodMode) return;
@@ -1242,6 +1256,9 @@
                 const container = this.els.bubble.parentElement;
                 if (val === null || isNaN(val)) { container.style.opacity='0'; return; } 
                 container.style.opacity='1'; 
+                
+                // 水平器の色を常に元の色（黄緑）に固定
+                container.style.backgroundColor = 'var(--color-liquid)'; 
                 
                 if(val > 0 || val < 0) { 
                     this.els.bubble.style.setProperty('--wobble-amp', `${Math.min(Math.abs(val)*400, 45)}%`); 
