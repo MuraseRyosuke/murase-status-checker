@@ -51,7 +51,7 @@
 
     <!-- Spotify IFrame API -->
     <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
-    
+
     <!-- 🎵 外部ファイル化したSpotifyのBPM曲リストを読み込む -->
     <script src="spotify_bpm_mapping.js"></script>
 
@@ -363,7 +363,7 @@
         <div class="help-trigger-container"><span class="help-trigger" id="btn-open-modal">⚠️ Beaconが届かない場合はこちら</span></div>
         <div class="footer-info">最終更新: <span id="last_updated">---</span></div>
     </main>
-<script>
+    <script>
         // ============================================================================
         // ⚙️ 1. SYSTEM CONFIGURATION & VJ SETTINGS
         // ============================================================================
@@ -716,7 +716,6 @@
 
             const models = [];
             let currentPattern = 0;
-            let time = 0;
 
             const loader = new THREE.GLTFLoader();
             loader.load(MY_3D_MODEL_URL, (gltf) => {
@@ -750,12 +749,22 @@
                 const m0 = models[0];
 
                 if (currentPattern === 0) {
-                    m0.visible = true; m0.scale.set(10, 10, 10); m0.position.set(30, -5, -20); m0.rotation.set(0, -Math.PI / 2, 0); 
+                    // Pattern 1: 横切る（XMB風の直線移動）
+                    m0.visible = true; 
+                    m0.scale.set(50, 50, 50); // 5倍
+                    m0.position.set(90, -15, -30); // 完全に画面外(右)に配置
+                    m0.rotation.set(0, -Math.PI / 2, 0); 
                 } else if (currentPattern === 1) {
-                    m0.visible = true; m0.scale.set(15, 15, 15); m0.position.set(0, -30, -25); m0.rotation.set(0, 0, 0);
+                    // Pattern 2: ろくろ（下から回転上昇）
+                    m0.visible = true; 
+                    m0.scale.set(75, 75, 75); // 5倍
+                    m0.position.set(0, -70, -30); // 完全に画面外(下)に配置
+                    m0.rotation.set(0, 0, 0);
                 } else if (currentPattern === 2) {
+                    // Pattern 3: 群れ
                     models.forEach(m => {
-                        m.visible = true; m.scale.set(2, 2, 2);
+                        m.visible = true; 
+                        m.scale.set(2, 2, 2);
                         m.position.set((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 40, -80 - Math.random() * 50);
                         m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
                     });
@@ -764,15 +773,15 @@
 
             function animate() {
                 requestAnimationFrame(animate);
-                time += 0.01;
                 const m0 = models[0];
                 
                 if (currentPattern === 0) {
-                    m0.position.x -= 0.08; m0.position.y += Math.sin(time) * 0.02; 
-                    if (m0.position.x < -30) m0.position.x = 30;
+                    // 24秒かけて画面をゆっくりと横切る（Y軸のブレを削除）
+                    m0.position.x -= 0.12; 
                 } else if (currentPattern === 1) {
-                    m0.rotation.y -= 0.008; m0.position.y += 0.03;
-                    if (m0.position.y > 15) m0.position.y = -30;
+                    // 24秒かけて下からゆっくりとせり上がる
+                    m0.rotation.y -= 0.005; 
+                    m0.position.y += 0.09;
                 } else if (currentPattern === 2) {
                     models.forEach(m => {
                         m.position.z += 0.6; m.rotation.x += 0.01; m.rotation.y += 0.01;
