@@ -239,12 +239,13 @@
             .card-heart .value { font-size: 4rem; } 
             .card-tune::after { display: none; }
             .card-small, .card-device-location, .card-spotify, .card-tune-container { grid-column: span 1; width: 100%; }
+            
             body.dark-mode .card-status { order: 1; } 
             body.dark-mode .card-heart  { order: 2; } 
-            body.dark-mode #loc-bat-spot-group { order: 3; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 0; } 
-            body.dark-mode .card-tune-container { order: 4; margin-bottom: 0.5rem; }
-            body.dark-mode .help-trigger-container { order: 5; margin-top: 0; margin-bottom: 1rem; } 
-            body.dark-mode .mobile-grid-2:not(#loc-bat-spot-group) { order: 6; display: flex; flex-direction: column; gap: 1rem; } 
+            body.dark-mode .card-tune-container { order: 3; margin-bottom: 0.5rem; }
+            body.dark-mode .help-trigger-container { order: 4; margin-top: 0; margin-bottom: 1rem; } 
+            body.dark-mode .mobile-grid-2:not(#loc-bat-spot-group) { order: 5; display: flex; flex-direction: column; gap: 1rem; } 
+            body.dark-mode #loc-bat-spot-group { order: 6; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 0; } 
             body.dark-mode .footer-info { order: 7; }
         }
     </style>
@@ -721,6 +722,38 @@
             loader.load(MY_3D_MODEL_URL, (gltf) => {
                 const baseModel = gltf.scene;
 
+                // ⚡️ VJ Fresnel (ぼかした白い輪郭) Shader Override
+                baseModel.traverse((child) => {
+                    if (child.isMesh && child.material) {
+                        child.material = child.material.clone();
+                        child.material.needsUpdate = true;
+                        
+                        child.material.onBeforeCompile = (shader) => {
+                            shader.vertexShader = shader.vertexShader.replace(
+                                '#include <common>',
+                                `#include <common>\nvarying vec3 vWPosition;\nvarying vec3 vWNormal;`
+                            ).replace(
+                                '#include <worldpos_vertex>',
+                                `#include <worldpos_vertex>\nvWPosition = (modelMatrix * vec4(position, 1.0)).xyz;\nvWNormal = normalize(mat3(modelMatrix) * normal);`
+                            );
+
+                            shader.fragmentShader = shader.fragmentShader.replace(
+                                '#include <common>',
+                                `#include <common>\nvarying vec3 vWPosition;\nvarying vec3 vWNormal;`
+                            ).replace(
+                                '#include <dithering_fragment>',
+                                `#include <dithering_fragment>
+                                vec3 viewDir = normalize(cameraPosition - vWPosition);
+                                float fresnel = dot(viewDir, vWNormal);
+                                fresnel = clamp(1.0 - fresnel, 0.0, 1.0);
+                                fresnel = pow(fresnel, 3.5); // 輪郭の細さとぼかし具合
+                                gl_FragColor.rgb += vec3(1.0, 1.0, 1.0) * fresnel * 0.6; // 薄く白い光を加算
+                                `
+                            );
+                        };
+                    }
+                });
+
                 for (let i = 0; i < 30; i++) {
                     const clone = baseModel.clone();
                     clone.visible = false; 
@@ -749,16 +782,16 @@
                 const m0 = models[0];
 
                 if (currentPattern === 0) {
-                    // Pattern 1: 横切る（XMB風の直線移動）
+                    // Pattern 1: 横切る（XMB風の一直線の超スロー移動・5倍サイズ）
                     m0.visible = true; 
-                    m0.scale.set(50, 50, 50); // 5倍
-                    m0.position.set(90, -15, -30); // 完全に画面外(右)に配置
+                    m0.scale.set(50, 50, 50); 
+                    m0.position.set(90, -15, -30); 
                     m0.rotation.set(0, -Math.PI / 2, 0); 
                 } else if (currentPattern === 1) {
-                    // Pattern 2: ろくろ（下から回転上昇）
+                    // Pattern 2: ろくろ（下から回転上昇・5倍サイズ）
                     m0.visible = true; 
-                    m0.scale.set(75, 75, 75); // 5倍
-                    m0.position.set(0, -70, -30); // 完全に画面外(下)に配置
+                    m0.scale.set(75, 75, 75); 
+                    m0.position.set(0, -70, -30); 
                     m0.rotation.set(0, 0, 0);
                 } else if (currentPattern === 2) {
                     // Pattern 3: 群れ
@@ -776,13 +809,14 @@
                 const m0 = models[0];
                 
                 if (currentPattern === 0) {
-                    // 24秒かけて画面をゆっくりと横切る（Y軸のブレを削除）
-                    m0.position.x -= 0.12; 
+                    // XMB風に24秒かけて画面をゆっくり一直線に横切る（距離180を1440フレームで）
+                    m0.position.x -= 0.125; 
                 } else if (currentPattern === 1) {
-                    // 24秒かけて下からゆっくりとせり上がる
-                    m0.rotation.y -= 0.005; 
-                    m0.position.y += 0.09;
+                    // 24秒で約2回転（1フレームあたり0.0087ラジアン）しながら、ゆっくり下から現れる
+                    m0.rotation.y -= 0.0087; 
+                    m0.position.y += 0.06;
                 } else if (currentPattern === 2) {
+                    // 群れのアニメーション
                     models.forEach(m => {
                         m.position.z += 0.6; m.rotation.x += 0.01; m.rotation.y += 0.01;
                         if (m.position.z > 15) {
