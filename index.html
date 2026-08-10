@@ -705,7 +705,8 @@
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+            // 負荷軽減：最大解像度を1.2に制限し、30体出しても軽くする
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.2)); 
             container.appendChild(renderer.domElement);
 
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); 
@@ -719,7 +720,7 @@
             let currentPattern = 0;
             let time = 0;
             
-            // 自由落下用
+            // 自由落下用変数
             let dropIndex = 0;
             let lastDropTime = 0;
 
@@ -793,13 +794,14 @@
                     m0.visible = true; 
                     m0.scale.set(50, 50, 50); 
                     m0.position.set(90, -15, -30); 
+                    // 時計回りに90度回した状態を正面（カメラ側）に向けるための補正
                     m0.rotation.set(0, -Math.PI / 2, 0); 
                 } else if (currentPattern === 1) {
                     // Pattern 2: ろくろ（下から回転上昇・5倍サイズ）
                     m0.visible = true; 
                     m0.scale.set(75, 75, 75); 
                     m0.position.set(0, -70, -30); 
-                    m0.rotation.set(0, 0, 0);
+                    m0.rotation.set(0, -Math.PI / 2, 0);
                 } else if (currentPattern === 2) {
                     // Pattern 3: 群れ
                     models.forEach(m => {
@@ -809,18 +811,18 @@
                         m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
                     });
                 } else if (currentPattern === 3) {
-                    // Pattern 4: たらこキユーピー風（押し寄せる大群）
+                    // Pattern 4: たらこキユーピー風（押し寄せる大群 3列×10行）
                     models.forEach((m, i) => {
                         m.visible = true; 
                         m.scale.set(6, 6, 6);
-                        const col = i % 10;
-                        const row = Math.floor(i / 10);
-                        m.position.set((col - 4.5) * 8, -15, -40 - row * 15);
-                        m.rotation.set(0, 0, 0);
+                        const col = i % 3; // 0, 1, 2
+                        const row = Math.floor(i / 3); // 0 〜 9
+                        m.position.set((col - 1) * 12, -15, -40 - row * 15);
+                        m.rotation.set(0, -Math.PI / 2, 0); // 正面
                         m.userData = { baseY: m.position.y };
                     });
                 } else if (currentPattern === 4) {
-                    // Pattern 5: 自由落下して積もる（だるま落とし）
+                    // Pattern 5: 自由落下して積もる（だるま落とし・平面）
                     dropIndex = 0;
                     lastDropTime = time;
                     models.forEach(m => {
@@ -836,7 +838,7 @@
                 const m0 = models[0];
                 
                 if (currentPattern === 0) {
-                    // XMB風に24秒かけて画面をゆっくり一直線に横切る（距離180を1440フレームで）
+                    // XMB風に24秒かけて画面をゆっくり一直線に横切る
                     m0.position.x -= 0.125; 
                 } else if (currentPattern === 1) {
                     // 24秒で約2回転（1フレームあたり0.0087ラジアン）しながら、ゆっくり下から現れる
@@ -856,49 +858,59 @@
                     // たらこキユーピー風のアニメーション
                     models.forEach((m, i) => {
                         m.position.z += 0.15; 
+                        // ピョコピョコ上下に跳ねる
                         m.position.y = m.userData.baseY + Math.abs(Math.sin(time * 5 + i * 0.5)) * 3; 
-                        m.rotation.z = Math.sin(time * 3 + i * 0.5) * 0.2; 
+                        // 少し首をかしげるように揺らす
+                        m.rotation.z = Math.sin(time * 3 + i * 0.5) * 0.15; 
+                        m.rotation.x = Math.sin(time * 2 + i * 0.5) * 0.1; 
                         if (m.position.z > 20) {
-                            m.position.z -= 45; // 3列(15*3)分下げる
+                            m.position.z -= 150; // 15間隔 * 10列分 奥へ戻る
                         }
                     });
                 } else if (currentPattern === 4) {
-                    // 自由落下して積もる（だるま落としループ）
+                    // 自由落下して積もる（だるま落としループ・平面Z固定）
                     if (time - lastDropTime > 0.4) {
                         const m = models[dropIndex];
                         m.visible = true; m.userData.active = true; m.userData.stopped = false; m.userData.vy = 0;
-                        m.position.set((Math.random() - 0.5) * 50, 40, (Math.random() - 0.5) * 20 - 10);
-                        m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                        m.position.set((Math.random() - 0.5) * 40, 30, -20); // Zを -20 に固定して平面落下
+                        m.rotation.set(Math.random() * Math.PI, -Math.PI / 2, Math.random() * Math.PI);
                         dropIndex = (dropIndex + 1) % models.length;
                         lastDropTime = time;
                     }
                     models.forEach((m) => {
                         if (!m.userData.active || m.userData.stopped) return;
                         
-                        m.userData.vy -= 0.08; 
+                        m.userData.vy -= 0.12; // 重力
                         m.position.y += m.userData.vy;
                         m.rotation.x += 0.02; m.rotation.y += 0.03;
 
                         let hit = false;
                         if (m.position.y < -25) {
+                            // 地面に衝突
                             hit = true; m.position.y = -25;
                         } else {
+                            // 他の止まっているモデルとの衝突判定
                             for (let j = 0; j < models.length; j++) {
                                 const other = models[j];
-                                if (other !== m && other.userData.stopped && other.visible) {
+                                if (other !== m && other.userData.active && other.visible && other.userData.stopped) {
                                     const dx = m.position.x - other.position.x;
                                     const dy = m.position.y - other.position.y;
-                                    const dz = m.position.z - other.position.z;
-                                    if (dx*dx + dy*dy + dz*dz < 30 && dy > 0) {
-                                        hit = true; m.position.y = other.position.y + 4.5; break;
+                                    // 距離が近く、かつ相手より上にいる場合に乗っかる
+                                    if (dx*dx + dy*dy < 40 && dy > 0 && dy < 6) {
+                                        hit = true; m.position.y = other.position.y + 6; break;
                                     }
                                 }
                             }
                         }
-                        if (hit) { m.userData.stopped = true; m.userData.vy = 0; }
+                        if (hit) { 
+                            m.userData.vy *= -0.4; // ポヨンと弾む（反発係数0.4）
+                            if (Math.abs(m.userData.vy) < 0.5) { 
+                                // 速度が落ちたら完全に停止
+                                m.userData.stopped = true; m.userData.vy = 0; 
+                            } 
+                        }
                     });
                 }
-
                 renderer.render(scene, camera);
             }
 
