@@ -147,16 +147,19 @@
         .card-small { grid-column: span 1; } .card-device-location { grid-column: span 1; } 
 
         /* ==================================================================
-           🚀 Speed Meter Border Integration
+           🚀 Speed Meter Border Integration (Fixed for Dark/God Mode)
            ================================================================== */
         #card-speed {
             position: relative;
-            /* 背景の透過を保つために、カード本来の背景色は内部の擬似要素に持たせます */
             background: transparent !important; 
             border: none !important; 
-            padding: 0; /* Paddingを内部コンテナに移動 */
-            overflow: visible; /* 境界線のブレをはみ出させるため */
+            padding: 0 !important; 
+            overflow: visible; 
             z-index: 1;
+            /* 外側のカードは透過＆ブラーなしにし、二重描画を防ぐ */
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-shadow: none !important;
         }
 
         #card-speed-inner {
@@ -171,29 +174,25 @@
             flex-direction: column; 
             justify-content: space-between;
             position: relative;
-            z-index: 2; /* 境界線の前に表示 */
-            /* 境界線とカードの間の隙間を埋める */
-            box-shadow: inset 0 0 0 1px var(--card-border);
+            z-index: 2; 
+            box-shadow: var(--shadow-card), inset 0 0 0 1px var(--card-border);
+            transition: background-color 0.5s ease;
         }
 
-        /* 境界線を描画する要素 */
         #card-speed::before {
             content: "";
             position: absolute;
-            inset: -3px; /* ボーダーの太さ */
-            border-radius: calc(var(--radius-card) + 3px); /* 角丸を合わせる */
+            inset: -3px; 
+            border-radius: calc(var(--radius-card) + 3px); 
             z-index: -1;
-            /* 速度メーター用のグラデーション（JavaScriptで動的に変更されます） */
             background: conic-gradient(from 180deg, transparent 0%, transparent 100%);
             transition: background 0.5s ease-out;
-            /* 境界線部分だけを残してくり抜く（内側を透過） */
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: destination-out;
             mask-composite: exclude;
-            padding: 3px; /* ボーダーの太さ */
+            padding: 3px; 
         }
 
-        /* レブリミット（最高速度到達時）のブレアニメーション */
         @keyframes revLimitShake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
             10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -209,10 +208,17 @@
         }
 
         #card-speed.rev-limit::before {
-            animation: revLimitShake 0.1s infinite; /* 激しくブレる */
-            filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.8)); /* 赤く光る */
+            animation: revLimitShake 0.1s infinite; 
+            filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.8)); 
         }
         
+        /* GOD MODE専用のインナーカード白背景化 */
+        body.god-mode-active #card-speed-inner {
+            background: rgba(255, 255, 255, 0.85) !important;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* 🎧 Spotify Player */
         .card-spotify { grid-column: span 2; display: flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; }
         #spotify-player-wrapper { width: 100%; height: 80px; border-radius: 12px; overflow: hidden; transition: opacity 0.3s ease; display: flex; align-items: center; }
         #spotify-player-wrapper.hidden { display: none; }
@@ -313,7 +319,7 @@
             body.dark-mode .help-trigger-container { order: 4; margin-top: 0; margin-bottom: 1rem; } 
             body.dark-mode .mobile-grid-2:not(#loc-bat-spot-group) { order: 5; display: flex; flex-direction: column; gap: 1rem; } 
             
-            /* 📱 スマホ（死亡時）の順序変更：Spotify・現在地・バッテリーを「騒音」のさらに下に配置 */
+            /* 📱 スマホ（死亡時）の順序変更：Spotify・現在地・バッテリーを一番下へ */
             body.dark-mode #loc-bat-spot-group { order: 6; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 0; } 
             
             body.dark-mode .footer-info { order: 7; }
@@ -427,7 +433,8 @@
             </div>
             <div class="card card-spotify" id="card-spotify">
                 <div id="spotify-player-wrapper" class="hidden"><div id="embed-iframe"></div></div>
-                <div id="spotify-no-signal" class="card">NO VITAL SIGNAL</div>
+                <!-- 🚫 NO VITAL SIGNALからclass="card"を削除し、二重描画を防ぐ -->
+                <div id="spotify-no-signal">NO VITAL SIGNAL</div>
             </div>
         </div>
         
