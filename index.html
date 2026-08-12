@@ -18,15 +18,16 @@
     <meta property="og:site_name" content="Murase Status Checker">
     <meta name="twitter:card" content="summary">
 
+    <!-- Push Notification SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     
     <script>
-      /**
-       * ------------------------------------------------------------------
-       * Hidden Console Logs (Easter Eggs)
-       * ------------------------------------------------------------------
-       */
-      console.log(
+        /**
+         * ------------------------------------------------------------------
+         * Hidden Console Logs (Easter Eggs)
+         * ------------------------------------------------------------------
+         */
+        console.log(
 `%c
       /\\ 
      /  \\ 
@@ -37,16 +38,17 @@
 
 > check --status "alive"
 ✦ Scanning vital signs... Match found.`,
-        "color: #b0c4de; background: #101010; font-family: monospace;"
-      );
+            "color: #b0c4de; background: #101010; font-family: monospace;"
+        );
 
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b",
-          notifyButton: { enable: true }
+        // OneSignal Initialization
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+                appId: "f5949fef-1032-4fb2-b4b5-2c680b96867b",
+                notifyButton: { enable: true }
+            });
         });
-      });
     </script>
 
     <!-- Spotify IFrame API -->
@@ -63,13 +65,19 @@
             --glass-blur: 10px;
             --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.1);
             --radius-card: 20px;
+            
+            /* Status Colors */
             --color-good: #2e8b57;
             --color-ok:   #20b2aa;
             --color-avg:  #d97706;
             --color-bad:  #dc2626;
             --color-liquid: #c5e010; 
+            
+            /* ECG Colors */
             --color-ecg-alive: rgba(46, 204, 113, 0.6);
             --color-ecg-lost:  rgba(48, 209, 201, 0.6);
+            
+            /* Tune Button Colors */
             --color-tune-bg:     rgba(155, 89, 182, 0.15); 
             --color-tune-border: rgba(155, 89, 182, 0.5); 
             --color-tune-text:   #6c3483;
@@ -77,77 +85,217 @@
             --color-bubble-text: #6c3483;
         }
 
-        * { box-sizing: border-box; }
+        /* ==================================================================
+           2. Reset & Base Layout
+           ================================================================== */
+        * { 
+            box-sizing: border-box; 
+        }
         
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; 
-            margin: 0; padding: 1.25rem 1rem; 
+            margin: 0; 
+            padding: 1.25rem 1rem; 
             transition: background-color 0.5s ease, color 0.5s ease; 
             -webkit-font-smoothing: antialiased; 
-            min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow-x: hidden; 
+            min-height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow-x: hidden; 
         }
         
         a { text-decoration: none; } 
         a:hover { text-decoration: underline; }
 
+        /* Light Mode (Alive) */
         body.light-mode { 
-            background-color: #f5f5f7; color: #1d1d1f; 
-            --card-bg: rgba(255, 255, 255, 0.65); --card-border: rgba(255, 255, 255, 0.4); 
-            --text-sub: #555559; --link-color: #0066cc; 
-            --modal-bg: #ffffff; --modal-text: #1d1d1f; 
+            background-color: #f5f5f7; 
+            color: #1d1d1f; 
+            --card-bg: rgba(255, 255, 255, 0.65); 
+            --card-border: rgba(255, 255, 255, 0.4); 
+            --text-sub: #555559; 
+            --link-color: #0066cc; 
+            --modal-bg: #ffffff; 
+            --modal-text: #1d1d1f; 
         }
 
+        /* Dark Mode (No Signal) */
         body.dark-mode { 
-            background-color: #000000; color: #f5f5f7; 
-            --card-bg: rgba(28, 28, 30, 0.65); --card-border: rgba(255, 255, 255, 0.1); 
-            --text-sub: #a1a1a6; --link-color: #0a84ff; 
-            --modal-bg: #1c1c1e; --modal-text: #f5f5f7; 
+            background-color: #000000; 
+            color: #f5f5f7; 
+            --card-bg: rgba(28, 28, 30, 0.65); 
+            --card-border: rgba(255, 255, 255, 0.1); 
+            --text-sub: #a1a1a6; 
+            --link-color: #0a84ff; 
+            --modal-bg: #1c1c1e; 
+            --modal-text: #f5f5f7; 
         }
 
+        /* Dashboard Grid */
         .dashboard-grid { 
-            display: grid; grid-template-columns: repeat(4, 1fr); 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
             grid-auto-rows: minmax(80px, auto); 
-            gap: 1rem; width: 100%; max-width: 900px; position: relative; z-index: 1;
+            gap: 1rem; 
+            width: 100%; 
+            max-width: 900px; 
+            position: relative; 
+            z-index: 1;
         }
-        .mobile-grid-2 { display: contents; }
-
-        .card { 
-            background: var(--card-bg); border: 1px solid var(--card-border); 
-            backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); 
-            border-radius: var(--radius-card); padding: 1.2rem; 
-            display: flex; flex-direction: column; justify-content: space-between; 
-            box-shadow: var(--shadow-card); transition: transform 0.2s ease, background-color 0.5s ease; 
-        }
-        .card-interactive { cursor: pointer; position: relative; user-select: none; } 
-        .card-interactive:active { transform: scale(0.98); opacity: 0.9; }
         
-        .anim-flash { animation: flashAnim 0.3s ease-out; } 
-        @keyframes flashAnim { 0% { opacity: 0.2; transform: scale(0.98); } 100% { opacity: 1; transform: scale(1); } }
+        .mobile-grid-2 { 
+            display: contents; 
+        }
 
+        /* ==================================================================
+           3. UI Components (Cards & Typography)
+           ================================================================== */
+        .card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border); 
+            backdrop-filter: blur(var(--glass-blur)); 
+            -webkit-backdrop-filter: blur(var(--glass-blur)); 
+            border-radius: var(--radius-card); 
+            padding: 1.2rem; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            box-shadow: var(--shadow-card); 
+            transition: transform 0.2s ease, background-color 0.5s ease; 
+        }
+        
+        .card-interactive { 
+            cursor: pointer; 
+            position: relative; 
+            user-select: none; 
+        } 
+        
+        .card-interactive:active { 
+            transform: scale(0.98); 
+            opacity: 0.9; 
+        }
+        
+        /* Flash Animation for interactions */
+        .anim-flash { animation: flashAnim 0.3s ease-out; } 
+        @keyframes flashAnim { 
+            0% { opacity: 0.2; transform: scale(0.98); } 
+            100% { opacity: 1; transform: scale(1); } 
+        }
+
+        /* Text Scramble Duds */
         .dud { color: var(--text-sub); opacity: 0.8; }
         .marquee-text .dud { color: #000; opacity: 0.8; }
 
-        .label { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; color: var(--text-sub); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4em; width: 100%; }
-        .value { font-size: 1.6rem; font-weight: 700; line-height: 1.1; } 
-        .unit { font-size: 0.85rem; font-weight: 500; color: var(--text-sub); margin-left: 0.2em; } 
-        .sub-value { font-size: 0.85rem; color: var(--text-sub); margin-top: 0.2em; }
+        /* Typography */
+        .label { 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            letter-spacing: 0.05em; 
+            color: var(--text-sub); 
+            margin-bottom: 0.5rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 0.4em; 
+            width: 100%; 
+        }
         
-        .card-status { grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1.5rem 1rem; min-height: 130px; position: relative; }
-        #liveness-message { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; position: relative; z-index: 1; transition: opacity 0.5s ease; } 
-        #liveness-subtext { font-size: 0.95rem; color: var(--text-sub); line-height: 1.5; margin-top: 0.6rem; position: relative; z-index: 1; } 
+        .value { 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            line-height: 1.1; 
+        } 
+        
+        .unit { 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            color: var(--text-sub); 
+            margin-left: 0.2em; 
+        } 
+        
+        .sub-value { 
+            font-size: 0.85rem; 
+            color: var(--text-sub); 
+            margin-top: 0.2em; 
+        }
+        
+        /* specific cards */
+        .card-status { 
+            grid-column: span 4; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            padding: 1.5rem 1rem; 
+            min-height: 130px; 
+            position: relative; 
+        }
+        
+        #liveness-message { 
+            font-size: clamp(1.6rem, 4vw, 2.4rem); 
+            font-weight: 800; 
+            line-height: 1.2; 
+            margin: 0; 
+            word-wrap: break-word; 
+            position: relative; 
+            z-index: 1; 
+            transition: opacity 0.5s ease; 
+        } 
+        
+        #liveness-subtext { 
+            font-size: 0.95rem; 
+            color: var(--text-sub); 
+            line-height: 1.5; 
+            margin-top: 0.6rem; 
+            position: relative; 
+            z-index: 1; 
+        } 
+        
         #liveness-subtext:empty { display: none; margin-top: 0; }
 
-        .card-profile { grid-column: span 1; padding: 0; background: transparent !important; border: none !important; box-shadow: none !important; display: flex; align-items: center; justify-content: center; } 
-        .profile-img { width: 100%; height: 100%; aspect-ratio: 1/1; border-radius: var(--radius-card); object-fit: cover; box-shadow: var(--shadow-card); transition: filter 0.5s; } 
+        .card-profile { 
+            grid-column: span 1; 
+            padding: 0; 
+            background: transparent !important; 
+            border: none !important; 
+            box-shadow: none !important; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        } 
+        
+        .profile-img { 
+            width: 100%; 
+            height: 100%; 
+            aspect-ratio: 1/1; 
+            border-radius: var(--radius-card); 
+            object-fit: cover; 
+            box-shadow: var(--shadow-card); 
+            transition: filter 0.5s; 
+        } 
+        
         body.dark-mode .profile-img { filter: invert(1) grayscale(1); }
         
-        .card-heart { grid-column: span 3; position: relative; align-items: center; } 
-        .heart-value-container { text-align: center; width: 100%; user-select: none; cursor: pointer; } 
+        .card-heart { 
+            grid-column: span 3; 
+            position: relative; 
+            align-items: center; 
+        } 
+        
+        .heart-value-container { 
+            text-align: center; 
+            width: 100%; 
+            user-select: none; 
+            cursor: pointer; 
+        } 
+        
         .card-heart .value { font-size: 3.5rem; letter-spacing: -0.05em; } 
-        .card-small { grid-column: span 1; } .card-device-location { grid-column: span 1; } 
+        .card-small { grid-column: span 1; } 
+        .card-device-location { grid-column: span 1; } 
 
         /* ==================================================================
-           🚀 Speed Meter Border Integration (Cleaned up shake effects)
+           🚀 Speed Meter Border Integration (Cyber Meter)
            ================================================================== */
         #card-speed {
             position: relative;
@@ -194,94 +342,480 @@
         /* GOD MODE専用のインナーカード白背景化 */
         body.god-mode-active #card-speed-inner {
             background: rgba(255, 255, 255, 0.85) !important;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2), 
+                        inset 0 0 10px rgba(255, 255, 255, 0.1), 
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.8) !important;
         }
 
-        /* 🎧 Spotify Player */
-        .card-spotify { grid-column: span 2; display: flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; }
-        #spotify-player-wrapper { width: 100%; height: 80px; border-radius: 12px; overflow: hidden; transition: opacity 0.3s ease; display: flex; align-items: center; }
+        /* ==================================================================
+           4. Spotify Player UI
+           ================================================================== */
+        .card-spotify { 
+            grid-column: span 2; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 0.5rem 1rem; 
+        }
+        
+        #spotify-player-wrapper { 
+            width: 100%; 
+            height: 80px; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            transition: opacity 0.3s ease; 
+            display: flex; 
+            align-items: center; 
+        }
+        
         #spotify-player-wrapper.hidden { display: none; }
-        #spotify-no-signal { display: none; width: 100%; text-align: center; font-size: 0.8rem; color: var(--text-sub); font-weight: 600; letter-spacing: 0.05em; }
+        
+        #spotify-no-signal { 
+            display: none; 
+            width: 100%; 
+            text-align: center; 
+            font-size: 0.8rem; 
+            color: var(--text-sub); 
+            font-weight: 600; 
+            letter-spacing: 0.05em; 
+        }
+        
         #spotify-no-signal.visible { display: block; }
 
-        .footer-info { grid-column: span 4; text-align: right; font-size: 0.8rem; color: var(--text-sub); margin-top: 0.2rem; }
+        .footer-info { 
+            grid-column: span 4; 
+            text-align: right; 
+            font-size: 0.8rem; 
+            color: var(--text-sub); 
+            margin-top: 0.2rem; 
+        }
 
-        #ecg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4; pointer-events: none; transform: translateZ(0); will-change: transform; }
+        /* ==================================================================
+           5. Background Canvas & Effects
+           ================================================================== */
+        #ecg-canvas { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: -1; 
+            opacity: 0.4; 
+            pointer-events: none; 
+            transform: translateZ(0); 
+            will-change: transform; 
+        }
 
-        .spirit-level-container { width: 100%; height: 8px; background: var(--color-liquid); border-radius: 4px; margin-top: 6px; position: relative; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), inset 0 -1px 1px rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.8); }
-        .spirit-level-container::before, .spirit-level-container::after { content: ''; position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0,0,0,0.7); z-index: 2; }
-        .spirit-level-container::before { left: calc(50% - 8px); } .spirit-level-container::after { left: calc(50% + 7px); }
-        .spirit-bubble { width: 14px; height: 4px; margin-top: 1px; background: rgba(255, 255, 255, 0.7); border-radius: 2px; position: absolute; left: 50%; top: 0; transform: translateX(-50%); transition: opacity 0.3s; box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), inset 0 -1px 1px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.3); z-index: 1; border: 1px solid rgba(255,255,255,0.5); }
+        /* 💡 Spirit Level (バランス水平器) */
+        .spirit-level-container { 
+            width: 100%; 
+            height: 8px; 
+            background: var(--color-liquid); 
+            border-radius: 4px; 
+            margin-top: 6px; 
+            position: relative; 
+            overflow: hidden; 
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), inset 0 -1px 1px rgba(255,255,255,0.4); 
+            border: 1px solid rgba(0,0,0,0.8); 
+        }
+        
+        .spirit-level-container::before, .spirit-level-container::after { 
+            content: ''; 
+            position: absolute; 
+            top: 0; bottom: 0; 
+            width: 1px; 
+            background: rgba(0,0,0,0.7); 
+            z-index: 2; 
+        }
+        .spirit-level-container::before { left: calc(50% - 8px); } 
+        .spirit-level-container::after { left: calc(50% + 7px); }
+        
+        .spirit-bubble { 
+            width: 14px; 
+            height: 4px; 
+            margin-top: 1px; 
+            background: rgba(255, 255, 255, 0.7); 
+            border-radius: 2px; 
+            position: absolute; 
+            left: 50%; 
+            top: 0; 
+            transform: translateX(-50%); 
+            transition: opacity 0.3s; 
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), 
+                        inset 0 -1px 1px rgba(0,0,0,0.3), 
+                        0 1px 1px rgba(0,0,0,0.3); 
+            z-index: 1; 
+            border: 1px solid rgba(255,255,255,0.5); 
+        }
 
+        /* ==================================================================
+           6. Tune Button & Notifications
+           ================================================================== */
         .card-tune-container { grid-column: span 4; }
-        .card-tune { background: var(--color-tune-bg) !important; border: 1px solid var(--color-tune-border) !important; color: var(--color-tune-text) !important; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; min-height: 80px; gap: 0.2rem; }
-        .card-tune:active { transform: scale(0.96); opacity: 0.8; } .card-tune.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
-        .card-tune::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 30; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); } 
+        
+        .card-tune { 
+            background: var(--color-tune-bg) !important; 
+            border: 1px solid var(--color-tune-border) !important; 
+            color: var(--color-tune-text) !important; 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            position: relative; 
+            z-index: 10; 
+            min-height: 80px; 
+            gap: 0.2rem; 
+        }
+        
+        .card-tune:active { transform: scale(0.96); opacity: 0.8; } 
+        .card-tune.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); pointer-events: none; }
+        
+        /* Tune Tooltip */
+        .card-tune::after { 
+            content: attr(data-tooltip); 
+            position: absolute; 
+            bottom: 100%; left: 50%; 
+            transform: translateX(-50%) translateY(10px); 
+            background: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(4px); 
+            color: #fff; 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            font-size: 0.8rem; 
+            font-weight: 500; 
+            white-space: nowrap; 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.2s, transform 0.2s; 
+            z-index: 30; 
+            margin-bottom: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+        } 
         .card-tune:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); } 
-        .tune-bubble { position: absolute; top: 10%; right: -10%; background: var(--color-bubble-bg); color: var(--color-bubble-text); padding: 8px 16px; border-radius: 12px; border-bottom-left-radius: 2px; font-weight: 700; font-size: 0.95rem; pointer-events: none; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; animation: bubblePop 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards; } 
-        @keyframes bubblePop { 0% { opacity: 0; transform: scale(0.8) translate(-10px, 10px); } 15% { opacity: 1; transform: scale(1) translate(0, 0); } 100% { opacity: 0; transform: scale(0.9) translate(0, -10px); } }
-        .tune-toast { position: fixed; bottom: 30px; left: 50%; background: rgba(20, 20, 20, 0.9); color: #fff; padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; z-index: 9999; white-space: nowrap; pointer-events: none; animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards; } 
-        @keyframes toastSlideUp { 0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 10% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
+        
+        /* Reaction Bubbles & Toasts */
+        .tune-bubble { 
+            position: absolute; 
+            top: 10%; right: -10%; 
+            background: var(--color-bubble-bg); 
+            color: var(--color-bubble-text); 
+            padding: 8px 16px; 
+            border-radius: 12px; 
+            border-bottom-left-radius: 2px; 
+            font-weight: 700; 
+            font-size: 0.95rem; 
+            pointer-events: none; 
+            z-index: 100; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            opacity: 0; 
+            animation: bubblePop 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards; 
+        } 
+        
+        @keyframes bubblePop { 
+            0% { opacity: 0; transform: scale(0.8) translate(-10px, 10px); } 
+            15% { opacity: 1; transform: scale(1) translate(0, 0); } 
+            100% { opacity: 0; transform: scale(0.9) translate(0, -10px); } 
+        }
+        
+        .tune-toast { 
+            position: fixed; 
+            bottom: 30px; left: 50%; 
+            background: rgba(20, 20, 20, 0.9); 
+            color: #fff; 
+            padding: 10px 20px; 
+            border-radius: 50px; 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
+            opacity: 0; 
+            z-index: 9999; 
+            white-space: nowrap; 
+            pointer-events: none; 
+            animation: toastSlideUp 3s cubic-bezier(0.19, 1, 0.22, 1) forwards; 
+        } 
+        
+        @keyframes toastSlideUp { 
+            0% { opacity: 0; transform: translateX(-50%) translateY(30px); } 
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); } 
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); } 
+            100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } 
+        }
+        
         .tune-icon { font-size: 1.5rem; display: inline-block; transform-origin: 70% 70%; } 
-        @keyframes wave-hand { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 75% { transform: rotate(-10deg); } }
+        @keyframes wave-hand { 
+            0%, 100% { transform: rotate(0deg); } 
+            25% { transform: rotate(15deg); } 
+            75% { transform: rotate(-10deg); } 
+        }
         .card-tune:hover .tune-icon, .card-tune.is-waving .tune-icon { animation: wave-hand 1.5s ease-in-out infinite; }
         .tune-label { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
 
-        .help-trigger-container { grid-column: span 4; text-align: center; margin-top: -0.5rem; margin-bottom: 0; }
-        .help-trigger { display: inline-block; padding: 0.5rem 1rem; font-size: 0.8rem; color: var(--text-sub); cursor: pointer; text-decoration: underline; opacity: 0.8; } .help-trigger:hover { opacity: 1; color: var(--link-color); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; } 
-        .modal-overlay.open { display: flex; opacity: 1; } .modal-content { background: var(--modal-bg); color: var(--modal-text); padding: 2rem; border-radius: 24px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative; transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); max-height: 90vh; overflow-y: auto; } 
-        .modal-overlay.open .modal-content { transform: scale(1); } .modal-close { position: absolute; top: 1rem; right: 1.5rem; font-size: 2rem; cursor: pointer; opacity: 0.5; line-height: 1; } 
-        .modal-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; text-align: center; } .step-block { margin-bottom: 2rem; } .step-title { font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5em; } 
-        .step-num { background: var(--color-good); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; } .step-img { width: auto; max-width: 100%; height: auto; max-height: 250px; border-radius: 12px; margin-top: 0.5rem; border: 1px solid var(--card-border); display: block; margin-left: auto; margin-right: auto; } 
+        /* ==================================================================
+           7. Help Modal UI
+           ================================================================== */
+        .help-trigger-container { 
+            grid-column: span 4; 
+            text-align: center; 
+            margin-top: -0.5rem; 
+            margin-bottom: 0; 
+        }
+        
+        .help-trigger { 
+            display: inline-block; 
+            padding: 0.5rem 1rem; 
+            font-size: 0.8rem; 
+            color: var(--text-sub); 
+            cursor: pointer; 
+            text-decoration: underline; 
+            opacity: 0.8; 
+        } 
+        
+        .help-trigger:hover { opacity: 1; color: var(--link-color); }
+        
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(5px); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999; 
+            opacity: 0; 
+            transition: opacity 0.3s ease; 
+        } 
+        
+        .modal-overlay.open { display: flex; opacity: 1; } 
+        
+        .modal-content { 
+            background: var(--modal-bg); 
+            color: var(--modal-text); 
+            padding: 2rem; 
+            border-radius: 24px; 
+            max-width: 500px; 
+            width: 90%; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
+            position: relative; 
+            transform: scale(0.95); 
+            transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); 
+            max-height: 90vh; 
+            overflow-y: auto; 
+        } 
+        
+        .modal-overlay.open .modal-content { transform: scale(1); } 
+        
+        .modal-close { 
+            position: absolute; 
+            top: 1rem; right: 1.5rem; 
+            font-size: 2rem; 
+            cursor: pointer; 
+            opacity: 0.5; 
+            line-height: 1; 
+        } 
+        
+        .modal-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; text-align: center; } 
+        .step-block { margin-bottom: 2rem; } 
+        .step-title { font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5em; } 
+        .step-num { 
+            background: var(--color-good); 
+            color: #fff; 
+            width: 24px; height: 24px; 
+            border-radius: 50%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 0.8rem; 
+        } 
+        .step-img { 
+            width: auto; max-width: 100%; height: auto; max-height: 250px; 
+            border-radius: 12px; margin-top: 0.5rem; 
+            border: 1px solid var(--card-border); 
+            display: block; margin-left: auto; margin-right: auto; 
+        } 
         .modal-note { font-size: 0.85rem; color: var(--text-sub); background: rgba(128,128,128,0.1); padding: 10px; border-radius: 8px; }
 
-        .marquee-wrapper { position: fixed; top: 25%; left: -10vw; width: 120vw; transform: rotate(-5deg); z-index: 1000; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
-        .marquee-mask { width: 100%; overflow: hidden; background: #ffee00; box-shadow: 0 4px 12px rgba(0,0,0,0.5); transform-origin: left center; transform: scaleX(0); transition: transform 0.6s cubic-bezier(0.77, 0, 0.17, 1); }
-        .marquee-track { display: flex; width: max-content; animation: marquee-scroll 20s linear infinite; transform: translateZ(0); -webkit-transform: translate3d(0,0,0); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-        .marquee-text { font-weight: 900; font-size: clamp(2rem, 6vw, 3.5rem); padding: 0.2em 0.5em; line-height: 1.1; color: #000; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; white-space: nowrap; }
-        .marquee-wrapper.apply-anim { opacity: 1; pointer-events: auto; } .marquee-wrapper.apply-anim .marquee-mask { transform: scaleX(1); }
-        @keyframes marquee-scroll { 0% { transform: translate3d(-50%, 0, 0); } 100% { transform: translate3d(0, 0, 0); } }
+        /* ==================================================================
+           8. Blockade Tape (No Response State)
+           ================================================================== */
+        .marquee-wrapper { 
+            position: fixed; top: 25%; left: -10vw; 
+            width: 120vw; transform: rotate(-5deg); 
+            z-index: 1000; cursor: pointer; opacity: 0; 
+            pointer-events: none; transition: opacity 0.4s ease; 
+        }
+        
+        .marquee-mask { 
+            width: 100%; overflow: hidden; background: #ffee00; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); 
+            transform-origin: left center; transform: scaleX(0); 
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.17, 1); 
+        }
+        
+        .marquee-track { 
+            display: flex; width: max-content; 
+            animation: marquee-scroll 20s linear infinite; 
+            transform: translateZ(0); 
+            backface-visibility: hidden; 
+        }
+        
+        .marquee-text { 
+            font-weight: 900; font-size: clamp(2rem, 6vw, 3.5rem); 
+            padding: 0.2em 0.5em; line-height: 1.1; color: #000; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; 
+            white-space: nowrap; 
+        }
+        
+        .marquee-wrapper.apply-anim { opacity: 1; pointer-events: auto; } 
+        .marquee-wrapper.apply-anim .marquee-mask { transform: scaleX(1); }
+        
+        @keyframes marquee-scroll { 
+            0% { transform: translate3d(-50%, 0, 0); } 
+            100% { transform: translate3d(0, 0, 0); } 
+        }
 
-        #konami-display { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 999999; opacity: 0; transition: opacity 0.5s ease-out; pointer-events: none; }
-        .konami-icon { width: 36px; height: 36px; background: rgba(0, 0, 0, 0.8); border: 2px solid rgba(255,255,255,0.4); border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; color: #fff; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.6); animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        /* ==================================================================
+           🌟🌟 9. EASTER EGG: 格ゲー風コマンド入力UI 🌟🌟
+           ================================================================== */
+        #konami-display { 
+            position: fixed; bottom: 20px; left: 50%; 
+            transform: translateX(-50%); display: flex; gap: 8px; 
+            z-index: 999999; opacity: 0; transition: opacity 0.5s ease-out; 
+            pointer-events: none; 
+        }
+        
+        .konami-icon { 
+            width: 36px; height: 36px; background: rgba(0, 0, 0, 0.8); 
+            border: 2px solid rgba(255,255,255,0.4); border-radius: 8px; 
+            display: flex; justify-content: center; align-items: center; 
+            font-size: 1.2rem; color: #fff; font-weight: bold; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6); 
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        
+        @keyframes popIn { 
+            0% { transform: scale(0.5); opacity: 0; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
 
+        /* ==================================================================
+           🌟🌟 10. EASTER EGG: ミリオンゴッド プチュン演出 🌟🌟
+           ================================================================== */
         #puchun-wrap { pointer-events: none; }
-        #puchun-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999998; opacity: 0; }
-        #puchun-flash { position: fixed; top: 50%; left: 50%; width: 100vw; height: 100vh; background: #fff; z-index: 9999999; transform: translate(-50%, -50%); display: none; }
+        
+        #puchun-layer { 
+            position: fixed; top: 0; left: 0; 
+            width: 100vw; height: 100vh; background: #000; 
+            z-index: 9999998; opacity: 0; 
+        }
+        
+        #puchun-flash { 
+            position: fixed; top: 50%; left: 50%; 
+            width: 100vw; height: 100vh; background: #fff; 
+            z-index: 9999999; transform: translate(-50%, -50%); display: none; 
+        }
+        
         .puchun-active #puchun-layer { opacity: 1; pointer-events: auto; }
         .puchun-active #puchun-flash { display: block; animation: puchunAnim 0.3s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
-        @keyframes puchunAnim { 0% { transform: translate(-50%, -50%) scale(1, 1); opacity: 1; background: #fff; } 40% { transform: translate(-50%, -50%) scale(1, 0.01); opacity: 1; background: #fff; } 100% { transform: translate(-50%, -50%) scale(0, 0); opacity: 1; background: #fff; } }
-
-        body.god-mode-active .card { background: rgba(255, 255, 255, 0.85) !important; border-color: rgba(255, 255, 255, 0.8) !important; }
-        body.god-mode-active .label, body.god-mode-active .unit, body.god-mode-active .sub-value, body.god-mode-active #spotify-no-signal { color: #555559 !important; }
-        body.god-mode-active .value, body.god-mode-active #liveness-message { color: #1d1d1f !important; }
         
-        body.god-mode-active::after { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #ff7e5f, #feb47b, #fffc00, #ffb347); background-size: 300% 300%; animation: heaven-bg-shift 3s ease infinite; z-index: -3; }
-        @keyframes heaven-bg-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes puchunAnim { 
+            0% { transform: translate(-50%, -50%) scale(1, 1); opacity: 1; background: #fff; } 
+            40% { transform: translate(-50%, -50%) scale(1, 0.01); opacity: 1; background: #fff; } 
+            100% { transform: translate(-50%, -50%) scale(0, 0); opacity: 1; background: #fff; } 
+        }
 
-        body.god-mode-active::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -2; background-image: radial-gradient(circle at 15% 25%, #ffffff 0px, transparent 15vmin), radial-gradient(circle at 85% 15%, #ffffff 0px, transparent 20vmin), radial-gradient(circle at 50% 80%, #ffffff 0px, transparent 18vmin), radial-gradient(circle at 25% 75%, #ffffff 0px, transparent 12vmin), radial-gradient(circle at 75% 65%, #ffffff 0px, transparent 15vmin); animation: heaven-flare 1.5s alternate infinite ease-in-out; mix-blend-mode: overlay; }
-        @keyframes heaven-flare { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.1); } }
+        /* ==================================================================
+           🌟🌟 11. EASTER EGG: GOD MODE (無敵スター状態) 🌟🌟
+           ================================================================== */
+        body.god-mode-active .card { 
+            background: rgba(255, 255, 255, 0.85) !important; 
+            border-color: rgba(255, 255, 255, 0.8) !important; 
+        }
+        
+        body.god-mode-active .label, 
+        body.god-mode-active .unit, 
+        body.god-mode-active .sub-value, 
+        body.god-mode-active #spotify-no-signal { color: #555559 !important; }
+        
+        body.god-mode-active .value, 
+        body.god-mode-active #liveness-message { color: #1d1d1f !important; }
+        
+        /* God Mode Base Background Gradient */
+        body.god-mode-active::after { 
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background: linear-gradient(135deg, #ff7e5f, #feb47b, #fffc00, #ffb347); 
+            background-size: 300% 300%; animation: heaven-bg-shift 3s ease infinite; z-index: -3; 
+        }
+        @keyframes heaven-bg-shift { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; } 
+            100% { background-position: 0% 50%; } 
+        }
 
+        /* God Mode Sparkles */
+        body.god-mode-active::before { 
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            pointer-events: none; z-index: -2; 
+            background-image: 
+                radial-gradient(circle at 15% 25%, #ffffff 0px, transparent 15vmin), 
+                radial-gradient(circle at 85% 15%, #ffffff 0px, transparent 20vmin), 
+                radial-gradient(circle at 50% 80%, #ffffff 0px, transparent 18vmin), 
+                radial-gradient(circle at 25% 75%, #ffffff 0px, transparent 12vmin), 
+                radial-gradient(circle at 75% 65%, #ffffff 0px, transparent 15vmin); 
+            animation: heaven-flare 1.5s alternate infinite ease-in-out; 
+            mix-blend-mode: overlay; 
+        }
+        @keyframes heaven-flare { 
+            0% { opacity: 0.3; transform: scale(0.9); } 
+            100% { opacity: 1; transform: scale(1.1); } 
+        }
+
+        /* Profile Image Glow */
         body.god-mode-active .card-profile { background: transparent !important; box-shadow: none !important; border: none !important; animation: none !important; }
-        body.god-mode-active .profile-img { border: 4px solid rgba(255, 255, 255, 0.9); transform-origin: center center; animation: god-glow-photo 0.8s ease-in-out infinite alternate !important; }
-        @keyframes god-glow-photo { 0% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #fffc00) brightness(1.1) contrast(1.1); transform: scale(1); } 100% { filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #fffc00) brightness(1.4) contrast(1.2); transform: scale(1.15); } }
+        body.god-mode-active .profile-img { 
+            border: 4px solid rgba(255, 255, 255, 0.9); 
+            transform-origin: center center; 
+            animation: god-glow-photo 0.8s ease-in-out infinite alternate !important; 
+        }
+        @keyframes god-glow-photo { 
+            0% { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #fffc00) brightness(1.1) contrast(1.1); transform: scale(1); } 
+            100% { filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #fffc00) brightness(1.4) contrast(1.2); transform: scale(1.15); } 
+        }
 
+        /* Card Neon Outlines */
         body.god-mode-active .card:not(.card-profile) { position: relative; z-index: 1; animation: none !important; }
-        body.god-mode-active .card:not(.card-profile)::before { content: ''; position: absolute; inset: -5px; border-radius: 25px; padding: 5px; background: linear-gradient(115deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb, #fbc2eb, #ff9a9e); background-size: 200% 200%; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude; animation: dreamyNeon 4s linear infinite; z-index: -1; pointer-events: none; filter: blur(6px) opacity(0.9); }
-        @keyframes dreamyNeon { 0% { background-position: 0% 50%; } 100% { background-position: -200% 50%; } }
+        body.god-mode-active .card:not(.card-profile)::before { 
+            content: ''; position: absolute; inset: -5px; border-radius: 25px; padding: 5px; 
+            background: linear-gradient(115deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb, #fbc2eb, #ff9a9e); 
+            background-size: 200% 200%; 
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); 
+            -webkit-mask-composite: destination-out; mask-composite: exclude; 
+            animation: dreamyNeon 4s linear infinite; z-index: -1; pointer-events: none; filter: blur(6px) opacity(0.9); 
+        }
+        @keyframes dreamyNeon { 
+            0% { background-position: 0% 50%; } 
+            100% { background-position: -200% 50%; } 
+        }
 
+        /* Modals in God Mode */
         body.god-mode-active .modal-overlay { background: rgba(0, 0, 0, 0.85); }
         body.god-mode-active .modal-content { background: rgba(28, 28, 30, 0.98) !important; color: #fff !important; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         body.god-mode-active .modal-note { background: rgba(255, 255, 255, 0.1); color: #ccc; }
 
         /* ==================================================================
-           🌟🌟 9. VJ 3D CANVAS LAYER 🌟🌟
+           🌟🌟 12. VJ 3D CANVAS LAYER 🌟🌟
            ================================================================== */
-        #vj-canvas-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; pointer-events: none; opacity: 0; transition: opacity 1.5s ease-in-out; }
+        #vj-canvas-container { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            z-index: -2; pointer-events: none; opacity: 0; 
+            transition: opacity 1.5s ease-in-out; 
+        }
         #vj-canvas-container.active { opacity: 1; }
 
+        /* ==================================================================
+           13. Responsive Media Queries
+           ================================================================== */
         @media (max-width: 768px) {
             body { padding: 1rem; display: block; overflow-y: auto; } 
             .dashboard-grid { display: flex; flex-direction: column; gap: 1rem; } 
@@ -307,14 +841,17 @@
 </head>
 <body class="light-mode">
 
+    <!-- Konami Code UI -->
     <div id="konami-display"></div>
     <div id="puchun-wrap"><div id="puchun-layer"></div><div id="puchun-flash"></div></div>
     
     <!-- 🌟 VJ 3D Canvas Layer -->
     <div id="vj-canvas-container"></div>
     
+    <!-- Background ECG Canvas -->
     <canvas id="ecg-canvas"></canvas>
 
+    <!-- Blockade Tape -->
     <div class="marquee-wrapper" id="marquee-tape">
         <div class="marquee-mask">
             <div class="marquee-track">
@@ -326,6 +863,7 @@
         </div>
     </div>
 
+    <!-- Help Modal -->
     <div id="help-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-close" id="btn-close-modal">×</div>
@@ -344,6 +882,7 @@
         </div>
     </div>
 
+    <!-- Main Dashboard -->
     <main class="dashboard-grid">
         <div class="card card-status" id="card-status-container">
             <div id="liveness-message">ステータス確認中...</div>
@@ -372,6 +911,7 @@
         </div>
 
         <div class="mobile-grid-2">
+            <!-- 🚀 スピードメーター機能追加のため構造変更 -->
             <div class="card card-small card-interactive" id="card-speed">
                 <div id="card-speed-inner">
                     <div class="label">🚶歩行速度</div>
@@ -411,6 +951,7 @@
             </div>
             <div class="card card-spotify" id="card-spotify">
                 <div id="spotify-player-wrapper" class="hidden"><div id="embed-iframe"></div></div>
+                <!-- 🚫 NO VITAL SIGNALからclass="card"を削除し、二重描画を防ぐ -->
                 <div id="spotify-no-signal">NO VITAL SIGNAL</div>
             </div>
         </div>
@@ -430,163 +971,344 @@
             gistId: '1f81b107b898201a865a613c319d579b',
             gistFileName: 'murase_status.json',
             thresholdHours: 13, 
-            links: { twitter: 'https://twitter.com/vl_lvoO', dosei: 'https://dosei.muraseryosuke.info/' },
+            links: { 
+                twitter: 'https://twitter.com/vl_lvoO', 
+                dosei: 'https://dosei.muraseryosuke.info/' 
+            },
             ntfyTopic: 'murase_status_tune',
             tuneCooldownMs: 30 * 60 * 1000
         };
 
         const MY_3D_MODEL_URL = "https://cdn.jsdelivr.net/gh/MuraseRyosuke/Murase-Ryosuke-3D-Model@main/models/statue_bust/15k_standard/murase_statue_bust_15k_standard.glb";
 
+        // ============================================================================
+        // ✨ 2. TEXT SCRAMBLE ENGINE (00s Web Design Homage)
+        // ============================================================================
         class TextScramble {
-            constructor(el) { this.el = el; this.chars = '!<>-_\\/[]{}—=+*^?#ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; this.update = this.update.bind(this); }
+            constructor(el) { 
+                this.el = el; 
+                this.chars = '!<>-_\\/[]{}—=+*^?#ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; 
+                this.update = this.update.bind(this); 
+            }
+            
             setText(newText) {
-                const oldText = this.el.innerText || ''; const oldChars = Array.from(oldText); const newChars = Array.from(newText);
-                const length = Math.max(oldChars.length, newChars.length); const promise = new Promise((resolve) => this.resolve = resolve);
+                const oldText = this.el.innerText || ''; 
+                const oldChars = Array.from(oldText); 
+                const newChars = Array.from(newText);
+                const length = Math.max(oldChars.length, newChars.length); 
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                
                 this.queue = [];
                 for (let i = 0; i < length; i++) {
-                    const from = oldChars[i] || ''; const to = newChars[i] || '';
-                    const start = Math.floor(Math.random() * 5) + i * 2; const end = start + Math.floor(Math.random() * 10) + 10;
+                    const from = oldChars[i] || ''; 
+                    const to = newChars[i] || '';
+                    const start = Math.floor(Math.random() * 5) + i * 2; 
+                    const end = start + Math.floor(Math.random() * 10) + 10;
                     this.queue.push({ from, to, start, end });
                 }
-                cancelAnimationFrame(this.frameRequest); this.frame = 0; this.update(); return promise;
+                cancelAnimationFrame(this.frameRequest); 
+                this.frame = 0; 
+                this.update(); 
+                return promise;
             }
+            
             update() {
-                let output = ''; let complete = 0;
+                let output = ''; 
+                let complete = 0;
                 for (let i = 0, n = this.queue.length; i < n; i++) {
                     let { from, to, start, end, char } = this.queue[i];
-                    if (this.frame >= end) { complete++; output += to; } 
-                    else if (this.frame >= start) {
-                        if (!char || Math.random() < 0.28) { char = this.randomChar(); this.queue[i].char = char; }
+                    if (this.frame >= end) { 
+                        complete++; 
+                        output += to; 
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) { 
+                            char = this.randomChar(); 
+                            this.queue[i].char = char; 
+                        }
                         output += `<span class="dud">${char}</span>`;
-                    } else { output += from; }
+                    } else { 
+                        output += from; 
+                    }
                 }
                 this.el.innerHTML = output;
-                if (complete === this.queue.length) { this.resolve(); } else { this.frameRequest = requestAnimationFrame(this.update); this.frame++; }
+                if (complete === this.queue.length) { 
+                    this.resolve(); 
+                } else { 
+                    this.frameRequest = requestAnimationFrame(this.update); 
+                    this.frame++; 
+                }
             }
-            randomChar() { return this.chars[Math.floor(Math.random() * this.chars.length)]; }
+            
+            randomChar() { 
+                return this.chars[Math.floor(Math.random() * this.chars.length)]; 
+            }
         }
 
+        // ============================================================================
+        // 🩺 3. ECG MONITOR ENGINE
+        // ============================================================================
         class ECGMonitor {
             constructor(canvasId) { 
-                this.c = document.getElementById(canvasId); this.ctx = this.c.getContext('2d'); 
-                this.x = 0; this.y = window.innerHeight / 2; this.bpm = 60; this.alive = true; this.last = 0;
-                this.lastWidth = window.innerWidth; this.resize(); 
-                window.addEventListener('resize', () => { if (window.innerWidth !== this.lastWidth) { this.lastWidth = window.innerWidth; this.resize(); } }); 
+                this.c = document.getElementById(canvasId); 
+                this.ctx = this.c.getContext('2d'); 
+                this.x = 0; 
+                this.y = window.innerHeight / 2; 
+                this.bpm = 60; 
+                this.alive = true; 
+                this.last = 0;
+                this.lastWidth = window.innerWidth; 
+                
+                this.resize(); 
+                window.addEventListener('resize', () => { 
+                    if (window.innerWidth !== this.lastWidth) { 
+                        this.lastWidth = window.innerWidth; 
+                        this.resize(); 
+                    } 
+                }); 
             }
-            resize() { this.c.width = window.innerWidth; this.c.height = window.innerHeight; this.y = this.c.height / 2; }
-            setStatus(bpm, isAlive) { this.bpm = bpm > 0 ? bpm : 60; this.alive = isAlive; }
+            
+            resize() { 
+                this.c.width = window.innerWidth; 
+                this.c.height = window.innerHeight; 
+                this.y = this.c.height / 2; 
+            }
+            
+            setStatus(bpm, isAlive) { 
+                this.bpm = bpm > 0 ? bpm : 60; 
+                this.alive = isAlive; 
+            }
+            
             draw() { 
-                const now = Date.now(); const interval = this.alive ? 60000 / this.bpm : Infinity; 
-                this.ctx.clearRect(this.x, 0, 10, this.c.height); this.ctx.beginPath(); this.ctx.moveTo(this.x - 2, this.y); 
+                const now = Date.now(); 
+                const interval = this.alive ? 60000 / this.bpm : Infinity; 
+                
+                this.ctx.clearRect(this.x, 0, 10, this.c.height); 
+                this.ctx.beginPath(); 
+                this.ctx.moveTo(this.x - 2, this.y); 
+                
                 let targetY = this.c.height / 2; 
-                if(this.alive) { 
+                if (this.alive) { 
                     const delta = now - this.last; 
-                    if(delta > interval) { this.last = now; targetY -= this.c.height * 0.25; } 
-                    else if(delta < 50) { targetY += this.c.height * 0.05; } else if(delta > interval - 200) { targetY += this.c.height * 0.1; }
+                    if (delta > interval) { 
+                        this.last = now; 
+                        targetY -= this.c.height * 0.25; 
+                    } else if (delta < 50) { 
+                        targetY += this.c.height * 0.05; 
+                    } else if (delta > interval - 200) { 
+                        targetY += this.c.height * 0.1; 
+                    }
                 } 
-                this.y = this.y * 0.9 + targetY * 0.1; this.ctx.lineTo(this.x, this.y); 
+                
+                this.y = this.y * 0.9 + targetY * 0.1; 
+                this.ctx.lineTo(this.x, this.y); 
+                
                 const isDarkMode = document.body.classList.contains('dark-mode');
                 this.ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue(isDarkMode ? '--color-ecg-lost' : '--color-ecg-alive').trim(); 
-                this.ctx.lineWidth = 2; this.ctx.stroke(); 
-                this.x++; if(this.x > this.c.width) { this.x = 0; this.ctx.clearRect(0, 0, this.c.width, this.c.height); } 
+                this.ctx.lineWidth = 2; 
+                this.ctx.stroke(); 
+                
+                this.x++; 
+                if (this.x > this.c.width) { 
+                    this.x = 0; 
+                    this.ctx.clearRect(0, 0, this.c.width, this.c.height); 
+                } 
                 requestAnimationFrame(() => this.draw()); 
             } 
+            
             start() { this.draw(); } 
         }
 
+        // ============================================================================
+        // 🎧 Spotify Player Controller
+        // ============================================================================
         class SpotifyController {
             constructor() {
-                this.embedController = null; this.isReady = false; this.currentTrackId = null;
-                this.wrapper = document.getElementById('spotify-player-wrapper'); this.noSignal = document.getElementById('spotify-no-signal');
+                this.embedController = null; 
+                this.isReady = false; 
+                this.currentTrackId = null;
+                this.wrapper = document.getElementById('spotify-player-wrapper'); 
+                this.noSignal = document.getElementById('spotify-no-signal');
             }
+            
             init(IFrameAPI) {
                 const element = document.getElementById('embed-iframe');
-                const options = { width: '100%', height: '100%', uri: 'spotify:track:7xWKGIFGLxBJAyGSus7BOJ' };
-                IFrameAPI.createController(element, options, (EmbedController) => { this.embedController = EmbedController; this.isReady = true; });
+                const options = { 
+                    width: '100%', 
+                    height: '100%', 
+                    uri: 'spotify:track:7xWKGIFGLxBJAyGSus7BOJ' 
+                };
+                IFrameAPI.createController(element, options, (EmbedController) => { 
+                    this.embedController = EmbedController; 
+                    this.isReady = true; 
+                });
             }
+            
             getTrackIdByBpm(currentBpm) {
                 if (!currentBpm || currentBpm <= 0) currentBpm = 60;
                 if (typeof bpmTracks === 'undefined') return null;
-                const availableBpms = Object.keys(bpmTracks).filter(bpm => bpmTracks[bpm] && bpmTracks[bpm].trim() !== "").map(Number);
+                
+                const availableBpms = Object.keys(bpmTracks)
+                    .filter(bpm => bpmTracks[bpm] && bpmTracks[bpm].trim() !== "")
+                    .map(Number);
+                    
                 if (availableBpms.length === 0) return null;
-                const multipliers = [1, 2, 3, 1/2, 1/3]; const targetCandidates = multipliers.map(m => Math.round(currentBpm * m));
-                let minDistance = Infinity; let bestBpms = [];
+                
+                const multipliers = [1, 2, 3, 1/2, 1/3]; 
+                const targetCandidates = multipliers.map(m => Math.round(currentBpm * m));
+                
+                let minDistance = Infinity; 
+                let bestBpms = [];
+                
                 for (let availBpm of availableBpms) {
                     let distForThisBpm = Math.min(...targetCandidates.map(t => Math.abs(t - availBpm)));
-                    if (distForThisBpm < minDistance) { minDistance = distForThisBpm; bestBpms = [availBpm]; } 
-                    else if (distForThisBpm === minDistance) { bestBpms.push(availBpm); }
+                    if (distForThisBpm < minDistance) { 
+                        minDistance = distForThisBpm; 
+                        bestBpms = [availBpm]; 
+                    } else if (distForThisBpm === minDistance) { 
+                        bestBpms.push(availBpm); 
+                    }
                 }
                 const selectedBpm = bestBpms[Math.floor(Math.random() * bestBpms.length)];
                 return bpmTracks[selectedBpm];
             }
+            
             updatePlayer(bpm, isAlive) {
                 if (!this.isReady) return;
+                
                 if (!isAlive) {
-                    this.wrapper.classList.add('hidden'); this.noSignal.classList.add('visible');
-                    this.embedController.loadUri(''); this.currentTrackId = null; return;
+                    this.wrapper.classList.add('hidden'); 
+                    this.noSignal.classList.add('visible');
+                    this.embedController.loadUri(''); 
+                    this.currentTrackId = null; 
+                    return;
                 }
-                this.wrapper.classList.remove('hidden'); this.noSignal.classList.remove('visible');
+                
+                this.wrapper.classList.remove('hidden'); 
+                this.noSignal.classList.remove('visible');
+                
                 const targetTrackId = this.getTrackIdByBpm(bpm);
                 if (targetTrackId && targetTrackId !== this.currentTrackId) {
-                    this.embedController.loadUri(`spotify:track:${targetTrackId}`); this.currentTrackId = targetTrackId;
+                    this.embedController.loadUri(`spotify:track:${targetTrackId}`); 
+                    this.currentTrackId = targetTrackId;
                 }
             }
         }
 
+        // ============================================================================
+        // 📊 4. DASHBOARD CONTROLLER (Data Fetch & UI Management)
+        // ============================================================================
         class HealthDashboard {
             constructor(ecgEngine, spotifyController) {
-                this.ecgEngine = ecgEngine; this.spotifyController = spotifyController;
-                this.speedUnitIdx = 0; this.globalSpeedKmh = 0; this.isGodMode = false;
+                this.ecgEngine = ecgEngine; 
+                this.spotifyController = spotifyController;
+                this.speedUnitIdx = 0; 
+                this.globalSpeedKmh = 0; 
+                this.isGodMode = false;
                 
+                // 🚀 スピードメーター用変数
                 this.meterTargetSpeed = 0;
                 this.meterCurrentSpeed = 0;
                 this.godMeterAngle = 180;
                 this.meterLoop = this.animateMeter.bind(this);
                 
-                this.els = this.getElements(); this.initScramblers(); this.bindEvents();
+                this.els = this.getElements(); 
+                this.initScramblers(); 
+                this.bindEvents();
+                
+                // メーターの描画ループ開始
                 requestAnimationFrame(this.meterLoop);
             }
+            
             getElements() {
                 return {
-                    body: document.body, msg: document.getElementById('liveness-message'), sub: document.getElementById('liveness-subtext'),
-                    upd: document.getElementById('last_updated'), hr: document.getElementById('heart_rate'), hrSub: document.getElementById('heart_sub'), rHr: document.getElementById('resting_hr'),
-                    steps: document.getElementById('steps'), cal: document.getElementById('calories'), asym: document.getElementById('walking_asymmetry'), stand: document.getElementById('stand_hours'),
-                    flights: document.getElementById('flights'), cond: document.getElementById('condition'), sndVal: document.getElementById('sound_value'), sndLbl: document.getElementById('sound_label'),
-                    loc: document.getElementById('location'), batVal: document.getElementById('battery_val'), batIcon: document.getElementById('battery_icon'), cardSpeed: document.getElementById('card-speed'),
-                    speedVal: document.getElementById('walking_speed'), speedUnit: document.getElementById('speed_unit'), bubble: document.getElementById('spirit-bubble'), btnTune: document.getElementById('btn-tune'),
-                    tuneText: document.getElementById('tune-text'), btnOpenModal: document.getElementById('btn-open-modal'), btnCloseModal: document.getElementById('btn-close-modal'), modal: document.getElementById('help-modal'),
+                    body: document.body, 
+                    msg: document.getElementById('liveness-message'), 
+                    sub: document.getElementById('liveness-subtext'),
+                    upd: document.getElementById('last_updated'), 
+                    hr: document.getElementById('heart_rate'), 
+                    hrSub: document.getElementById('heart_sub'), 
+                    rHr: document.getElementById('resting_hr'),
+                    steps: document.getElementById('steps'), 
+                    cal: document.getElementById('calories'), 
+                    asym: document.getElementById('walking_asymmetry'), 
+                    stand: document.getElementById('stand_hours'),
+                    flights: document.getElementById('flights'), 
+                    cond: document.getElementById('condition'), 
+                    sndVal: document.getElementById('sound_value'), 
+                    sndLbl: document.getElementById('sound_label'),
+                    loc: document.getElementById('location'), 
+                    batVal: document.getElementById('battery_val'), 
+                    batIcon: document.getElementById('battery_icon'), 
+                    cardSpeed: document.getElementById('card-speed'),
+                    speedVal: document.getElementById('walking_speed'), 
+                    speedUnit: document.getElementById('speed_unit'), 
+                    bubble: document.getElementById('spirit-bubble'), 
+                    btnTune: document.getElementById('btn-tune'),
+                    tuneText: document.getElementById('tune-text'), 
+                    btnOpenModal: document.getElementById('btn-open-modal'), 
+                    btnCloseModal: document.getElementById('btn-close-modal'), 
+                    modal: document.getElementById('help-modal'),
                     marqueeTape: document.getElementById('marquee-tape')
                 };
             }
+            
             initScramblers() {
                 this.scramblers = {
-                    msg: new TextScramble(this.els.msg), hr: new TextScramble(this.els.hr), steps: new TextScramble(this.els.steps), cal: new TextScramble(this.els.cal),
-                    speedVal: new TextScramble(this.els.speedVal), asym: new TextScramble(this.els.asym), stand: new TextScramble(this.els.stand), flights: new TextScramble(this.els.flights),
-                    cond: new TextScramble(this.els.cond), sndVal: new TextScramble(this.els.sndVal), loc: new TextScramble(this.els.loc), batVal: new TextScramble(this.els.batVal)
+                    msg: new TextScramble(this.els.msg), 
+                    hr: new TextScramble(this.els.hr), 
+                    steps: new TextScramble(this.els.steps), 
+                    cal: new TextScramble(this.els.cal),
+                    speedVal: new TextScramble(this.els.speedVal), 
+                    asym: new TextScramble(this.els.asym), 
+                    stand: new TextScramble(this.els.stand), 
+                    flights: new TextScramble(this.els.flights),
+                    cond: new TextScramble(this.els.cond), 
+                    sndVal: new TextScramble(this.els.sndVal), 
+                    loc: new TextScramble(this.els.loc), 
+                    batVal: new TextScramble(this.els.batVal)
                 };
                 this.tapeScramblers = Array.from(document.querySelectorAll('.marquee-text')).map(el => new TextScramble(el));
-                this.isInitialLoad = true; this.isTapeScrambled = false; 
+                this.isInitialLoad = true; 
+                this.isTapeScrambled = false; 
             }
+            
             bindEvents() {
                 this.els.cardSpeed.addEventListener('click', () => this.toggleSpeedUnit());
                 this.els.btnTune.addEventListener('click', () => this.sendTune());
                 this.els.btnOpenModal.addEventListener('click', () => this.openModal());
                 this.els.btnCloseModal.addEventListener('click', () => this.closeModal());
-                this.els.modal.addEventListener('click', (e) => { if (e.target === this.els.modal) this.closeModal(); });
-                this.els.marqueeTape.addEventListener('click', () => { this.els.marqueeTape.classList.remove('apply-anim'); this.els.marqueeTape.classList.add('hidden-by-user'); this.els.msg.style.opacity = '1'; });
+                this.els.modal.addEventListener('click', (e) => { 
+                    if (e.target === this.els.modal) this.closeModal(); 
+                });
+                this.els.marqueeTape.addEventListener('click', () => { 
+                    this.els.marqueeTape.classList.remove('apply-anim'); 
+                    this.els.marqueeTape.classList.add('hidden-by-user'); 
+                    this.els.msg.style.opacity = '1'; 
+                });
             }
+            
             safeParseInt(val) { return (!val || val === "") ? 0 : parseInt(val, 10); }
             safeParseFloat(val) { return (!val || val === "") ? 0 : parseFloat(val); }
+            
             getRelativeTime(date) { 
                 const now = new Date(), diffMins = Math.floor((now-date)/60000); 
-                if(diffMins < 1) return 'たった今'; if(diffMins < 60) return `${diffMins}分前`; 
-                const diffHours = Math.floor(diffMins/60); return diffHours < 24 ? `${diffHours}時間前` : `${Math.floor(diffHours/24)}日前`; 
+                if(diffMins < 1) return 'たった今'; 
+                if(diffMins < 60) return `${diffMins}分前`; 
+                const diffHours = Math.floor(diffMins/60); 
+                return diffHours < 24 ? `${diffHours}時間前` : `${Math.floor(diffHours/24)}日前`; 
             }
+            
             setTextData(key, text) {
                 const textStr = String(text);
                 if (this.isInitialLoad && this.scramblers[key]) {
-                    if (this.els[key].dataset.scrambled !== "true") { this.els[key].textContent = ''; this.scramblers[key].setText(textStr); this.els[key].dataset.scrambled = "true"; }
-                } else { this.els[key].textContent = textStr; }
+                    if (this.els[key].dataset.scrambled !== "true") { 
+                        this.els[key].textContent = ''; 
+                        this.scramblers[key].setText(textStr); 
+                        this.els[key].dataset.scrambled = "true"; 
+                    }
+                } else { 
+                    this.els[key].textContent = textStr; 
+                }
             }
 
             // 🚀 スピードメーターの常時描画・アニメーションループ
@@ -594,18 +1316,25 @@
                 requestAnimationFrame(this.meterLoop);
 
                 if (this.isGodMode) {
+                    // GOD MODE: 虹色が超高速で回転する
                     this.godMeterAngle = (this.godMeterAngle + 8) % 360;
                     let styleEl = document.getElementById('dynamic-meter-style');
-                    if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'dynamic-meter-style'; document.head.appendChild(styleEl); }
+                    if (!styleEl) { 
+                        styleEl = document.createElement('style'); 
+                        styleEl.id = 'dynamic-meter-style'; 
+                        document.head.appendChild(styleEl); 
+                    }
                     styleEl.innerHTML = `#card-speed::before { background: conic-gradient(from ${this.godMeterAngle}deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000) !important; }`;
                     return;
                 }
 
+                // 目標速度に向かって滑らかに補間 (0からスタートしてギュンッと上がる)
                 this.meterCurrentSpeed += (this.meterTargetSpeed - this.meterCurrentSpeed) * 0.05;
 
                 let s = this.meterCurrentSpeed;
                 let degrees = 0;
 
+                // 速度に応じた非線形の角度計算 (0 -> 0deg, 4.8 -> 180deg, 21 -> 270deg, 44.17 -> 360deg)
                 if (s <= 0) {
                     degrees = 0;
                 } else if (s <= 4.8) {
@@ -618,20 +1347,26 @@
                     degrees = 360;
                 }
 
+                // プルプルと震える微細な物理的ノイズ（ジッター）の生成
                 let jitter = 0;
                 if (this.meterTargetSpeed > 0) {
                     const timeSec = Date.now() / 50;
+                    // サイン波を組み合わせて機械的な振動を表現 (±0.75度のブレ)
                     jitter = (Math.sin(timeSec) + Math.cos(timeSec * 0.8)) * 0.75; 
                 }
                 
                 let fillDeg = Math.max(0, Math.min(360, degrees + jitter));
                 let stops = "";
 
+                // CPUメーター風のカラーセグメント生成
                 if (fillDeg <= 180) {
+                    // 安全圏 (0 ~ 4.8km/h) : 緑
                     stops = `var(--color-good) 0deg, var(--color-good) ${fillDeg}deg, transparent ${fillDeg}deg`;
                 } else if (fillDeg <= 270) {
+                    // 警告圏 (4.8 ~ 21km/h) : オレンジ
                     stops = `var(--color-good) 0deg, var(--color-good) 180deg, var(--color-avg) 180deg, var(--color-avg) ${fillDeg}deg, transparent ${fillDeg}deg`;
                 } else {
+                    // 危険圏 (21 ~ 44.17km/h) : 赤
                     stops = `var(--color-good) 0deg, var(--color-good) 180deg, var(--color-avg) 180deg, var(--color-avg) 270deg, var(--color-bad) 270deg, var(--color-bad) ${fillDeg}deg, transparent ${fillDeg}deg`;
                 }
 
@@ -646,139 +1381,352 @@
                 styleEl.innerHTML = `#card-speed::before { background: ${gradStr} !important; }`;
             }
 
+            // 🌟 GOD MODE 起動シーケンス
             activateGodMode() {
-                if (this.isGodMode) return; this.isGodMode = true;
+                if (this.isGodMode) return; 
+                this.isGodMode = true;
                 document.body.classList.add('puchun-active');
+                
                 setTimeout(() => {
                     this.els.body.classList.add('god-mode-active');
-                    this.els.marqueeTape.classList.remove('apply-anim'); this.els.marqueeTape.classList.add('hidden-by-user');
-                    this.setTextData('msg', 'ヘブン状態！！'); this.els.sub.textContent = 'HEYYEYAAEYAAAEYAEYAA'; this.els.sub.style.display = 'block'; this.els.sub.style.fontWeight = 'bold'; this.els.msg.style.opacity = '1';
-                    this.ecgEngine.setStatus(4000, true); this.setTextData('hr', '4000'); this.els.rHr.textContent = 'MAX'; this.els.hrSub.textContent = '限界突破';
+                    this.els.marqueeTape.classList.remove('apply-anim'); 
+                    this.els.marqueeTape.classList.add('hidden-by-user');
+                    
+                    // ステータス無敵書き換え
+                    this.setTextData('msg', 'ヘブン状態！！'); 
+                    this.els.sub.textContent = 'HEYYEYAAEYAAAEYAEYAA'; 
+                    this.els.sub.style.display = 'block'; 
+                    this.els.sub.style.fontWeight = 'bold'; 
+                    this.els.msg.style.opacity = '1';
+                    
+                    this.ecgEngine.setStatus(4000, true); 
+                    this.setTextData('hr', '4000'); 
+                    this.els.rHr.textContent = 'MAX'; 
+                    this.els.hrSub.textContent = '限界突破';
                     this.spotifyController.updatePlayer(4000, true);
-                    this.setTextData('steps', '57,250,000'); this.setTextData('cal', '36,268'); this.setTextData('speedVal', 'マッハ11'); this.els.speedUnit.textContent = ''; 
                     
-                    // 🌟 スタンド時間を9200分に修正
+                    this.setTextData('steps', '57,250,000'); 
+                    this.setTextData('cal', '36,268'); 
+                    this.setTextData('speedVal', 'マッハ11'); 
+                    this.els.speedUnit.textContent = ''; 
+                    
+                    // 🌟 スタンド時間を9200分に設定
                     this.setTextData('stand', '9200'); 
+                    this.setTextData('flights', '163'); 
                     
-                    this.setTextData('flights', '163'); this.setTextData('cond', 'GOD👼🌈'); this.els.cond.style.color = 'inherit';
-                    this.setTextData('sndVal', '194'); this.els.sndLbl.textContent = '(ビッグバン)'; this.els.sndLbl.style.color = 'inherit'; this.setTextData('loc', 'The Matrix');
-                    this.els.batVal.style.fontSize = 'clamp(0.4rem, 1.8vw, 0.75rem)'; this.els.batVal.style.lineHeight = '1'; this.els.batVal.style.wordBreak = 'break-all'; this.els.batVal.style.display = 'inline-block'; this.els.batVal.style.maxWidth = '100%'; this.els.batVal.textContent = '340282366920938463463374607431768211455'; this.els.batIcon.textContent = '🌟';
-                    const t = document.createElement('div'); t.className = 'tune-toast'; t.style.background = 'linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff)'; t.style.color = '#fff'; t.style.fontWeight = '900'; t.style.textShadow = '1px 1px 2px #000'; t.style.border = '2px solid #fff'; t.innerHTML = `<span>🌟 GOD MODE ACTIVATED 🌟</span>`; document.body.appendChild(t);
+                    this.setTextData('cond', 'GOD👼🌈'); 
+                    this.els.cond.style.color = 'inherit';
+                    this.setTextData('sndVal', '194'); 
+                    this.els.sndLbl.textContent = '(ビッグバン)'; 
+                    this.els.sndLbl.style.color = 'inherit'; 
+                    this.setTextData('loc', 'The Matrix');
                     
-                    let styleEl = document.getElementById('dynamic-meter-style');
-                    if (styleEl) styleEl.innerHTML = `#card-speed::before { background: conic-gradient(from 180deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000) !important; animation: dreamyNeon 1s linear infinite !important; }`;
-
+                    this.els.batVal.style.fontSize = 'clamp(0.4rem, 1.8vw, 0.75rem)'; 
+                    this.els.batVal.style.lineHeight = '1'; 
+                    this.els.batVal.style.wordBreak = 'break-all'; 
+                    this.els.batVal.style.display = 'inline-block'; 
+                    this.els.batVal.style.maxWidth = '100%'; 
+                    this.els.batVal.textContent = '340282366920938463463374607431768211455'; 
+                    this.els.batIcon.textContent = '🌟';
+                    
+                    const t = document.createElement('div'); 
+                    t.className = 'tune-toast'; 
+                    t.style.background = 'linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff)'; 
+                    t.style.color = '#fff'; 
+                    t.style.fontWeight = '900'; 
+                    t.style.textShadow = '1px 1px 2px #000'; 
+                    t.style.border = '2px solid #fff'; 
+                    t.innerHTML = `<span>🌟 GOD MODE ACTIVATED 🌟</span>`; 
+                    document.body.appendChild(t);
+                    
+                    // 非対称性のアニメーション
                     let asymFrame = 0;
                     const animateGodAsym = () => {
                         if(!this.isGodMode) return;
-                        asymFrame += 0.2; const sineVal = Math.sin(asymFrame);
-                        if (this.els.bubble.parentElement.style.opacity !== '0') { this.els.asym.textContent = (sineVal * 100).toFixed(1); this.els.bubble.style.transform = `translateX(calc(-50% + ${sineVal * 60}px))`; } 
-                        else { this.els.asym.textContent = '--'; }
+                        asymFrame += 0.2; 
+                        const sineVal = Math.sin(asymFrame);
+                        if (this.els.bubble.parentElement.style.opacity !== '0') { 
+                            this.els.asym.textContent = (sineVal * 100).toFixed(1); 
+                            this.els.bubble.style.transform = `translateX(calc(-50% + ${sineVal * 60}px))`; 
+                        } else { 
+                            this.els.asym.textContent = '--'; 
+                        }
                         requestAnimationFrame(animateGodAsym);
                     };
                     requestAnimationFrame(animateGodAsym);
 
+                    // 🌅 3秒かけてゆっくりと神降臨（フェードイン）
                     setTimeout(() => {
-                        const layer = document.getElementById('puchun-layer'); layer.style.transition = 'opacity 3s ease-in-out'; layer.style.opacity = '0';
-                        setTimeout(() => { document.body.classList.remove('puchun-active'); layer.style.transition = ''; layer.style.opacity = ''; }, 3000);
+                        const layer = document.getElementById('puchun-layer'); 
+                        layer.style.transition = 'opacity 3s ease-in-out'; 
+                        layer.style.opacity = '0';
+                        setTimeout(() => { 
+                            document.body.classList.remove('puchun-active'); 
+                            layer.style.transition = ''; 
+                            layer.style.opacity = ''; 
+                        }, 3000);
+                        
                         // 🎬 3D VJ Load
                         loadThreeJSAndStartVJ();
                     }, 3500);
                 }, 400);
             }
+
+            // 📡 Github Gistからデータ取得＆パース
             async updateStatus() {
                 if (this.isGodMode) return;
+                
                 try { 
                     const res = await fetch(`https://api.github.com/gists/${AppConfig.gistId}?t=${Date.now()}`); 
                     if (!res.ok) throw new Error(); 
-                    const json = await res.json(); const d = JSON.parse(json.files[AppConfig.gistFileName].content);
-                    const last = new Date(d.last_updated); const alive = (new Date() - last) / 36e5 <= AppConfig.thresholdHours; 
                     
-                    if(alive){ 
-                        this.els.body.className = 'light-mode'; this.setTextData('msg', '村瀨亮介は生きています。'); this.els.msg.style.opacity = '1'; this.els.sub.textContent = ''; 
-                        this.els.marqueeTape.classList.remove('apply-anim'); this.els.marqueeTape.classList.remove('hidden-by-user'); 
+                    const json = await res.json(); 
+                    const d = JSON.parse(json.files[AppConfig.gistFileName].content);
+                    const last = new Date(d.last_updated); 
+                    const alive = (new Date() - last) / 36e5 <= AppConfig.thresholdHours; 
+                    
+                    if (alive) { 
+                        this.els.body.className = 'light-mode'; 
+                        this.setTextData('msg', '村瀨亮介は生きています。'); 
+                        this.els.msg.style.opacity = '1'; 
+                        this.els.sub.textContent = ''; 
+                        this.els.marqueeTape.classList.remove('apply-anim'); 
+                        this.els.marqueeTape.classList.remove('hidden-by-user'); 
                     } else { 
-                        this.els.body.className = 'dark-mode'; this.setTextData('msg', '村瀨亮介からの応答がありません。'); this.els.sub.innerHTML = `安否確認は <a href="${AppConfig.links.twitter}" target="_blank">X</a> または <a href="${AppConfig.links.dosei}" target="_blank">動静</a> へ`; 
-                        if (!this.isTapeScrambled) { this.tapeScramblers.forEach(sc => { sc.el.textContent = ''; sc.setText('村瀨亮介からの応答がありません。 ⚠'); }); this.isTapeScrambled = true; }
-                        if (!this.els.marqueeTape.classList.contains('hidden-by-user')) { this.els.marqueeTape.classList.add('apply-anim'); this.els.msg.style.opacity = '0.4'; } else { this.els.msg.style.opacity = '1'; }
+                        this.els.body.className = 'dark-mode'; 
+                        this.setTextData('msg', '村瀨亮介からの応答がありません。'); 
+                        this.els.sub.innerHTML = `安否確認は <a href="${AppConfig.links.twitter}" target="_blank">X</a> または <a href="${AppConfig.links.dosei}" target="_blank">動静</a> へ`; 
+                        
+                        if (!this.isTapeScrambled) { 
+                            this.tapeScramblers.forEach(sc => { 
+                                sc.el.textContent = ''; 
+                                sc.setText('村瀨亮介からの応答がありません。 ⚠'); 
+                            }); 
+                            this.isTapeScrambled = true; 
+                        }
+                        
+                        if (!this.els.marqueeTape.classList.contains('hidden-by-user')) { 
+                            this.els.marqueeTape.classList.add('apply-anim'); 
+                            this.els.msg.style.opacity = '0.4'; 
+                        } else { 
+                            this.els.msg.style.opacity = '1'; 
+                        }
                     } 
                     
-                    const hr = this.safeParseInt(d.health.heart_rate); this.ecgEngine.setStatus(hr, alive); this.setTextData('hr', hr || '---'); this.els.hrSub.textContent = this.getRelativeTime(last); this.els.rHr.textContent = this.safeParseInt(d.health.resting_heart_rate) || '--'; 
+                    // 心拍数
+                    const hr = this.safeParseInt(d.health.heart_rate); 
+                    this.ecgEngine.setStatus(hr, alive); 
+                    this.setTextData('hr', hr || '---'); 
+                    this.els.hrSub.textContent = this.getRelativeTime(last); 
+                    this.els.rHr.textContent = this.safeParseInt(d.health.resting_heart_rate) || '--'; 
                     this.spotifyController.updatePlayer(hr, alive);
-                    const steps = this.safeParseInt(d.health.steps); this.setTextData('steps', steps.toLocaleString()); this.els.steps.style.color = steps >= 8000 ? 'var(--color-gold)' : 'inherit'; this.setTextData('cal', Math.round(this.safeParseInt(d.health.active_calories)).toLocaleString()); 
                     
+                    // 歩数・カロリー
+                    const steps = this.safeParseInt(d.health.steps); 
+                    this.setTextData('steps', steps.toLocaleString()); 
+                    this.els.steps.style.color = steps >= 8000 ? 'var(--color-gold)' : 'inherit'; 
+                    this.setTextData('cal', Math.round(this.safeParseInt(d.health.active_calories)).toLocaleString()); 
+                    
+                    // 歩行速度
                     this.globalSpeedKmh = this.safeParseFloat(d.health.walking_speed); 
                     this.renderSpeed(); 
                     this.meterTargetSpeed = isNaN(this.globalSpeedKmh) ? 0 : this.globalSpeedKmh;
                     
+                    // 非対称性
                     const asymRaw = this.safeParseFloat(d.health.walking_asymmetry); 
-                    if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") { this.setTextData('asym', asymRaw.toFixed(0)); this.updateLevel(asymRaw / 100); } 
-                    else { this.setTextData('asym', '--'); this.updateLevel(null); } 
-                    this.setTextData('stand', this.safeParseInt(d.health.stand_hours) || '0'); this.setTextData('flights', this.safeParseInt(d.health.flights_climbed) || '0'); 
+                    if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") { 
+                        this.setTextData('asym', asymRaw.toFixed(0)); 
+                        this.updateLevel(asymRaw / 100); 
+                    } else { 
+                        this.setTextData('asym', '--'); 
+                        this.updateLevel(null); 
+                    } 
+                    
+                    // その他ヘルスデータ
+                    this.setTextData('stand', this.safeParseInt(d.health.stand_hours) || '0'); 
+                    this.setTextData('flights', this.safeParseInt(d.health.flights_climbed) || '0'); 
+                    
                     const hrv = this.safeParseFloat(d.health.condition_hrv); 
-                    if (hrv >= 40) { this.setTextData('cond', '絶好調✨'); this.els.cond.style.color = 'var(--color-good)'; } else if (hrv >= 20) { this.setTextData('cond', '安定🌱'); this.els.cond.style.color = 'var(--color-ok)'; } else if (hrv > 0) { this.setTextData('cond', '疲労気味💤'); this.els.cond.style.color = 'var(--color-bad)'; } else { this.setTextData('cond', '---'); this.els.cond.style.color = 'inherit'; } 
+                    if (hrv >= 40) { 
+                        this.setTextData('cond', '絶好調✨'); 
+                        this.els.cond.style.color = 'var(--color-good)'; 
+                    } else if (hrv >= 20) { 
+                        this.setTextData('cond', '安定🌱'); 
+                        this.els.cond.style.color = 'var(--color-ok)'; 
+                    } else if (hrv > 0) { 
+                        this.setTextData('cond', '疲労気味💤'); 
+                        this.els.cond.style.color = 'var(--color-bad)'; 
+                    } else { 
+                        this.setTextData('cond', '---'); 
+                        this.els.cond.style.color = 'inherit'; 
+                    } 
+                    
+                    // 環境音
                     const db = this.safeParseFloat(d.environment && d.environment.sound_level_db); 
-                    if (db > 0) { this.setTextData('sndVal', Math.round(db)); this.els.sndLbl.textContent = (db < 40 ? '(静寂)' : db < 70 ? '(普通)' : '(騒音)'); this.els.sndLbl.style.color = db < 40 ? 'var(--color-good)' : db < 70 ? 'var(--color-avg)' : 'var(--color-bad)'; } 
-                    else { this.setTextData('sndVal', '---'); this.els.sndLbl.textContent = ''; } 
-                    this.setTextData('batVal', d.device.battery); this.els.batIcon.textContent = (d.device.is_charging === 'Yes' || d.device.is_charging === true) ? '⚡️' : ''; this.els.upd.textContent = last.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }); this.setTextData('loc', d.location.city || '---'); 
+                    if (db > 0) { 
+                        this.setTextData('sndVal', Math.round(db)); 
+                        this.els.sndLbl.textContent = (db < 40 ? '(静寂)' : db < 70 ? '(普通)' : '(騒音)'); 
+                        this.els.sndLbl.style.color = db < 40 ? 'var(--color-good)' : db < 70 ? 'var(--color-avg)' : 'var(--color-bad)'; 
+                    } else { 
+                        this.setTextData('sndVal', '---'); 
+                        this.els.sndLbl.textContent = ''; 
+                    } 
+                    
+                    // バッテリー・位置情報
+                    this.setTextData('batVal', d.device.battery); 
+                    this.els.batIcon.textContent = (d.device.is_charging === 'Yes' || d.device.is_charging === true) ? '⚡️' : ''; 
+                    this.els.upd.textContent = last.toLocaleString('ja-JP', { dateStyle: 'medium', timeStyle: 'short' }); 
+                    this.setTextData('loc', d.location.city || '---'); 
+                    
                     this.isInitialLoad = false;
-                } catch (e) { console.error(e); this.els.msg.textContent = '読み込み失敗'; } 
+                } catch (e) { 
+                    console.error(e); 
+                    this.els.msg.textContent = '読み込み失敗'; 
+                } 
             }
+            
             toggleSpeedUnit() { 
                 if (this.isGodMode) return;
-                this.speedUnitIdx = (this.speedUnitIdx + 1) % 3; this.renderSpeed(); this.els.cardSpeed.classList.remove('anim-flash'); void this.els.cardSpeed.offsetWidth; this.els.cardSpeed.classList.add('anim-flash'); 
+                this.speedUnitIdx = (this.speedUnitIdx + 1) % 3; 
+                this.renderSpeed(); 
+                this.els.cardSpeed.classList.remove('anim-flash'); 
+                void this.els.cardSpeed.offsetWidth; 
+                this.els.cardSpeed.classList.add('anim-flash'); 
             }
+            
             renderSpeed() { 
-                if (!this.globalSpeedKmh) { this.setTextData('speedVal', '--'); return; } 
-                if (this.speedUnitIdx === 0) { this.setTextData('speedVal', this.globalSpeedKmh.toFixed(1)); this.els.speedUnit.textContent = 'km/h'; } 
-                else if (this.speedUnitIdx === 1) { this.setTextData('speedVal', (this.globalSpeedKmh * 16.6667).toFixed(0)); this.els.speedUnit.textContent = 'm/min'; } 
-                else { this.setTextData('speedVal', (this.globalSpeedKmh / 3.6).toFixed(2)); this.els.speedUnit.textContent = 'm/s'; } 
+                if (!this.globalSpeedKmh) { 
+                    this.setTextData('speedVal', '--'); 
+                    return; 
+                } 
+                if (this.speedUnitIdx === 0) { 
+                    this.setTextData('speedVal', this.globalSpeedKmh.toFixed(1)); 
+                    this.els.speedUnit.textContent = 'km/h'; 
+                } else if (this.speedUnitIdx === 1) { 
+                    this.setTextData('speedVal', (this.globalSpeedKmh * 16.6667).toFixed(0)); 
+                    this.els.speedUnit.textContent = 'm/min'; 
+                } else { 
+                    this.setTextData('speedVal', (this.globalSpeedKmh / 3.6).toFixed(2)); 
+                    this.els.speedUnit.textContent = 'm/s'; 
+                } 
             }
+            
             updateLevel(val) { 
                 const container = this.els.bubble.parentElement;
-                if (val === null || isNaN(val)) { container.style.opacity='0'; return; } 
-                container.style.opacity='1'; container.style.backgroundColor = 'var(--color-liquid)'; 
-                if(val > 0 || val < 0) { this.els.bubble.style.setProperty('--wobble-amp', `${Math.min(Math.abs(val)*400, 45)}%`); this.els.bubble.classList.add('wobble'); } 
-                else { this.els.bubble.style.transform = 'translateX(-50%)'; this.els.bubble.classList.remove('wobble'); } 
+                if (val === null || isNaN(val)) { 
+                    container.style.opacity='0'; 
+                    return; 
+                } 
+                container.style.opacity='1'; 
+                container.style.backgroundColor = 'var(--color-liquid)'; 
+                if (val > 0 || val < 0) { 
+                    this.els.bubble.style.setProperty('--wobble-amp', `${Math.min(Math.abs(val)*400, 45)}%`); 
+                    this.els.bubble.classList.add('wobble'); 
+                } else { 
+                    this.els.bubble.style.transform = 'translateX(-50%)'; 
+                    this.els.bubble.classList.remove('wobble'); 
+                } 
             }
-            openModal() { this.els.modal.style.display = 'flex'; setTimeout(() => this.els.modal.classList.add('open'), 10); }
-            closeModal() { this.els.modal.classList.remove('open'); setTimeout(() => this.els.modal.style.display = 'none', 300); }
-            checkCooldown() { const last = localStorage.getItem('lastTuneTime'); if (last && Date.now() - parseInt(last,10) < AppConfig.tuneCooldownMs) { this.disableTuneBtn(AppConfig.tuneCooldownMs - (Date.now() - parseInt(last,10))); } }
+            
+            openModal() { 
+                this.els.modal.style.display = 'flex'; 
+                setTimeout(() => this.els.modal.classList.add('open'), 10); 
+            }
+            
+            closeModal() { 
+                this.els.modal.classList.remove('open'); 
+                setTimeout(() => this.els.modal.style.display = 'none', 300); 
+            }
+            
+            checkCooldown() { 
+                const last = localStorage.getItem('lastTuneTime'); 
+                if (last && Date.now() - parseInt(last,10) < AppConfig.tuneCooldownMs) { 
+                    this.disableTuneBtn(AppConfig.tuneCooldownMs - (Date.now() - parseInt(last,10))); 
+                } 
+            }
+            
             disableTuneBtn(t) { 
-                this.els.tuneText.textContent = 'Stay Tuned!'; this.els.btnTune.classList.add('disabled'); localStorage.setItem('lastTuneTime', Date.now()); 
-                setTimeout(() => { this.els.btnTune.classList.remove('disabled'); this.els.tuneText.textContent = 'Tune'; localStorage.removeItem('lastTuneTime'); }, t); 
+                this.els.tuneText.textContent = 'Stay Tuned!'; 
+                this.els.btnTune.classList.add('disabled'); 
+                localStorage.setItem('lastTuneTime', Date.now()); 
+                setTimeout(() => { 
+                    this.els.btnTune.classList.remove('disabled'); 
+                    this.els.tuneText.textContent = 'Tune'; 
+                    localStorage.removeItem('lastTuneTime'); 
+                }, t); 
             }
+            
             showTuneReaction() {
-                const msgs = ['👋Tune!', '📡送信！', '👍Thanks!', '💫届きました！']; const msg = msgs[Math.floor(Math.random()*msgs.length)];
-                if (window.innerWidth <= 768) { const t = document.createElement('div'); t.className = 'tune-toast'; t.innerHTML = `<span>${msg}</span>`; this.els.body.appendChild(t); setTimeout(() => t.remove(), 3000); } 
-                else { const b = document.createElement('div'); b.className = 'tune-bubble'; b.textContent = msg; document.getElementById('profile-card').appendChild(b); setTimeout(() => b.remove(), 2500); }
+                const msgs = ['👋Tune!', '📡送信！', '👍Thanks!', '💫届きました！']; 
+                const msg = msgs[Math.floor(Math.random()*msgs.length)];
+                if (window.innerWidth <= 768) { 
+                    const t = document.createElement('div'); 
+                    t.className = 'tune-toast'; 
+                    t.innerHTML = `<span>${msg}</span>`; 
+                    this.els.body.appendChild(t); 
+                    setTimeout(() => t.remove(), 3000); 
+                } else { 
+                    const b = document.createElement('div'); 
+                    b.className = 'tune-bubble'; 
+                    b.textContent = msg; 
+                    document.getElementById('profile-card').appendChild(b); 
+                    setTimeout(() => b.remove(), 2500); 
+                }
             }
+            
             sendTune() {
                 if (this.els.btnTune.classList.contains('disabled')) return;
-                this.els.btnTune.classList.add('is-waving'); setTimeout(() => { this.els.btnTune.classList.remove('is-waving'); }, 3000);
-                this.showTuneReaction(); this.els.tuneText.textContent = 'Tuning...'; this.els.btnTune.classList.add('disabled'); 
+                this.els.btnTune.classList.add('is-waving'); 
+                setTimeout(() => { this.els.btnTune.classList.remove('is-waving'); }, 3000);
+                
+                this.showTuneReaction(); 
+                this.els.tuneText.textContent = 'Tuning...'; 
+                this.els.btnTune.classList.add('disabled'); 
+                
                 fetch(`https://ntfy.sh/${AppConfig.ntfyTopic}?title=Tune&priority=default&tags=zap`, { method:'POST', body: 'Tune受信' })
-                .then(r => { if(r.ok){ this.disableTuneBtn(AppConfig.tuneCooldownMs); } else throw new Error(); })
-                .catch(() => { this.els.tuneText.textContent = 'エラー'; setTimeout(() => { this.els.btnTune.classList.remove('disabled'); this.els.tuneText.textContent = 'Tune'; }, 3000); });
+                .then(r => { 
+                    if(r.ok){ this.disableTuneBtn(AppConfig.tuneCooldownMs); } 
+                    else throw new Error(); 
+                })
+                .catch(() => { 
+                    this.els.tuneText.textContent = 'エラー'; 
+                    setTimeout(() => { 
+                        this.els.btnTune.classList.remove('disabled'); 
+                        this.els.tuneText.textContent = 'Tune'; 
+                    }, 3000); 
+                });
             }
         }
 
+        // ============================================================================
+        // 🚀 5. INITIALIZATION & EASTER EGGS
+        // ============================================================================
         let spotifyControllerInstance = new SpotifyController();
-        window.onSpotifyIframeApiReady = (IFrameAPI) => { spotifyControllerInstance.init(IFrameAPI); };
+        window.onSpotifyIframeApiReady = (IFrameAPI) => { 
+            spotifyControllerInstance.init(IFrameAPI); 
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             const ecgEngine = new ECGMonitor('ecg-canvas');
             const dashboard = new HealthDashboard(ecgEngine, spotifyControllerInstance);
-            ecgEngine.start(); dashboard.updateStatus(); dashboard.checkCooldown();
+            
+            ecgEngine.start(); 
+            dashboard.updateStatus(); 
+            dashboard.checkCooldown();
 
             // 🎵 心拍数の数字を3回連続タップでプレイリスト表示
             const heartValueContainer = document.querySelector('.heart-value-container');
-            let tapCount = 0; let tapTimer = null;
+            let tapCount = 0; 
+            let tapTimer = null;
+            
             heartValueContainer.addEventListener('click', () => {
                 tapCount++;
-                if (tapCount === 1) { tapTimer = setTimeout(() => { tapCount = 0; }, 1000); }
+                if (tapCount === 1) { 
+                    tapTimer = setTimeout(() => { tapCount = 0; }, 1000); 
+                }
                 if (tapCount === 3) {
-                    clearTimeout(tapTimer); tapCount = 0;
+                    clearTimeout(tapTimer); 
+                    tapCount = 0;
                     window.open('https://open.spotify.com/playlist/1ggNzbODGwmefdRstCGQ8L?si=f94c2643fe90422a', '_blank');
                 }
             });
@@ -791,26 +1739,39 @@
             
             document.addEventListener('keydown', (e) => {
                 if (dashboard.isGodMode) return; 
+                
                 const key = e.key.toLowerCase();
+                
                 if (key === konamiCode[konamiIndex]) {
-                    if (konamiIndex === 0) { displayEl.innerHTML = ''; displayEl.style.opacity = '1'; }
+                    if (konamiIndex === 0) { 
+                        displayEl.innerHTML = ''; 
+                        displayEl.style.opacity = '1'; 
+                    }
                     const icon = document.createElement('div');
-                    icon.className = 'konami-icon'; icon.textContent = konamiIcons[key] || key.toUpperCase();
+                    icon.className = 'konami-icon'; 
+                    icon.textContent = konamiIcons[key] || key.toUpperCase();
                     displayEl.appendChild(icon);
                     konamiIndex++;
+                    
                     if (konamiIndex === konamiCode.length) {
                         dashboard.activateGodMode();
                         setTimeout(() => { displayEl.style.opacity = '0'; }, 1000);
                         konamiIndex = 0;
                     }
                 } else {
-                    if (konamiIndex > 0) { displayEl.style.opacity = '0'; setTimeout(() => { displayEl.innerHTML = ''; }, 500); }
+                    if (konamiIndex > 0) { 
+                        displayEl.style.opacity = '0'; 
+                        setTimeout(() => { displayEl.innerHTML = ''; }, 500); 
+                    }
                     konamiIndex = 0;
                     if (key === konamiCode[0]) {
-                        displayEl.innerHTML = ''; displayEl.style.opacity = '1';
+                        displayEl.innerHTML = ''; 
+                        displayEl.style.opacity = '1';
                         const icon = document.createElement('div');
-                        icon.className = 'konami-icon'; icon.textContent = konamiIcons[key];
-                        displayEl.appendChild(icon); konamiIndex = 1;
+                        icon.className = 'konami-icon'; 
+                        icon.textContent = konamiIcons[key];
+                        displayEl.appendChild(icon); 
+                        konamiIndex = 1;
                     }
                 }
             });
@@ -835,13 +1796,16 @@
             const container = document.getElementById('vj-canvas-container');
             container.classList.add('active'); 
 
+            // Scene & Camera setup
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.2)); 
             container.appendChild(renderer.domElement);
 
+            // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); 
             const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
             dirLight.position.set(5, 10, 5);
@@ -868,6 +1832,7 @@
                         child.material.needsUpdate = true;
                         
                         child.material.onBeforeCompile = (shader) => {
+                            // 頂点シェーダーの注入
                             shader.vertexShader = shader.vertexShader.replace(
                                 '#include <common>',
                                 `#include <common>\nvarying vec3 vWPosition;\nvarying vec3 vWNormal;`
@@ -876,6 +1841,7 @@
                                 `#include <worldpos_vertex>\nvWPosition = (modelMatrix * vec4(position, 1.0)).xyz;\nvWNormal = normalize(mat3(modelMatrix) * normal);`
                             );
 
+                            // フラグメントシェーダーの注入
                             shader.fragmentShader = shader.fragmentShader.replace(
                                 '#include <common>',
                                 `#include <common>\nvarying vec3 vWPosition;\nvarying vec3 vWNormal;`
@@ -918,135 +1884,162 @@
                 console.error("VJ Model Load Error:", error);
             });
 
+            // パターンの切り替えと初期配置のリセット
             function resetPattern() {
                 models.forEach(m => m.visible = false);
                 const m0 = models[0];
 
-                if (currentPattern === 0) {
-                    // Pattern 1: 横切る（XMB風の一直線の超スロー移動・5倍サイズ）
-                    m0.visible = true; 
-                    m0.scale.set(50, 50, 50); 
-                    m0.position.set(90, -15, -30); 
-                    // 時計回りに90度回した状態を正面（カメラ側）に向けるための補正
-                    m0.rotation.set(0, -Math.PI / 2, 0); 
-                } else if (currentPattern === 1) {
-                    // Pattern 2: ろくろ（下から回転上昇・5倍サイズ）
-                    m0.visible = true; 
-                    m0.scale.set(75, 75, 75); 
-                    m0.position.set(0, -70, -30); 
-                    m0.rotation.set(0, -Math.PI / 2, 0);
-                } else if (currentPattern === 2) {
-                    // Pattern 3: 群れ
-                    models.forEach(m => {
-                        m.visible = true; 
-                        m.scale.set(2, 2, 2);
-                        m.position.set((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 40, -80 - Math.random() * 50);
-                        m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-                    });
-                } else if (currentPattern === 3) {
-                    // Pattern 4: たらこキユーピー風（押し寄せる大群 3列×10行）
-                    models.forEach((m, i) => {
-                        m.visible = true; 
-                        m.scale.set(6, 6, 6);
-                        const col = i % 3; // 0, 1, 2
-                        const row = Math.floor(i / 3); // 0 〜 9
-                        m.position.set((col - 1) * 12, -15, -40 - row * 15);
-                        m.rotation.set(0, -Math.PI / 2, 0); // 正面
-                        m.userData = { baseY: m.position.y };
-                    });
-                } else if (currentPattern === 4) {
-                    // Pattern 5: 自由落下して積もる（だるま落とし・平面）
-                    dropIndex = 0;
-                    lastDropTime = time;
-                    models.forEach(m => {
-                        m.scale.set(4, 4, 4);
-                        m.userData = { active: false, vy: 0, stopped: false };
-                    });
+                switch (currentPattern) {
+                    case 0:
+                        // Pattern 1: 横切る（XMB風の一直線の超スロー移動・5倍サイズ）
+                        m0.visible = true; 
+                        m0.scale.set(50, 50, 50); 
+                        m0.position.set(90, -15, -30); 
+                        m0.rotation.set(0, -Math.PI / 2, 0); 
+                        break;
+                    case 1:
+                        // Pattern 2: ろくろ（下から回転上昇・5倍サイズ）
+                        m0.visible = true; 
+                        m0.scale.set(75, 75, 75); 
+                        m0.position.set(0, -70, -30); 
+                        m0.rotation.set(0, -Math.PI / 2, 0);
+                        break;
+                    case 2:
+                        // Pattern 3: 群れ (ワープ)
+                        models.forEach(m => {
+                            m.visible = true; 
+                            m.scale.set(2, 2, 2);
+                            m.position.set((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 40, -80 - Math.random() * 50);
+                            m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                        });
+                        break;
+                    case 3:
+                        // Pattern 4: たらこキユーピー風（押し寄せる大群 3列×10行）
+                        models.forEach((m, i) => {
+                            m.visible = true; 
+                            m.scale.set(6, 6, 6);
+                            const col = i % 3; // 0, 1, 2
+                            const row = Math.floor(i / 3); // 0 〜 9
+                            m.position.set((col - 1) * 12, -15, -40 - row * 15);
+                            m.rotation.set(0, -Math.PI / 2, 0); // 正面
+                            m.userData = { baseY: m.position.y };
+                        });
+                        break;
+                    case 4:
+                        // Pattern 5: 自由落下して積もる（だるま落とし・平面）
+                        dropIndex = 0;
+                        lastDropTime = time;
+                        models.forEach(m => {
+                            m.scale.set(4, 4, 4);
+                            m.userData = { active: false, vy: 0, stopped: false };
+                        });
+                        break;
                 }
             }
 
+            // メインの描画ループ
             function animate() {
                 requestAnimationFrame(animate);
                 time += 0.01;
                 const m0 = models[0];
                 
-                if (currentPattern === 0) {
-                    // XMB風に24秒かけて画面をゆっくり一直線に横切る
-                    m0.position.x -= 0.125; 
-                } else if (currentPattern === 1) {
-                    // 24秒で約2回転（1フレームあたり0.0087ラジアン）しながら、ゆっくり下から現れる
-                    m0.rotation.y -= 0.0087; 
-                    m0.position.y += 0.06;
-                } else if (currentPattern === 2) {
-                    // 群れのアニメーション
-                    models.forEach(m => {
-                        m.position.z += 0.6; m.rotation.x += 0.01; m.rotation.y += 0.01;
-                        if (m.position.z > 15) {
-                            m.position.z = -80 - Math.random() * 20;
-                            m.position.x = (Math.random() - 0.5) * 60;
-                            m.position.y = (Math.random() - 0.5) * 40;
+                switch (currentPattern) {
+                    case 0:
+                        // XMB風に24秒かけて画面をゆっくり一直線に横切る
+                        m0.position.x -= 0.125; 
+                        break;
+                    case 1:
+                        // 24秒で約2回転（1フレームあたり0.0087ラジアン）しながら、ゆっくり下から現れる
+                        m0.rotation.y -= 0.0087; 
+                        m0.position.y += 0.06;
+                        break;
+                    case 2:
+                        // 群れのアニメーション
+                        models.forEach(m => {
+                            m.position.z += 0.6; 
+                            m.rotation.x += 0.01; 
+                            m.rotation.y += 0.01;
+                            if (m.position.z > 15) {
+                                m.position.z = -80 - Math.random() * 20;
+                                m.position.x = (Math.random() - 0.5) * 60;
+                                m.position.y = (Math.random() - 0.5) * 40;
+                            }
+                        });
+                        break;
+                    case 3:
+                        // たらこキユーピー風のアニメーション
+                        models.forEach((m, i) => {
+                            m.position.z += 0.15; 
+                            // ピョコピョコ上下に跳ねる
+                            m.position.y = m.userData.baseY + Math.abs(Math.sin(time * 5 + i * 0.5)) * 3; 
+                            // 少し首をかしげるように揺らす
+                            m.rotation.z = Math.sin(time * 3 + i * 0.5) * 0.15; 
+                            m.rotation.x = Math.sin(time * 2 + i * 0.5) * 0.1; 
+                            if (m.position.z > 20) {
+                                m.position.z -= 150; // 15間隔 * 10列分 奥へ戻る
+                            }
+                        });
+                        break;
+                    case 4:
+                        // 自由落下して積もる（だるま落としループ・平面Z固定）
+                        if (time - lastDropTime > 0.4) {
+                            const m = models[dropIndex];
+                            m.visible = true; 
+                            m.userData.active = true; 
+                            m.userData.stopped = false; 
+                            m.userData.vy = 0;
+                            
+                            m.position.set((Math.random() - 0.5) * 40, 30, -20); // Zを -20 に固定して平面落下
+                            m.rotation.set(Math.random() * Math.PI, -Math.PI / 2, Math.random() * Math.PI);
+                            dropIndex = (dropIndex + 1) % models.length;
+                            lastDropTime = time;
                         }
-                    });
-                } else if (currentPattern === 3) {
-                    // たらこキユーピー風のアニメーション
-                    models.forEach((m, i) => {
-                        m.position.z += 0.15; 
-                        // ピョコピョコ上下に跳ねる
-                        m.position.y = m.userData.baseY + Math.abs(Math.sin(time * 5 + i * 0.5)) * 3; 
-                        // 少し首をかしげるように揺らす
-                        m.rotation.z = Math.sin(time * 3 + i * 0.5) * 0.15; 
-                        m.rotation.x = Math.sin(time * 2 + i * 0.5) * 0.1; 
-                        if (m.position.z > 20) {
-                            m.position.z -= 150; // 15間隔 * 10列分 奥へ戻る
-                        }
-                    });
-                } else if (currentPattern === 4) {
-                    // 自由落下して積もる（だるま落としループ・平面Z固定）
-                    if (time - lastDropTime > 0.4) {
-                        const m = models[dropIndex];
-                        m.visible = true; m.userData.active = true; m.userData.stopped = false; m.userData.vy = 0;
-                        m.position.set((Math.random() - 0.5) * 40, 30, -20); // Zを -20 に固定して平面落下
-                        m.rotation.set(Math.random() * Math.PI, -Math.PI / 2, Math.random() * Math.PI);
-                        dropIndex = (dropIndex + 1) % models.length;
-                        lastDropTime = time;
-                    }
-                    models.forEach((m) => {
-                        if (!m.userData.active || m.userData.stopped) return;
                         
-                        m.userData.vy -= 0.12; // 重力
-                        m.position.y += m.userData.vy;
-                        m.rotation.x += 0.02; m.rotation.y += 0.03;
+                        models.forEach((m) => {
+                            if (!m.userData.active || m.userData.stopped) return;
+                            
+                            m.userData.vy -= 0.12; // 重力
+                            m.position.y += m.userData.vy;
+                            m.rotation.x += 0.02; 
+                            m.rotation.y += 0.03;
 
-                        let hit = false;
-                        if (m.position.y < -25) {
-                            // 地面に衝突
-                            hit = true; m.position.y = -25;
-                        } else {
-                            // 他の止まっているモデルとの衝突判定
-                            for (let j = 0; j < models.length; j++) {
-                                const other = models[j];
-                                if (other !== m && other.userData.active && other.visible && other.userData.stopped) {
-                                    const dx = m.position.x - other.position.x;
-                                    const dy = m.position.y - other.position.y;
-                                    // 距離が近く、かつ相手より上にいる場合に乗っかる
-                                    if (dx*dx + dy*dy < 40 && dy > 0 && dy < 6) {
-                                        hit = true; m.position.y = other.position.y + 6; break;
+                            let hit = false;
+                            if (m.position.y < -25) {
+                                // 地面に衝突
+                                hit = true; 
+                                m.position.y = -25;
+                            } else {
+                                // 他の止まっているモデルとの衝突判定
+                                for (let j = 0; j < models.length; j++) {
+                                    const other = models[j];
+                                    if (other !== m && other.userData.active && other.visible && other.userData.stopped) {
+                                        const dx = m.position.x - other.position.x;
+                                        const dy = m.position.y - other.position.y;
+                                        // 距離が近く、かつ相手より上にいる場合に乗っかる
+                                        if (dx*dx + dy*dy < 40 && dy > 0 && dy < 6) {
+                                            hit = true; 
+                                            m.position.y = other.position.y + 6; 
+                                            break;
+                                        }
                                     }
                                 }
                             }
-                        }
-                        if (hit) { 
-                            m.userData.vy *= -0.4; // ポヨンと弾む（反発係数0.4）
-                            if (Math.abs(m.userData.vy) < 0.5) { 
-                                // 速度が落ちたら完全に停止
-                                m.userData.stopped = true; m.userData.vy = 0; 
-                            } 
-                        }
-                    });
+                            
+                            if (hit) { 
+                                m.userData.vy *= -0.4; // ポヨンと弾む（反発係数0.4）
+                                if (Math.abs(m.userData.vy) < 0.5) { 
+                                    // 速度が落ちたら完全に停止
+                                    m.userData.stopped = true; 
+                                    m.userData.vy = 0; 
+                                } 
+                            }
+                        });
+                        break;
                 }
                 renderer.render(scene, camera);
             }
 
+            // ウィンドウのリサイズ処理
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
