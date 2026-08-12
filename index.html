@@ -147,7 +147,7 @@
         .card-small { grid-column: span 1; } .card-device-location { grid-column: span 1; } 
 
         /* ==================================================================
-           🚀 Speed Meter Border Integration (Fixed for Dark/God Mode)
+           🚀 Speed Meter Border Integration
            ================================================================== */
         #card-speed {
             position: relative;
@@ -156,7 +156,6 @@
             padding: 0 !important; 
             overflow: visible; 
             z-index: 1;
-            /* 外側のカードは透過＆ブラーなしにし、二重描画を防ぐ */
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
             box-shadow: none !important;
@@ -185,8 +184,9 @@
             inset: -3px; 
             border-radius: calc(var(--radius-card) + 3px); 
             z-index: -1;
+            /* JavaScript側で requestAnimationFrame を用いて毎フレーム更新するため、
+               CSSのtransitionを外してリアルタイムな「プルプル感」を表現します */
             background: conic-gradient(from 180deg, transparent 0%, transparent 100%);
-            transition: background 0.5s ease-out;
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: destination-out;
             mask-composite: exclude;
@@ -208,11 +208,10 @@
         }
 
         #card-speed.rev-limit::before {
-            animation: revLimitShake 0.1s infinite; 
+            animation: revLimitShake 0.08s infinite !important; 
             filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.8)); 
         }
         
-        /* GOD MODE専用のインナーカード白背景化 */
         body.god-mode-active #card-speed-inner {
             background: rgba(255, 255, 255, 0.85) !important;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.8) !important;
@@ -560,7 +559,17 @@
             constructor(ecgEngine, spotifyController) {
                 this.ecgEngine = ecgEngine; this.spotifyController = spotifyController;
                 this.speedUnitIdx = 0; this.globalSpeedKmh = 0; this.isGodMode = false;
+                
+                // 🚀 スピードメーター用変数
+                this.meterTargetSpeed = 0;
+                this.meterCurrentSpeed = 0;
+                this.godMeterAngle = 180;
+                this.meterLoop = this.animateMeter.bind(this);
+                
                 this.els = this.getElements(); this.initScramblers(); this.bindEvents();
+                
+                // メーターの描画ループ開始
+                requestAnimationFrame(this.meterLoop);
             }
             getElements() {
                 return {
@@ -605,39 +614,64 @@
                 } else { this.els[key].textContent = textStr; }
             }
 
-            // 🚀 CPUメーター風スピードメーターの描画更新
-            updateSpeedMeter(speedKmh) {
-                if (this.isGodMode || isNaN(speedKmh)) return;
+            // 🚀 スピードメーターの常時描画・アニメーションループ
+            animateMeter() {
+                requestAnimationFrame(this.meterLoop);
 
-                // 速度に応じた角度計算 (0 -> 0deg, 4.8 -> 180deg, 44.17 -> 360deg)
-                let degrees = 0;
-                if (speedKmh <= 4.8) {
-                    degrees = (speedKmh / 4.8) * 180;
-                } else {
-                    // 4.8km/hを超えたら後半の半周 (非線形スケール)
-                    const extraSpeed = speedKmh - 4.8;
-                    const maxExtra = 44.17 - 4.8;
-                    const ratio = Math.min(extraSpeed / maxExtra, 1.0);
-                    degrees = 180 + (ratio * 180);
+                if (this.isGodMode) {
+                    // GOD MODE: 虹色が超高速で回転する
+                    this.godMeterAngle = (this.godMeterAngle + 8) % 360;
+                    let styleEl = document.getElementById('dynamic-meter-style');
+                    if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'dynamic-meter-style'; document.head.appendChild(styleEl); }
+                    styleEl.innerHTML = `#card-speed::before { background: conic-gradient(from ${this.godMeterAngle}deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000) !important; }`;
+                    this.els.cardSpeed.classList.add('rev-limit');
+                    return;
                 }
 
-                // 色の計算 (緑 -> オレンジ -> 赤)
-                let color1 = 'var(--color-good)';
-                let color2 = 'var(--color-ok)';
-                if (speedKmh > 4.8) color2 = 'var(--color-avg)';
-                if (speedKmh > 20) { color1 = 'var(--color-avg)'; color2 = 'var(--color-bad)'; }
-                
-                // メーターを時計回りに描画 (下部180度からスタート)
-                // 終了地点の角度(endAngle)を計算
-                const startAngle = 180; // CSS conic-gradient は上(0deg)から時計回りなので、下から始めるには180deg
-                let endAngle = startAngle + degrees;
-                if (endAngle > 360) endAngle -= 360;
+                // 目標速度に向かって滑らかに補間 (0からスタートしてギュンッと上がる)
+                this.meterCurrentSpeed += (this.meterTargetSpeed - this.meterCurrentSpeed) * 0.05;
 
-                // CSSカスタムプロパティをインラインで更新して、擬似要素の背景を描画
-                // ※透明->色->色->透明 とすることで円弧の長さを表現
-                const gradStr = `conic-gradient(from 180deg, ${color1} 0deg, ${color2} ${degrees}deg, transparent ${degrees}deg, transparent 360deg)`;
+                let s = this.meterCurrentSpeed;
+                let degrees = 0;
+
+                // 速度に応じた非線形の角度計算 (0 -> 0deg, 4.8 -> 180deg, 21 -> 270deg, 44.17 -> 360deg)
+                if (s <= 0) {
+                    degrees = 0;
+                } else if (s <= 4.8) {
+                    degrees = (s / 4.8) * 180;
+                } else if (s <= 21) {
+                    degrees = 180 + ((s - 4.8) / (21 - 4.8)) * 90;
+                } else if (s < 44.17) {
+                    degrees = 270 + ((s - 21) / (44.17 - 21)) * 90;
+                } else {
+                    degrees = 360;
+                }
+
+                // プルプルと震える微細な物理的ノイズ（ジッター）の生成
+                let jitter = 0;
+                if (this.meterTargetSpeed > 0) {
+                    const timeSec = Date.now() / 50;
+                    // サイン波を組み合わせて機械的な振動を表現 (±1.5度のブレ)
+                    jitter = (Math.sin(timeSec) + Math.cos(timeSec * 0.8)) * 0.75; 
+                }
                 
-                // Styleタグに直接書き込むと安全 (擬似要素はインラインスタイルで操作できないため)
+                let fillDeg = Math.max(0, Math.min(360, degrees + jitter));
+                let stops = "";
+
+                // CPUメーター風のカラーセグメント生成
+                if (fillDeg <= 180) {
+                    // 安全圏 (0 ~ 4.8km/h) : 緑
+                    stops = `var(--color-good) 0deg, var(--color-good) ${fillDeg}deg, transparent ${fillDeg}deg`;
+                } else if (fillDeg <= 270) {
+                    // 警告圏 (4.8 ~ 21km/h) : オレンジ
+                    stops = `var(--color-good) 0deg, var(--color-good) 180deg, var(--color-avg) 180deg, var(--color-avg) ${fillDeg}deg, transparent ${fillDeg}deg`;
+                } else {
+                    // 危険圏 (21 ~ 44.17km/h) : 赤
+                    stops = `var(--color-good) 0deg, var(--color-good) 180deg, var(--color-avg) 180deg, var(--color-avg) 270deg, var(--color-bad) 270deg, var(--color-bad) ${fillDeg}deg, transparent ${fillDeg}deg`;
+                }
+
+                const gradStr = `conic-gradient(from 180deg, ${stops}, transparent 360deg)`;
+
                 let styleEl = document.getElementById('dynamic-meter-style');
                 if (!styleEl) {
                     styleEl = document.createElement('style');
@@ -646,8 +680,8 @@
                 }
                 styleEl.innerHTML = `#card-speed::before { background: ${gradStr} !important; }`;
 
-                // 限界突破(44.17 km/h以上)のブレ演出
-                if (speedKmh >= 44.17) {
+                // 限界突破(44.17 km/h以上)のブレ演出（レブリミット）
+                if (this.meterTargetSpeed >= 44.17) {
                     this.els.cardSpeed.classList.add('rev-limit');
                 } else {
                     this.els.cardSpeed.classList.remove('rev-limit');
@@ -669,11 +703,6 @@
                     this.els.batVal.style.fontSize = 'clamp(0.4rem, 1.8vw, 0.75rem)'; this.els.batVal.style.lineHeight = '1'; this.els.batVal.style.wordBreak = 'break-all'; this.els.batVal.style.display = 'inline-block'; this.els.batVal.style.maxWidth = '100%'; this.els.batVal.textContent = '340282366920938463463374607431768211455'; this.els.batIcon.textContent = '🌟';
                     const t = document.createElement('div'); t.className = 'tune-toast'; t.style.background = 'linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff)'; t.style.color = '#fff'; t.style.fontWeight = '900'; t.style.textShadow = '1px 1px 2px #000'; t.style.border = '2px solid #fff'; t.innerHTML = `<span>🌟 GOD MODE ACTIVATED 🌟</span>`; document.body.appendChild(t);
                     
-                    // GOD MODE中はメーターを虹色にフル点灯
-                    let styleEl = document.getElementById('dynamic-meter-style');
-                    if (styleEl) styleEl.innerHTML = `#card-speed::before { background: conic-gradient(from 180deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000) !important; animation: dreamyNeon 1s linear infinite !important; }`;
-                    this.els.cardSpeed.classList.add('rev-limit');
-
                     let asymFrame = 0;
                     const animateGodAsym = () => {
                         if(!this.isGodMode) return;
@@ -715,7 +744,8 @@
                     
                     this.globalSpeedKmh = this.safeParseFloat(d.health.walking_speed); 
                     this.renderSpeed(); 
-                    this.updateSpeedMeter(this.globalSpeedKmh); // 🚀 メーター更新
+                    // 🚀 メーターの目標速度をセット（アニメーションで追いつく）
+                    this.meterTargetSpeed = isNaN(this.globalSpeedKmh) ? 0 : this.globalSpeedKmh;
                     
                     const asymRaw = this.safeParseFloat(d.health.walking_asymmetry); 
                     if (d.health.walking_asymmetry !== undefined && d.health.walking_asymmetry !== "") { this.setTextData('asym', asymRaw.toFixed(0)); this.updateLevel(asymRaw / 100); } 
