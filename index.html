@@ -160,7 +160,7 @@
             justify-content: space-between; 
             box-shadow: var(--card-shadow); 
             transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease; 
-            min-width: 0; /* 文字列長大化によるGridのレイアウトシフト防止 */
+            min-width: 0;
         }
         
         .card-interactive { cursor: pointer; position: relative; user-select: none; } 
@@ -235,6 +235,9 @@
             box-shadow: none !important; 
             align-items: center; 
             justify-content: center; 
+            position: relative; /* 吹き出しの配置基準 */
+            z-index: 20;        /* 隣のカードより手前に表示 */
+            overflow: visible;
         } 
         
         .profile-img { 
@@ -397,15 +400,40 @@
         .card-tune:hover .tune-icon, .card-tune.is-waving .tune-icon { animation: wave-hand 1.5s ease-in-out infinite; }
         .tune-label { font-weight: 600; font-size: 0.85rem; letter-spacing: 0.05em; opacity: 0.8; }
 
+        /* 💬 アイコンがしゃべっているような吹き出し */
         .tune-bubble { 
-            position: absolute; top: 5%; right: -15%; background: var(--sys-on-surface); color: var(--sys-bg); padding: 8px 20px; 
-            border-radius: var(--shape-pill); border-bottom-left-radius: 4px; font-weight: 700; font-size: 0.9rem; pointer-events: none; 
-            z-index: 100; box-shadow: var(--card-shadow); opacity: 0; animation: bubblePop 2.5s cubic-bezier(0.2, 0, 0, 1) forwards; 
+            position: absolute; 
+            top: 4%; 
+            left: 72%; 
+            background: var(--sys-on-surface); 
+            color: var(--sys-bg); 
+            padding: 8px 16px; 
+            border-radius: 18px; 
+            border-bottom-left-radius: 0; 
+            font-weight: 700; 
+            font-size: 0.9rem; 
+            white-space: nowrap;
+            pointer-events: none; 
+            z-index: 100; 
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2); 
+            opacity: 0; 
+            transform-origin: bottom left;
+            animation: bubblePop 2.5s cubic-bezier(0.2, 0, 0, 1) forwards; 
         } 
+        .tune-bubble::before {
+            content: "";
+            position: absolute;
+            bottom: -7px;
+            left: 0;
+            border-width: 8px 12px 0 0;
+            border-style: solid;
+            border-color: var(--sys-on-surface) transparent transparent transparent;
+        }
         @keyframes bubblePop { 
-            0% { opacity: 0; transform: scale(0.8) translate(-10px, 10px); } 
-            15% { opacity: 1; transform: scale(1) translate(0, 0); } 
-            100% { opacity: 0; transform: scale(0.9) translate(0, -10px); } 
+            0% { opacity: 0; transform: scale(0.5) translate(-8px, 8px); } 
+            12% { opacity: 1; transform: scale(1.05) translate(0, 0); } 
+            20%, 85% { opacity: 1; transform: scale(1) translate(0, 0); } 
+            100% { opacity: 0; transform: scale(0.9) translate(0, -8px); } 
         }
         
         .tune-toast { 
