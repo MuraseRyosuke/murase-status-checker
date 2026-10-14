@@ -172,6 +172,8 @@
             justify-content: space-between; 
             box-shadow: var(--card-shadow); 
             transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s ease; 
+            /* 🚨 長い文字列でグリッドが右に膨らんでしまうのを防ぐ（レイアウトシフト対策） */
+            min-width: 0; 
         }
         
         .card-interactive { cursor: pointer; position: relative; user-select: none; } 
@@ -192,7 +194,12 @@
         /* specific cards */
         .card-status { grid-column: span 4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1.5rem 1rem; min-height: 110px; position: relative; }
         #liveness-message { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 800; line-height: 1.2; margin: 0; word-wrap: break-word; position: relative; z-index: 1; transition: opacity 0.5s ease; } 
-        #liveness-subtext { font-size: 0.9rem; color: var(--sys-on-surface-sub); line-height: 1.5; margin-top: 0.5rem; position: relative; z-index: 1; } 
+        
+        /* 🚨 長い文字列の折り返しを強制し、レイアウト破壊を防ぐ */
+        #liveness-subtext { 
+            font-size: 0.9rem; color: var(--sys-on-surface-sub); line-height: 1.5; margin-top: 0.5rem; position: relative; z-index: 1; 
+            word-wrap: break-word; overflow-wrap: break-word; word-break: break-all;
+        } 
         #liveness-subtext:empty { display: none; margin-top: 0; }
 
         .card-profile { grid-column: span 1; padding: 0; background: transparent !important; border: none !important; box-shadow: none !important; display: flex; align-items: center; justify-content: center; } 
@@ -326,7 +333,7 @@
            ================================================================== */
         #puchun-wrap { pointer-events: none; }
         #puchun-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999998; opacity: 0; }
-        #puchun-flash { fixed; top: 50%; left: 50%; width: 100vw; height: 100vh; background: #fff; z-index: 9999999; transform: translate(-50%, -50%); display: none; }
+        #puchun-flash { position: fixed; top: 50%; left: 50%; width: 100vw; height: 100vh; background: #fff; z-index: 9999999; transform: translate(-50%, -50%); display: none; }
         .puchun-active #puchun-layer { opacity: 1; pointer-events: auto; }
         .puchun-active #puchun-flash { display: block; animation: puchunAnim 0.3s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
         @keyframes puchunAnim { 0% { transform: translate(-50%, -50%) scale(1, 1); opacity: 1; background: #fff; } 40% { transform: translate(-50%, -50%) scale(1, 0.01); opacity: 1; background: #fff; } 100% { transform: translate(-50%, -50%) scale(0, 0); opacity: 1; background: #fff; } }
@@ -349,18 +356,26 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important; 
         }
         
-        body.god-mode-active .label, body.god-mode-active .unit, body.god-mode-active .sub-value, body.god-mode-active #spotify-no-signal { 
-            color: rgba(255, 255, 255, 0.9) !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        /* 🚨 GOD MODE時の文字を視認しやすくする強力な黒フチ（三重シャドウ）効果 */
+        body.god-mode-active .label, 
+        body.god-mode-active .unit, 
+        body.god-mode-active .sub-value, 
+        body.god-mode-active #spotify-no-signal,
+        body.god-mode-active .tune-label { 
+            color: rgba(255, 255, 255, 0.95) !important; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6) !important;
         } 
         
-        body.god-mode-active .value, body.god-mode-active #liveness-message { 
-            color: #ffffff !important; text-shadow: 0 2px 5px rgba(0,0,0,0.9);
+        body.god-mode-active .value, 
+        body.god-mode-active #liveness-message,
+        body.god-mode-active #condition,
+        body.god-mode-active #sound_label,
+        body.god-mode-active .tune-icon { 
+            color: #ffffff !important; 
+            text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.8), 0 0 30px rgba(0,0,0,0.6) !important;
         }
         
-        /* Refactored CSS for specific GOD MODE elements */
         body.god-mode-active #card-speed-inner { background: rgba(255, 255, 255, 0.1) !important; box-shadow: none !important; }
-        body.god-mode-active #condition { color: inherit !important; }
-        body.god-mode-active #sound_label { color: inherit !important; }
         
         body.god-mode-active #battery_val {
             font-size: clamp(0.4rem, 1.8vw, 0.75rem); line-height: 1; word-break: break-all; display: inline-block; max-width: 100%;
@@ -543,7 +558,6 @@
 
         const MY_3D_MODEL_URL = "https://cdn.jsdelivr.net/gh/MuraseRyosuke/Murase-Ryosuke-3D-Model@main/models/statue_bust/15k_standard/murase_statue_bust_15k_standard.glb";
 
-        // Helper for concise DOM selection
         const $ = id => document.getElementById(id);
 
         class TextScramble {
