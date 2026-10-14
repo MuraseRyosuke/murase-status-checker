@@ -326,7 +326,7 @@
            ================================================================== */
         #puchun-wrap { pointer-events: none; }
         #puchun-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999998; opacity: 0; }
-        #puchun-flash { position: fixed; top: 50%; left: 50%; width: 100vw; height: 100vh; background: #fff; z-index: 9999999; transform: translate(-50%, -50%); display: none; }
+        #puchun-flash { fixed; top: 50%; left: 50%; width: 100vw; height: 100vh; background: #fff; z-index: 9999999; transform: translate(-50%, -50%); display: none; }
         .puchun-active #puchun-layer { opacity: 1; pointer-events: auto; }
         .puchun-active #puchun-flash { display: block; animation: puchunAnim 0.3s cubic-bezier(0.8, 0, 0.2, 1) forwards; }
         @keyframes puchunAnim { 0% { transform: translate(-50%, -50%) scale(1, 1); opacity: 1; background: #fff; } 40% { transform: translate(-50%, -50%) scale(1, 0.01); opacity: 1; background: #fff; } 100% { transform: translate(-50%, -50%) scale(0, 0); opacity: 1; background: #fff; } }
@@ -363,11 +363,7 @@
         body.god-mode-active #sound_label { color: inherit !important; }
         
         body.god-mode-active #battery_val {
-            font-size: clamp(0.4rem, 1.8vw, 0.75rem);
-            line-height: 1;
-            word-break: break-all;
-            display: inline-block;
-            max-width: 100%;
+            font-size: clamp(0.4rem, 1.8vw, 0.75rem); line-height: 1; word-break: break-all; display: inline-block; max-width: 100%;
         }
 
         body.god-mode-active::after { 
@@ -749,7 +745,7 @@
             setTextData(key, text) {
                 if (this.isInitialLoad && this.scramblers[key]) {
                     if (this.els[key].dataset.scrambled !== "true") { 
-                        this.els[key].textContent = ''; this.scramblers[key].setText(textStr); this.els[key].dataset.scrambled = "true"; 
+                        this.els[key].textContent = ''; this.scramblers[key].setText(String(text)); this.els[key].dataset.scrambled = "true"; 
                     }
                 } else { this.els[key].textContent = String(text); }
             }
